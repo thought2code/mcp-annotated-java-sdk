@@ -1,7 +1,7 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
 
@@ -48,10 +48,10 @@ public class McpStdioServer extends McpServerBase {
    *
    * @return a synchronization specification configured for STDIO transport
    * @see StdioServerTransportProvider
-   * @see McpJsonMapper
+   * @see McpJsonDefaults
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
-    return McpServer.sync(new StdioServerTransportProvider(McpJsonMapper.getDefault()));
+    return McpServer.sync(new StdioServerTransportProvider(McpJsonDefaults.getMapper()));
   }
 }

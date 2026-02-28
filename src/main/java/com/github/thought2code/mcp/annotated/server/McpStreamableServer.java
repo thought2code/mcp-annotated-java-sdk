@@ -3,7 +3,7 @@ package com.github.thought2code.mcp.annotated.server;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
 import com.github.thought2code.mcp.annotated.util.InetHelper;
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
 import java.time.Duration;
@@ -88,7 +88,7 @@ public class McpStreamableServer extends McpServerBase {
    * @return a synchronization specification configured for HTTP streaming transport
    * @see HttpServletStreamableServerTransportProvider
    * @see McpServerStreamable
-   * @see McpJsonMapper
+   * @see McpJsonDefaults
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
@@ -96,7 +96,7 @@ public class McpStreamableServer extends McpServerBase {
     port = streamable.port();
     transportProvider =
         HttpServletStreamableServerTransportProvider.builder()
-            .jsonMapper(McpJsonMapper.getDefault())
+            .jsonMapper(McpJsonDefaults.getMapper())
             .mcpEndpoint(streamable.mcpEndpoint())
             .disallowDelete(streamable.disallowDelete())
             .keepAliveInterval(Duration.ofMillis(streamable.keepAliveInterval()))

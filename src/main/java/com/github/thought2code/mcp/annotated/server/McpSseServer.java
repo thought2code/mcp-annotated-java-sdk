@@ -3,7 +3,7 @@ package com.github.thought2code.mcp.annotated.server;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
 import com.github.thought2code.mcp.annotated.util.InetHelper;
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
 import org.slf4j.Logger;
@@ -61,7 +61,7 @@ public class McpSseServer extends McpServerBase {
    * @return a synchronization specification configured for SSE transport
    * @see HttpServletSseServerTransportProvider
    * @see McpServerSSE
-   * @see McpJsonMapper
+   * @see McpJsonDefaults
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
@@ -70,7 +70,7 @@ public class McpSseServer extends McpServerBase {
     port = sse.port();
     transportProvider =
         HttpServletSseServerTransportProvider.builder()
-            .jsonMapper(McpJsonMapper.getDefault())
+            .jsonMapper(McpJsonDefaults.getMapper())
             .baseUrl(sse.baseUrl())
             .sseEndpoint(sse.endpoint())
             .messageEndpoint(sse.messageEndpoint())
