@@ -2,6 +2,7 @@ package com.github.thought2code.mcp.annotated;
 
 import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.server.McpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
@@ -48,6 +49,32 @@ public final class McpApplication {
     startMcpServer();
   }
 
+  /**
+   * Starts the MCP server based on the loaded configuration.
+   *
+   * <p>This method performs the following steps:
+   *
+   * <ol>
+   *   <li>Loads the MCP server configuration from configuration file
+   *   <li>Validates if the MCP server is enabled in the configuration
+   *   <li>Creates the appropriate server instance based on the configured mode:
+   *       <ul>
+   *         <li>{@link ServerMode#STDIO} - Standard input/output based server
+   *         <li>{@link ServerMode#SSE} - Server-Sent Events based HTTP server
+   *         <li>{@link ServerMode#STREAMABLE} - Streamable HTTP server
+   *       </ul>
+   *   <li>Initializes the synchronous MCP server and registers all annotated components
+   *   <li>Starts the HTTP server for SSE or STREAMABLE modes
+   * </ol>
+   *
+   * <p>If the MCP server is disabled in the configuration, a warning message will be logged and no
+   * server will be started.
+   *
+   * @see McpConfigurationLoader
+   * @see McpServerConfiguration
+   * @see McpServer
+   * @see McpSyncServer
+   */
   private static void startMcpServer() {
     McpConfigurationLoader configurationLoader = new McpConfigurationLoader();
     McpServerConfiguration configuration = configurationLoader.loadConfig();
