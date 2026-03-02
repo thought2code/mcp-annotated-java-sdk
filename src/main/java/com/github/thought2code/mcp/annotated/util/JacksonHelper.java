@@ -1,14 +1,13 @@
 package com.github.thought2code.mcp.annotated.util;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.exception.McpServerJsonProcessingException;
 import java.io.File;
-import java.io.IOException;
 import org.jetbrains.annotations.VisibleForTesting;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * Helper class for Jackson JSON and YAML serialization and deserialization.
@@ -45,7 +44,7 @@ public final class JacksonHelper {
   public static String toJsonString(Object object) {
     try {
       return JSON.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new McpServerJsonProcessingException("Error converting object to JSON", e);
     }
   }
@@ -61,7 +60,7 @@ public final class JacksonHelper {
   public static <T> T fromJson(String json, Class<T> valueType) {
     try {
       return JSON.readValue(json, valueType);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new McpServerJsonProcessingException("Error converting JSON to object", e);
     }
   }
@@ -77,7 +76,7 @@ public final class JacksonHelper {
   public static <T> T fromYaml(File yamlFile, Class<T> valueType) {
     try {
       return YAML.readValue(yamlFile, valueType);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       final String path = yamlFile.getAbsolutePath();
       throw new McpServerConfigurationException("Error reading YAML file: " + path, e);
     }
