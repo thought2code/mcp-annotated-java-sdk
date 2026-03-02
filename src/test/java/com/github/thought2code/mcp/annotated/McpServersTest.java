@@ -23,7 +23,7 @@ import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.time.Duration;
 import java.util.List;
@@ -56,7 +56,7 @@ class McpServersTest {
             .build();
 
     StdioClientTransport transport =
-        new StdioClientTransport(serverParameters, McpJsonMapper.getDefault());
+        new StdioClientTransport(serverParameters, McpJsonDefaults.getMapper());
 
     try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
       Executors.newSingleThreadExecutor().execute(() -> verify(client));

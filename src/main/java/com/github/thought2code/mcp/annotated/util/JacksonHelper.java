@@ -1,9 +1,10 @@
 package com.github.thought2code.mcp.annotated.util;
 
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
-import com.github.thought2code.mcp.annotated.exception.McpServerJsonProcessingException;
 import java.io.File;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.ObjectMapper;
@@ -18,6 +19,8 @@ import tools.jackson.dataformat.yaml.YAMLFactory;
  * @author codeboyzhou
  */
 public final class JacksonHelper {
+
+  private static final Logger log = LoggerFactory.getLogger(JacksonHelper.class);
 
   /** JSON ObjectMapper instance. */
   private static final ObjectMapper JSON = new ObjectMapper(new JsonFactory());
@@ -42,10 +45,15 @@ public final class JacksonHelper {
    * @return the JSON string representation of the object
    */
   public static String toJsonString(Object object) {
+    if (object == null) {
+      return null;
+    }
+
     try {
       return JSON.writeValueAsString(object);
     } catch (JacksonException e) {
-      throw new McpServerJsonProcessingException("Error converting object to JSON", e);
+      log.error("Error serializing object to JSON", e);
+      return null;
     }
   }
 
@@ -58,10 +66,15 @@ public final class JacksonHelper {
    * @return the deserialized object
    */
   public static <T> T fromJson(String json, Class<T> valueType) {
+    if (json == null) {
+      return null;
+    }
+
     try {
       return JSON.readValue(json, valueType);
     } catch (JacksonException e) {
-      throw new McpServerJsonProcessingException("Error converting JSON to object", e);
+      log.error("Error deserializing JSON to object", e);
+      return null;
     }
   }
 

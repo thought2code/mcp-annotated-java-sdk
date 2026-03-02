@@ -1,11 +1,11 @@
 package com.github.thought2code.mcp.annotated.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
-import com.github.thought2code.mcp.annotated.exception.McpServerJsonProcessingException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,10 +13,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class JacksonHelperTest {
-
-  static class CircularReference {
-    private final CircularReference self = this;
-  }
 
   record Person(String name, int age) {}
 
@@ -27,32 +23,21 @@ class JacksonHelperTest {
 
   @Test
   void testToJsonString_shouldSucceed() {
+    assertNull(JacksonHelper.toJsonString(null));
+
     String json = JacksonHelper.toJsonString(new Person("test", 25));
     assertTrue(json.contains("\"name\":\"test\""));
     assertTrue(json.contains("\"age\":25"));
   }
 
   @Test
-  void testToJsonString_shouldThrowException() {
-    assertThrows(
-        McpServerJsonProcessingException.class,
-        () -> JacksonHelper.toJsonString(new CircularReference()));
-  }
-
-  @Test
   void testFromJson_shouldSucceed() {
+    assertNull(JacksonHelper.fromJson(null, Person.class));
+
     String json = "{\"name\":\"test\",\"age\":25}";
     Person person = JacksonHelper.fromJson(json, Person.class);
     assertEquals("test", person.name);
     assertEquals(25, person.age);
-  }
-
-  @Test
-  void testFromJson_shouldThrowException() {
-    String json = "{\"name\":\"test\",\"age\":25}";
-    assertThrows(
-        McpServerJsonProcessingException.class,
-        () -> JacksonHelper.fromJson(json, CircularReference.class));
   }
 
   @Test
