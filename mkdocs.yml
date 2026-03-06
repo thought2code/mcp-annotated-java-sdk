@@ -1,5 +1,5 @@
 site_name: mcp-annotated-java-sdk documentation
-site_url: https://thought2code.github.io/mcp-annotated-java-sdk/docs
+site_url: https://thought2code.github.io/mcp-annotated-java-sdk
 theme:
   name: material
   icon:
