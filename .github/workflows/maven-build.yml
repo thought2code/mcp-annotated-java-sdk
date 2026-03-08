@@ -26,7 +26,9 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Maven
-        run: ./mvnw -B package --file pom.xml
+        run: |
+          chmod +x ./mvnw
+          ./mvnw -B package --file pom.xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

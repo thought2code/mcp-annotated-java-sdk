@@ -27,7 +27,9 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE
 
       - name: Deploy to Maven Central
-        run: ./mvnw clean deploy -DskipTests -B
+        run: |
+          chmod +x ./mvnw
+          ./mvnw clean deploy -DskipTests -B
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
