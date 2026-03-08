@@ -29,11 +29,14 @@ public class MyResources {
 }
 ```
 
-### Annotation Explanation
+### Annotation Parameters
 
-- `@McpResource`: Marks a method as an MCP resource
-- `uri`: Unique identifier of the resource, following URI format
-- `description`: Resource description for LLM to understand the resource's purpose
+| Parameter      | Description                                    | Required |
+|----------------|------------------------------------------------|----------|
+| `uri`          | Unique identifier of the resource (URI format) | Yes      |
+| `description`  | Resource description for LLM understanding     | Yes      |
+| `name`         | Resource name (defaults to method name)        | No       |
+| `mimeType`     | MIME type of the resource content              | No       |
 
 ## Tools
 
@@ -48,14 +51,16 @@ import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
 public class MyTools {
     @McpTool(description = "Calculate the sum of two numbers")
     public int add(
-        @McpToolParam(name = "a", description = "First number", required = true) int a,
-        @McpToolParam(name = "b", description = "Second number", required = true) int b
+        @McpToolParam(name = "a", description = "First number") int a,
+        @McpToolParam(name = "b", description = "Second number") int b
     ) {
         return a + b;
     }
 
     @McpTool(description = "Read complete file contents with UTF-8 encoding")
-    public String readFile(@McpToolParam(name = "path", description = "File path", required = true) String path) {
+    public String readFile(
+        @McpToolParam(name = "path", description = "File path") String path
+    ) {
         try {
             return Files.readString(Path.of(path));
         } catch (IOException e) {
@@ -65,7 +70,23 @@ public class MyTools {
 }
 ```
 
-### Annotation Explanation
+### Annotation Parameters
+
+#### @McpTool
+
+| Parameter     | Description                              | Required |
+|---------------|------------------------------------------|----------|
+| `description` | Tool description for LLM understanding   | Yes      |
+| `name`        | Tool name (defaults to method name)      | No       |
+| `title`       | Tool title for display purposes          | No       |
+
+#### @McpToolParam
+
+| Parameter     | Description                              | Required |
+|---------------|------------------------------------------|----------|
+| `name`        | Parameter name                           | Yes      |
+| `description` | Parameter description                    | Yes      |
+| `required`    | Whether the parameter is required        | No       |
 
 - `@McpTool`: Marks a method as an MCP tool
 - `@McpToolParam`: Marks method parameters as tool parameters
@@ -86,54 +107,90 @@ import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
 public class MyPrompts {
     @McpPrompt(description = "Generate code for a given task")
     public String generateCode(
-        @McpPromptParam(name = "language", description = "Programming language", required = true) String language,
-        @McpPromptParam(name = "task", description = "Task description", required = true) String task
+        @McpPromptParam(name = "language", description = "Programming language") String language,
+        @McpPromptParam(name = "task", description = "Task description") String task
     ) {
         return String.format("Write %s code to: %s", language, task);
     }
 
     @McpPrompt(description = "Format text as specified style")
     public String formatText(
-        @McpPromptParam(name = "text", description = "Text to format", required = true) String text,
-        @McpPromptParam(name = "style", description = "Format style (e.g., formal, casual, technical)", required = true) String style
+        @McpPromptParam(name = "text", description = "Text to format") String text,
+        @McpPromptParam(name = "style", description = "Format style (e.g., formal, casual, technical)") String style
     ) {
         return String.format("Rewrite the following text in a %s style: %s", style, text);
     }
 }
 ```
 
-### Annotation Explanation
+### Annotation Parameters
 
-- `@McpPrompt`: Marks a method as an MCP prompt
-- `@McpPromptParam`: Marks method parameters as prompt parameters
-  - `name`: Parameter name
-  - `description`: Parameter description
-  - `required`: Whether the parameter is required
+#### @McpPrompt
+
+| Parameter     | Description                              | Required |
+|---------------|------------------------------------------|----------|
+| `description` | Prompt description for LLM understanding | Yes      |
+| `name`        | Prompt name (defaults to method name)    | No       |
+| `title`       | Prompt title for display purposes        | No       |
+
+#### @McpPromptParam
+
+| Parameter     | Description                              | Required |
+|---------------|------------------------------------------|----------|
+| `name`        | Parameter name                           | Yes      |
+| `description` | Parameter description                    | Yes      |
+| `required`    | Whether the parameter is required        | No       |
+
+## Completions
+
+Completions provide auto-complete suggestions for resource URIs and prompt arguments.
+
+### Resource Completions
+
+```java
+import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
+
+public class MyCompletions {
+    @McpResourceCompletion(uri = "file://")
+    public List<String> completeFilePath(String uri, String cursorValue) {
+        // Return matching file paths
+        return Files.list(Paths.get(cursorValue))
+            .map(Path::toString)
+            .collect(Collectors.toList());
+    }
+}
+```
+
+### Prompt Completions
+
+```java
+import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
+
+public class MyCompletions {
+    @McpPromptCompletion(promptName = "generateCode", argumentName = "language")
+    public List<String> completeLanguage(String value) {
+        return Arrays.asList("Java", "Python", "JavaScript", "Go", "Rust");
+    }
+}
+```
 
 ## Multilingual Support
 
 This SDK has built-in multilingual support, which can be enabled through the `@McpI18nEnabled` annotation.
 
-### Configure Multilingual
+### Enable i18n
 
 ```java
 @McpServerApplication
 @McpI18nEnabled(resourceBundleBaseName = "messages")
 public class I18nMcpServer {
-    /**
-     * Main method to start the MCP server with i18n support.
-     *
-     * @param args Command line arguments.
-     */
     public static void main(String[] args) {
-        McpServerConfiguration.Builder configuration =
-            McpServerConfiguration.builder().name("i18n-mcp-server").version("1.0.0");
-        McpServers.run(I18nMcpServer.class, args).startStdioServer(configuration);
+        McpApplication.run(I18nMcpServer.class, args);
     }
 }
 ```
 
-### Internationalization Resource Files
+### Create Resource Bundles
 
 Create `messages.properties` file:
 
@@ -161,7 +218,7 @@ prompt.generate.code.param.language.description=编程语言
 prompt.generate.code.param.task.description=任务描述
 ```
 
-Using internationalized messages in components:
+### Use i18n in Components
 
 ```java
 @McpTool(description = "tool.add.description")
@@ -177,6 +234,8 @@ public int add(
 
 After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are in the package scanning path of the server application.
 
+### Specify Package Path
+
 If you need to specify a specific package path, you can use the following methods:
 
 ```java
@@ -186,3 +245,34 @@ If you need to specify a specific package path, you can use the following method
 ```
 
 If no package path is specified, the package containing the main method will be scanned.
+
+## Structured Content
+
+Tools can return structured content for rich responses:
+
+```java
+@McpTool(description = "Get user details")
+public McpStructuredContent<User> getUser(
+    @McpToolParam(name = "id", description = "User ID") String id
+) {
+    User user = userService.findById(id);
+    return McpStructuredContent.of(user);
+}
+```
+
+## Error Handling
+
+When a tool encounters an error, you can return an error result:
+
+```java
+@McpTool(description = "Divide two numbers")
+public Number divide(
+    @McpToolParam(name = "a", description = "Dividend") double a,
+    @McpToolParam(name = "b", description = "Divisor") double b
+) {
+    if (b == 0) {
+        return McpStructuredContent.error("Division by zero is not allowed");
+    }
+    return a / b;
+}
+```

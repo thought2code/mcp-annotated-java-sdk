@@ -9,8 +9,7 @@ This guide will help you build your first MCP server in 5 minutes.
 
 ## Requirements
 
-- **Java 17 or later** (restricted by official MCP Java SDK)
-- **Maven 3.6+** or **Gradle 7+**
+- **Java 17 or later** (required by official MCP Java SDK)
 
 ## Installation
 
@@ -20,37 +19,51 @@ This guide will help you build your first MCP server in 5 minutes.
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.12.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.13.0'
 ```
 
 ## 5-Minutes Tutorial
 
-### Step 1: Create MCP Server Main Class
+### Step 1: Create Configuration File
+
+Create `mcp-server.yml` in your `src/main/resources`:
+
+```yaml
+enabled: true
+mode: STDIO
+name: my-first-mcp-server
+version: 1.0.0
+type: SYNC
+request-timeout: 20000
+capabilities:
+  resource: true
+  prompt: true
+  tool: true
+change-notification:
+  resource: true
+  prompt: true
+  tool: true
+```
+
+### Step 2: Create MCP Server Main Class
 
 ```java
 @McpServerApplication
 public class MyFirstMcpServer {
-    /**
-     * Main method to start the MCP server.
-     *
-     * @param args Command line arguments.
-     */
     public static void main(String[] args) {
-        McpServerConfiguration.Builder configuration =
-            McpServerConfiguration.builder().name("my-first-mcp-server").version("1.0.0");
-        McpServers.run(MyFirstMcpServer.class, args).startStdioServer(configuration);
+        McpApplication.run(MyFirstMcpServer.class, args);
     }
 }
 ```
 
-### Step 2: Define MCP Resources (Optional)
+### Step 3: Define MCP Resources (Optional)
 
 ```java
 public class MyResources {
@@ -65,39 +78,39 @@ public class MyResources {
 }
 ```
 
-### Step 3: Define MCP Tools
+### Step 4: Define MCP Tools
 
 ```java
 public class MyTools {
     @McpTool(description = "Calculate the sum of two numbers")
     public int add(
-        @McpToolParam(name = "a", description = "First number", required = true) int a,
-        @McpToolParam(name = "b", description = "Second number", required = true) int b
+        @McpToolParam(name = "a", description = "First number") int a,
+        @McpToolParam(name = "b", description = "Second number") int b
     ) {
         return a + b;
     }
 }
 ```
 
-### Step 4: Define MCP Prompts (Optional)
+### Step 5: Define MCP Prompts (Optional)
 
 ```java
 public class MyPrompts {
     @McpPrompt(description = "Generate code for a given task")
     public String generateCode(
-        @McpPromptParam(name = "language", description = "Programming language", required = true) String language,
-        @McpPromptParam(name = "task", description = "Task description", required = true) String task
+        @McpPromptParam(name = "language", description = "Programming language") String language,
+        @McpPromptParam(name = "task", description = "Task description") String task
     ) {
         return String.format("Write %s code to: %s", language, task);
     }
 }
 ```
 
-### Step 5: Run the Server
+### Step 6: Run the Server
 
 ```bash
 # Compile and run
-mvn clean package
+./mvnw clean package
 java -jar target/your-app.jar
 ```
 
@@ -106,27 +119,74 @@ java -jar target/your-app.jar
 This SDK supports three MCP server modes:
 
 ### 1. STDIO Mode (Default)
-Based on standard input/output communication, suitable for CLI tools.
 
-```java
-// Start STDIO server
-McpServers.run(MyMcpServer.class, args).startStdioServer(configuration);
+Based on standard input/output communication, suitable for CLI tools and local development.
+
+```yaml
+# mcp-server.yml
+mode: STDIO
 ```
 
 ### 2. SSE (Server-Sent Events) Mode
-HTTP-based real-time communication (deprecated).
 
-```java
-// Start SSE server
-McpServers.run(MyMcpServer.class, args).startSseServer(configuration);
+!!! warning "Deprecated"
+    SSE mode is deprecated. Use STREAMABLE mode for new projects.
+
+HTTP-based real-time communication.
+
+```yaml
+# mcp-server.yml
+mode: SSE
+sse:
+  port: 8080
+  endpoint: /sse
+  messageEndpoint: /message
 ```
 
-### 3. Streamable HTTP Mode
-HTTP streaming for web applications.
+### 3. STREAMABLE Mode
 
-```java
-// Start Streamable HTTP server
-McpServers.run(MyMcpServer.class, args).startStreamableServer(configuration);
+HTTP streaming for web applications, recommended for production.
+
+```yaml
+# mcp-server.yml
+mode: STREAMABLE
+streamable:
+  mcp-endpoint: /mcp/message
+  disallow-delete: true
+  keep-alive-interval: 30000
+  port: 8080
+```
+
+## Configuration Properties
+
+| Property              | Description                               | Default      |
+|-----------------------|-------------------------------------------|--------------|
+| `enabled`             | Enable/disable MCP server                 | `true`       |
+| `mode`                | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE` |
+| `name`                | Server name                               | `mcp-server` |
+| `version`             | Server version                            | `1.0.0`      |
+| `type`                | Server type: `SYNC`, `ASYNC`              | `SYNC`       |
+| `request-timeout`     | Request timeout in milliseconds           | `20000`      |
+| `capabilities`        | Enable resources, prompts, tools          | all `true`   |
+| `change-notification` | Enable change notifications               | all `true`   |
+
+## Profile-based Configuration
+
+You can use profiles for different environments:
+
+```yaml
+# mcp-server.yml (base configuration)
+enabled: true
+mode: STREAMABLE
+name: my-mcp-server
+version: 1.0.0
+profile: dev
+```
+
+```yaml
+# mcp-server-dev.yml (profile-specific configuration)
+streamable:
+  port: 8080
 ```
 
 ## Project Structure
@@ -141,20 +201,26 @@ your-mcp-project/
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── example/
-│   │   │           ├── MyMcpServer.java          # Main entry point
+│   │   │           ├── MyMcpServer.java         # Main entry point
 │   │   │           ├── components/
 │   │   │           │   ├── MyResources.java     # MCP Resources
 │   │   │           │   ├── MyTools.java         # MCP Tools
 │   │   │           │   └── MyPrompts.java       # MCP Prompts
 │   │   │           └── service/
-│   │   │               └── BusinessLogic.java    # Business logic
+│   │   │               └── BusinessLogic.java   # Business logic
 │   │   └── resources/
-│   │       ├── mcp-server.yml                    # MCP configuration
-│   │       └── messages.properties               # Internationalization messages
+│   │       ├── mcp-server.yml                   # MCP configuration
+│   │       └── messages.properties              # Internationalization messages
+│   └── test/
+│       └── java/
+│           └── com/
+│               └── example/
+│                   └── McpServerTest.java       # Unit tests
 └── target/
-    └── your-app.jar                              # Executable JAR
+    └── your-app.jar                             # Executable JAR
 ```
 
 ## Next Steps
 
 - Want to learn more about MCP components? Check [Core Components](./components.md)
+- Need multilingual support? See [i18n Support](./components.md#multilingual-support) section

@@ -49,12 +49,19 @@ This SDK is especially suitable for the following scenarios:
 
 ## Supported Server Modes
 
-| Mode                | Purpose                             | Use Cases                            |
-|---------------------|-------------------------------------|--------------------------------------|
-| **STDIO**           | Standard input/output communication | CLI tools, terminal applications     |
-| **SSE**             | HTTP-based server-sent events       | Real-time communication (deprecated) |
-| **Streamable HTTP** | HTTP streaming                      | Web applications                     |
+| Mode           | Description                         | Use Case                                     |
+|----------------|-------------------------------------|----------------------------------------------|
+| **STDIO**      | Standard input/output communication | CLI tools, local development                 |
+| **SSE**        | Server-Sent Events (HTTP-based)     | Real-time web applications (deprecated)      |
+| **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production |
 
 ## 📖 Getting Started
 
 Want to get started quickly? Check out the [Getting Started Guide](./getting-started.md) to learn how to build your first MCP server in 5 minutes.
+
+## 🔗 Quick Links
+
+- [Getting Started Guide](./getting-started.md) - Build your first MCP server
+- [Core Components](./components.md) - Learn about Resources, Tools, and Prompts
+- [GitHub Repository](https://github.com/thought2code/mcp-annotated-java-sdk) - Source code and examples
+- [Examples](https://github.com/thought2code/mcp-java-sdk-examples) - Real-world examples
