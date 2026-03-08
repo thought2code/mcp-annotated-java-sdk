@@ -40,7 +40,6 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 ### Prerequisites
 
 - **Java 17 or later** (required by official MCP Java SDK)
-- **Maven 3.6+** or **Gradle 7+**
 
 ### 5-Minutes Tutorial
 
@@ -51,34 +50,48 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.12.1</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.12.1'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.13.0'
 ```
 
-#### Step 2: Create Your First MCP Server
+#### Step 2: Create Configuration File
+
+Create `mcp-server.yml` in your `src/main/resources`:
+
+```yaml
+enabled: true
+mode: STDIO
+name: my-first-mcp-server
+version: 1.0.0
+type: SYNC
+request-timeout: 20000
+capabilities:
+  resource: true
+  prompt: true
+  tool: true
+change-notification:
+  resource: true
+  prompt: true
+  tool: true
+```
+
+#### Step 3: Create Your MCP Server
 
 ```java
 @McpServerApplication
 public class MyFirstMcpServer {
-    /**
-     * Main method to start the MCP server.
-     *
-     * @param args Command line arguments.
-     */
     public static void main(String[] args) {
-        McpServerConfiguration.Builder configuration =
-            McpServerConfiguration.builder().name("my-first-mcp-server").version("1.0.0");
-        McpServers.run(MyFirstMcpServer.class, args).startStdioServer(configuration);
+        McpApplication.run(MyFirstMcpServer.class, args);
     }
 }
 ```
 
-#### Step 3: Define MCP Resources (if needed)
+#### Step 4: Define MCP Resources (if needed)
 
 ```java
 public class MyResources {
@@ -93,39 +106,39 @@ public class MyResources {
 }
 ```
 
-#### Step 4: Define MCP Tools
+#### Step 5: Define MCP Tools
 
 ```java
 public class MyTools {
     @McpTool(description = "Calculate the sum of two numbers")
     public int add(
-        @McpToolParam(name = "a", description = "First number", required = true) int a,
-        @McpToolParam(name = "b", description = "Second number", required = true) int b
+        @McpToolParam(name = "a", description = "First number") int a,
+        @McpToolParam(name = "b", description = "Second number") int b
     ) {
         return a + b;
     }
 }
 ```
 
-#### Step 5: Define MCP Prompts (if needed)
+#### Step 6: Define MCP Prompts (if needed)
 
 ```java
 public class MyPrompts {
     @McpPrompt(description = "Generate code for a given task")
     public String generateCode(
-        @McpPromptParam(name = "language", description = "Programming language", required = true) String language,
-        @McpPromptParam(name = "task", description = "Task description", required = true) String task
+        @McpPromptParam(name = "language", description = "Programming language") String language,
+        @McpPromptParam(name = "task", description = "Task description") String task
     ) {
         return String.format("Write %s code to: %s", language, task);
     }
 }
 ```
 
-#### Step 6: Run Your Server
+#### Step 7: Run Your Server
 
 ```bash
 # Compile and run
-mvn clean package
+./mvnw clean package
 java -jar target/your-app.jar
 ```
 
@@ -149,9 +162,11 @@ The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is a standar
 
 This SDK supports three MCP server modes:
 
-1. **STDIO** - Standard input/output communication (default for CLI tools)
-2. **SSE (Server-Sent Events)** - HTTP-based real-time communication
-3. **Streamable HTTP** - HTTP streaming for web applications
+| Mode           | Description                         | Use Case                                     |
+|----------------|-------------------------------------|----------------------------------------------|
+| **STDIO**      | Standard input/output communication | CLI tools, local development                 |
+| **SSE**        | Server-Sent Events (HTTP-based)     | Real-time web applications (deprecated)      |
+| **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production |
 
 ## 🔧 Advanced Usage
 
@@ -181,17 +196,39 @@ streamable:
   port: 8080
 ```
 
-Then start your server:
+### Configuration Properties
 
-```java
-McpServers servers = McpServers.run(MyMcpServer.class, args);
-// Uses default mcp-server.yml
-servers.startServer();
-// or
-servers.startServer("custom-config.yml");
+| Property              | Description                               | Default      |
+|-----------------------|-------------------------------------------|--------------|
+| `enabled`             | Enable/disable MCP server                 | `true`       |
+| `mode`                | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE` |
+| `name`                | Server name                               | `mcp-server` |
+| `version`             | Server version                            | `1.0.0`      |
+| `type`                | Server type: `SYNC`, `ASYNC`              | `SYNC`       |
+| `request-timeout`     | Request timeout in milliseconds           | `20000`      |
+| `capabilities`        | Enable resources, prompts, tools          | all `true`   |
+| `change-notification` | Enable change notifications               | all `true`   |
+
+### Profile-based Configuration
+
+You can use profiles for different environments:
+
+```yaml
+# mcp-server.yml (base configuration)
+enabled: true
+mode: STREAMABLE
+name: my-mcp-server
+version: 1.0.0
+profile: dev
 ```
 
-### Multilingual Support
+```yaml
+# mcp-server-dev.yml (profile-specific configuration)
+streamable:
+  port: 8080
+```
+
+### Multilingual Support (i18n)
 
 Enable i18n for your MCP components:
 
@@ -199,31 +236,31 @@ Enable i18n for your MCP components:
 @McpServerApplication
 @McpI18nEnabled(resourceBundleBaseName = "messages")
 public class I18nMcpServer {
-    /**
-     * Main method to start the MCP server with i18n support.
-     *
-     * @param args Command line arguments.
-     */
     public static void main(String[] args) {
-        McpServerConfiguration.Builder configuration =
-            McpServerConfiguration.builder().name("i18n-mcp-server").version("1.0.0");
-        McpServers.run(I18nMcpServer.class, args).startStdioServer(configuration);
+        McpApplication.run(I18nMcpServer.class, args);
     }
 }
+```
 
-// Create messages.properties
+Create resource bundles:
+
+```properties
 # messages.properties
 tool.calculate.description=Calculate the sum of two numbers
 tool.calculate.param.a.description=First number
 tool.calculate.param.b.description=Second number
+```
 
-// Create messages_zh_CN.properties
+```properties
 # messages_zh_CN.properties
 tool.calculate.description=计算两个数字的和
 tool.calculate.param.a.description=第一个数字
 tool.calculate.param.b.description=第二个数字
+```
 
-// Then use the i18n messages in your MCP components, like this:
+Use i18n keys in your MCP components:
+
+```java
 @McpTool(description = "tool.calculate.description")
 public int add(
     @McpToolParam(name = "a", description = "tool.calculate.param.a.description") int a,
@@ -245,21 +282,21 @@ your-mcp-project/
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── example/
-│   │   │           ├── MyMcpServer.java          # Main entry point
+│   │   │           ├── MyMcpServer.java         # Main entry point
 │   │   │           ├── components/
 │   │   │           │   ├── MyResources.java     # MCP Resources
 │   │   │           │   ├── MyTools.java         # MCP Tools
 │   │   │           │   └── MyPrompts.java       # MCP Prompts
 │   │   │           └── service/
-│   │   │               └── BusinessLogic.java    # Your business logic
+│   │   │               └── BusinessLogic.java   # Your business logic
 │   │   └── resources/
-│   │       ├── mcp-server.yml                    # MCP configuration
-│   │       └── messages.properties               # i18n messages
+│   │       ├── mcp-server.yml                   # MCP configuration
+│   │       └── messages.properties              # i18n messages
 │   └── test/
 │       └── java/
 │           └── com/
 │               └── example/
-│                   └── McpServerTest.java         # Unit tests
+│                   └── McpServerTest.java       # Unit tests
 ```
 
 ## 🧪 Testing
@@ -267,13 +304,7 @@ your-mcp-project/
 Run the test suite:
 
 ```bash
-mvn clean test
-```
-
-Run tests with coverage:
-
-```bash
-mvn clean test jacoco:report
+./mvnw clean test
 ```
 
 ## ❓ FAQ
@@ -290,9 +321,20 @@ mvn clean test jacoco:report
 
 **A:** Java 17 or later is required, as this is a constraint of the underlying MCP Java SDK.
 
+### Q: What Maven version is required?
+
+**A:** Just use the provided Maven wrapper script `./mvnw` to build this project.
+
 ### Q: How do I debug my MCP server?
 
-**A:** You can use the [inspector](https://github.com/modelcontextprotocol/inspector) and set Java breakpoint to debug your MCP server.
+**A:** You can use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) and set Java breakpoints to debug your MCP server.
+
+### Q: Which server mode should I use?
+
+**A:** 
+- **STDIO**: For CLI tools and local development
+- **STREAMABLE**: For web applications and production deployments (recommended)
+- **SSE**: Deprecated, use STREAMABLE instead
 
 ## 🤝 Contributing
 
@@ -300,7 +342,10 @@ We welcome and appreciate contributions! Please follow these steps to contribute
 
 1. **Fork the repository**
 2. **Create a new branch** for your feature or bug fix
-3. **Submit a pull request** with a clear description of your changes
+3. **Add tests** for your changes
+4. **Update documentation** if necessary
+5. **Ensure all tests pass**
+6. **Submit a pull request** with a clear description of your changes
 
 ### Development Setup
 
@@ -310,10 +355,10 @@ git clone https://github.com/thought2code/mcp-annotated-java-sdk.git
 cd mcp-annotated-java-sdk
 
 # Build the project
-mvn clean install
+./mvnw clean install
 
 # Run tests
-mvn clean test
+./mvnw clean test
 ```
 
 ## 📖 Documentation
