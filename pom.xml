@@ -46,6 +46,7 @@
         <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
@@ -53,6 +54,7 @@
         <sortpom-maven-plugin.version>4.0.0</sortpom-maven-plugin.version>
         <spotbugs-maven-plugin.version>4.9.3.2</spotbugs-maven-plugin.version>
         <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
+        <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <!--==================== dependency versions ======================-->
         <annotations.version>26.1.0</annotations.version>
         <jetty.version>12.1.7</jetty.version>
@@ -185,6 +187,33 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <configuration>
+                    <rules>
+                        <requireJavaVersion>
+                            <version>17</version>
+                            <message>Java 17 or higher is required to build this project</message>
+                        </requireJavaVersion>
+                        <requireMavenVersion>
+                            <version>[3.9.0,4.0.0)</version>
+                            <message>Maven 3.9.0 or higher is required to build this project</message>
+                        </requireMavenVersion>
+                    </rules>
+                    <fail>true</fail>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>${maven-gpg-plugin.version}</version>
                 <executions>
@@ -231,6 +260,31 @@
                     <!--suppress UnresolvedMavenProperty for IntelliJ IDEA-->
                     <argLine>${jacoco.agent.argLine}</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+                <configuration>
+                    <allowSnapshots>false</allowSnapshots>
+                    <allowMinorUpdates>true</allowMinorUpdates>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>display-dependency-updates</id>
+                        <goals>
+                            <goal>display-dependency-updates</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                    <execution>
+                        <id>display-plugin-updates</id>
+                        <goals>
+                            <goal>display-plugin-updates</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
