@@ -1,0 +1,454 @@
+# mcp-annotated-java-sdk
+
+Annotation-driven MCP (Model Context Protocol) SDK for Java that simplifies MCP server development.
+
+## Overview
+
+This SDK is a lightweight, annotation-based framework that simplifies MCP server development in Java. Define, develop and integrate your MCP Resources / Prompts / Tools with minimal code - No Spring Framework Required.
+
+## What is MCP?
+
+The Model Context Protocol (MCP) is a standardized protocol for building servers that expose data and functionality to LLM applications. Think of it like a web API, but specifically designed for LLM interactions.
+
+## Key Advantages
+
+- **No Spring Framework Required** - Pure Java, lightweight and fast
+- **Instant MCP Server** - Get your server running with just 1 line of code
+- **Zero Boilerplate** - No need to write low-level MCP SDK code
+- **No JSON Schema** - Forget about complex and lengthy JSON definitions
+- **Focus on Logic** - Concentrate on your core business logic
+- **Spring AI Compatible** - Configuration file compatible with Spring AI Framework
+- **Multilingual Support** - Built-in i18n support for MCP components
+- **Type-Safe** - Leverage Java's type system for compile-time safety
+
+## Comparison with Official MCP Java SDK
+
+| Feature | Official MCP SDK | This SDK |
+|---------|------------------|----------|
+| Code Required | ~50-100 lines | ~5-10 lines |
+| JSON Schema | Hand-coded JSON | No need to care |
+| Type Safety | Limited | Full |
+| Learning Curve | Steep | Gentle |
+| Multilingual | Unsupported | Supported |
+
+## Requirements
+
+- **Java 17 or later** (required by official MCP Java SDK)
+
+## Installation
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>io.github.thought2code</groupId>
+    <artifactId>mcp-annotated-java-sdk</artifactId>
+    <version>0.13.0</version>
+</dependency>
+```
+
+### Gradle
+
+```gradle
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.13.0'
+```
+
+## Quick Start Tutorial
+
+### Step 1: Create Configuration File
+
+Create `mcp-server.yml` in your `src/main/resources`:
+
+```yaml
+enabled: true
+mode: STDIO
+name: my-first-mcp-server
+version: 1.0.0
+type: SYNC
+request-timeout: 20000
+capabilities:
+  resource: true
+  prompt: true
+  tool: true
+change-notification:
+  resource: true
+  prompt: true
+  tool: true
+```
+
+### Step 2: Create MCP Server Main Class
+
+```java
+@McpServerApplication
+public class MyFirstMcpServer {
+    public static void main(String[] args) {
+        McpApplication.run(MyFirstMcpServer.class, args);
+    }
+}
+```
+
+### Step 3: Define MCP Resources (Optional)
+
+```java
+public class MyResources {
+    @McpResource(uri = "system://info", description = "System information")
+    public Map<String, String> getSystemInfo() {
+        Map<String, String> info = new HashMap<>();
+        info.put("os", System.getProperty("os.name"));
+        info.put("java", System.getProperty("java.version"));
+        info.put("cores", String.valueOf(Runtime.getRuntime().availableProcessors()));
+        return info;
+    }
+}
+```
+
+### Step 4: Define MCP Tools
+
+```java
+public class MyTools {
+    @McpTool(description = "Calculate the sum of two numbers")
+    public int add(
+        @McpToolParam(name = "a", description = "First number") int a,
+        @McpToolParam(name = "b", description = "Second number") int b
+    ) {
+        return a + b;
+    }
+
+    @McpTool(description = "Read complete file contents with UTF-8 encoding")
+    public String readFile(
+        @McpToolParam(name = "path", description = "File path") String path
+    ) {
+        try {
+            return Files.readString(Path.of(path));
+        } catch (IOException e) {
+            return "Error reading file: " + e.getMessage();
+        }
+    }
+}
+```
+
+### Step 5: Define MCP Prompts (Optional)
+
+```java
+public class MyPrompts {
+    @McpPrompt(description = "Generate code for a given task")
+    public String generateCode(
+        @McpPromptParam(name = "language", description = "Programming language") String language,
+        @McpPromptParam(name = "task", description = "Task description") String task
+    ) {
+        return String.format("Write %s code to: %s", language, task);
+    }
+
+    @McpPrompt(description = "Format text as specified style")
+    public String formatText(
+        @McpPromptParam(name = "text", description = "Text to format") String text,
+        @McpPromptParam(name = "style", description = "Format style (e.g., formal, casual, technical)") String style
+    ) {
+        return String.format("Rewrite the following text in a %s style: %s", style, text);
+    }
+}
+```
+
+### Step 6: Run the Server
+
+```bash
+./mvnw clean package
+java -jar target/your-app.jar
+```
+
+## Core Components
+
+### Resources
+
+Resource components are used to expose data to LLMs, similar to GET requests in Web APIs.
+
+#### @McpResource Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `uri` | Unique identifier of the resource (URI format) | Yes |
+| `description` | Resource description for LLM understanding | Yes |
+| `name` | Resource name (defaults to method name) | No |
+| `mimeType` | MIME type of the resource content | No |
+
+### Tools
+
+Tool components are used to execute operations or calculations, similar to POST requests in Web APIs.
+
+#### @McpTool Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `description` | Tool description for LLM understanding | Yes |
+| `name` | Tool name (defaults to method name) | No |
+| `title` | Tool title for display purposes | No |
+
+#### @McpToolParam Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `name` | Parameter name | Yes |
+| `description` | Parameter description | Yes |
+| `required` | Whether the parameter is required | No |
+
+### Prompts
+
+Prompt components are used to define reusable prompt templates.
+
+#### @McpPrompt Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `description` | Prompt description for LLM understanding | Yes |
+| `name` | Prompt name (defaults to method name) | No |
+| `title` | Prompt title for display purposes | No |
+
+#### @McpPromptParam Parameters
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `name` | Parameter name | Yes |
+| `description` | Parameter description | Yes |
+| `required` | Whether the parameter is required | No |
+
+### Completions
+
+Completions provide auto-complete suggestions for resource URIs and prompt arguments.
+
+#### Resource Completions
+
+```java
+@McpResourceCompletion(uri = "file://")
+public List<String> completeFilePath(String uri, String cursorValue) {
+    return Files.list(Paths.get(cursorValue))
+        .map(Path::toString)
+        .collect(Collectors.toList());
+}
+```
+
+#### Prompt Completions
+
+```java
+@McpPromptCompletion(promptName = "generateCode", argumentName = "language")
+public List<String> completeLanguage(String value) {
+    return Arrays.asList("Java", "Python", "JavaScript", "Go", "Rust");
+}
+```
+
+## Server Modes
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **STDIO** | Standard input/output communication | CLI tools, local development |
+| **SSE** | Server-Sent Events (HTTP-based) | Real-time web applications (deprecated) |
+| **STREAMABLE** | HTTP streaming | Web applications, recommended for production |
+
+### STDIO Mode
+
+```yaml
+mode: STDIO
+```
+
+### SSE Mode (Deprecated)
+
+```yaml
+mode: SSE
+sse:
+  port: 8080
+  endpoint: /sse
+  messageEndpoint: /message
+```
+
+### STREAMABLE Mode
+
+```yaml
+mode: STREAMABLE
+streamable:
+  mcp-endpoint: /mcp/message
+  disallow-delete: true
+  keep-alive-interval: 30000
+  port: 8080
+```
+
+## Configuration Properties
+
+| Property | Description | Default |
+|----------|-------------|---------|
+| `enabled` | Enable/disable MCP server | `true` |
+| `mode` | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE` |
+| `name` | Server name | `mcp-server` |
+| `version` | Server version | `1.0.0` |
+| `type` | Server type: `SYNC`, `ASYNC` | `SYNC` |
+| `request-timeout` | Request timeout in milliseconds | `20000` |
+| `capabilities` | Enable resources, prompts, tools | all `true` |
+| `change-notification` | Enable change notifications | all `true` |
+
+## Profile-based Configuration
+
+```yaml
+# mcp-server.yml (base configuration)
+enabled: true
+mode: STREAMABLE
+name: my-mcp-server
+version: 1.0.0
+profile: dev
+```
+
+```yaml
+# mcp-server-dev.yml (profile-specific configuration)
+streamable:
+  port: 8080
+```
+
+## Multilingual Support (i18n)
+
+### Enable i18n
+
+```java
+@McpServerApplication
+@McpI18nEnabled(resourceBundleBaseName = "messages")
+public class I18nMcpServer {
+    public static void main(String[] args) {
+        McpApplication.run(I18nMcpServer.class, args);
+    }
+}
+```
+
+### Create Resource Bundles
+
+```properties
+# messages.properties
+tool.add.description=Calculate the sum of two numbers
+tool.add.param.a.description=First number
+tool.add.param.b.description=Second number
+```
+
+```properties
+# messages_zh_CN.properties
+tool.add.description=计算两个数字的和
+tool.add.param.a.description=第一个数字
+tool.add.param.b.description=第二个数字
+```
+
+### Use i18n in Components
+
+```java
+@McpTool(description = "tool.add.description")
+public int add(
+    @McpToolParam(name = "a", description = "tool.add.param.a.description") int a,
+    @McpToolParam(name = "b", description = "tool.add.param.b.description") int b
+) {
+    return a + b;
+}
+```
+
+## Structured Content
+
+Tools can return structured content for rich responses:
+
+```java
+@McpTool(description = "Get user details")
+public McpStructuredContent<User> getUser(
+    @McpToolParam(name = "id", description = "User ID") String id
+) {
+    User user = userService.findById(id);
+    return McpStructuredContent.of(user);
+}
+```
+
+## Error Handling
+
+When a tool encounters an error, you can return an error result:
+
+```java
+@McpTool(description = "Divide two numbers")
+public Number divide(
+    @McpToolParam(name = "a", description = "Dividend") double a,
+    @McpToolParam(name = "b", description = "Divisor") double b
+) {
+    if (b == 0) {
+        return McpStructuredContent.error("Division by zero is not allowed");
+    }
+    return a / b;
+}
+```
+
+## Automatic Registration
+
+After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are in the package scanning path of the server application.
+
+### Specify Package Path
+
+```java
+@McpServerApplication(basePackageClass = MyMcpServer.class)
+// or
+@McpServerApplication(basePackage = "com.example.mcp.components")
+```
+
+If no package path is specified, the package containing the main method will be scanned.
+
+## Project Structure
+
+```
+your-mcp-project/
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── example/
+│   │   │           ├── MyMcpServer.java         # Main entry point
+│   │   │           ├── components/
+│   │   │           │   ├── MyResources.java     # MCP Resources
+│   │   │           │   ├── MyTools.java         # MCP Tools
+│   │   │           │   └── MyPrompts.java       # MCP Prompts
+│   │   │           └── service/
+│   │   │               └── BusinessLogic.java   # Business logic
+│   │   └── resources/
+│   │       ├── mcp-server.yml                   # MCP configuration
+│   │       └── messages.properties              # Internationalization messages
+│   └── test/
+│       └── java/
+│           └── com/
+│               └── example/
+│                   └── McpServerTest.java       # Unit tests
+└── target/
+    └── your-app.jar                             # Executable JAR
+```
+
+## Custom JSON Schema
+
+For complex parameter types, you can define custom JSON schemas:
+
+```java
+@McpTool(description = "Create a user")
+@McpJsonSchemaDefinition(
+    properties = {
+        @McpJsonSchemaProperty(name = "name", type = "string", description = "User name"),
+        @McpJsonSchemaProperty(name = "age", type = "integer", description = "User age"),
+        @McpJsonSchemaProperty(name = "email", type = "string", description = "Email address")
+    },
+    required = {"name", "email"}
+)
+public User createUser(Map<String, Object> params) {
+    return new User((String) params.get("name"), (String) params.get("email"));
+}
+```
+
+## Important Notes
+
+1. **Deprecated API**: The `McpServers` class is deprecated. Use `McpApplication.run()` instead.
+2. **Deprecated Mode**: SSE mode is deprecated. Use STREAMABLE mode for new projects.
+3. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
+
+## Links
+
+- **GitHub Repository**: https://github.com/thought2code/mcp-annotated-java-sdk
+- **Official Documentation**: https://thought2code.github.io/mcp-annotated-java-sdk-docs
+- **Examples Repository**: https://github.com/thought2code/mcp-java-sdk-examples
+- **MCP Official Site**: https://modelcontextprotocol.io
+- **MCP Java SDK**: https://github.com/modelcontextprotocol/java-sdk
+
+## License
+
+MIT License

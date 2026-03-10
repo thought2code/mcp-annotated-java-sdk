@@ -1,0 +1,124 @@
+> mcp-annotated-java-sdk: Annotation-driven MCP Java SDK for building Model Context Protocol servers with minimal code.
+
+## What is this?
+
+A lightweight, annotation-based Java framework that simplifies MCP (Model Context Protocol) server development. No Spring Framework required - pure Java with zero boilerplate.
+
+## Key Features
+
+- No Spring Framework Required - Pure Java, lightweight and fast
+- Instant MCP Server - Start server with just 1 line of code
+- Zero Boilerplate - No need to write low-level MCP SDK code
+- No JSON Schema - Forget about complex JSON definitions
+- Type-Safe - Leverage Java's type system for compile-time safety
+- Multilingual Support - Built-in i18n for MCP components
+
+## Requirements
+
+- Java 17 or later
+
+## Quick Start
+
+### Maven Dependency
+
+```xml
+<dependency>
+    <groupId>io.github.thought2code</groupId>
+    <artifactId>mcp-annotated-java-sdk</artifactId>
+    <version>0.13.0</version>
+</dependency>
+```
+
+### Create MCP Server
+
+```java
+@McpServerApplication
+public class MyFirstMcpServer {
+    public static void main(String[] args) {
+        McpApplication.run(MyFirstMcpServer.class, args);
+    }
+}
+```
+
+### Define Tools
+
+```java
+@McpTool(description = "Calculate the sum of two numbers")
+public int add(
+    @McpToolParam(name = "a", description = "First number") int a,
+    @McpToolParam(name = "b", description = "Second number") int b
+) {
+    return a + b;
+}
+```
+
+### Define Resources
+
+```java
+@McpResource(uri = "system://info", description = "System information")
+public Map<String, String> getSystemInfo() {
+    Map<String, String> info = new HashMap<>();
+    info.put("os", System.getProperty("os.name"));
+    return info;
+}
+```
+
+### Define Prompts
+
+```java
+@McpPrompt(description = "Generate code for a given task")
+public String generateCode(
+    @McpPromptParam(name = "language", description = "Programming language") String language,
+    @McpPromptParam(name = "task", description = "Task description") String task
+) {
+    return String.format("Write %s code to: %s", language, task);
+}
+```
+
+## Core Annotations
+
+| Annotation | Purpose |
+|------------|---------|
+| `@McpServerApplication` | Marks the main class as an MCP server application |
+| `@McpTool` | Marks a method as an MCP tool |
+| `@McpToolParam` | Marks a parameter as a tool parameter |
+| `@McpResource` | Marks a method as an MCP resource |
+| `@McpPrompt` | Marks a method as an MCP prompt |
+| `@McpPromptParam` | Marks a parameter as a prompt parameter |
+| `@McpI18nEnabled` | Enables internationalization support |
+
+## Server Modes
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| STDIO | Standard input/output | CLI tools, local development |
+| STREAMABLE | HTTP streaming | Web applications, production (recommended) |
+| SSE | Server-Sent Events | Deprecated, use STREAMABLE instead |
+
+## Configuration (mcp-server.yml)
+
+```yaml
+enabled: true
+mode: STDIO
+name: my-mcp-server
+version: 1.0.0
+type: SYNC
+request-timeout: 20000
+capabilities:
+  resource: true
+  prompt: true
+  tool: true
+```
+
+## Important Notes
+
+- The `McpServers` class is deprecated, use `McpApplication.run()` instead
+- SSE mode is deprecated, use STREAMABLE for production
+- Components are auto-registered via package scanning
+
+## Links
+
+- GitHub: https://github.com/thought2code/mcp-annotated-java-sdk
+- Documentation: https://thought2code.github.io/mcp-annotated-java-sdk-docs
+- Examples: https://github.com/thought2code/mcp-java-sdk-examples
+- MCP Protocol: https://modelcontextprotocol.io
