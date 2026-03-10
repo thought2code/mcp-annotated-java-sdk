@@ -79,25 +79,27 @@ public final class McpApplication {
     McpConfigurationLoader configurationLoader = new McpConfigurationLoader();
     McpServerConfiguration configuration = configurationLoader.loadConfig();
     log.info("Starting MCP server with config: {}", JacksonHelper.toJsonString(configuration));
-    if (configuration.enabled()) {
-      McpServer mcpServer = null;
-      switch (configuration.mode()) {
-        case STDIO -> mcpServer = new McpStdioServer(configuration);
-        case SSE -> mcpServer = new McpSseServer(configuration);
-        case STREAMABLE -> mcpServer = new McpStreamableServer(configuration);
-      }
 
-      Objects.requireNonNull(mcpServer, "mcpServer must not be null");
-      McpSyncServer mcpSyncServer = mcpServer.createSyncServer();
-      mcpServer.registerComponents(mcpSyncServer);
-
-      if (mcpServer instanceof McpSseServer sseServer) {
-        sseServer.startHttpServer();
-      } else if (mcpServer instanceof McpStreamableServer streamableServer) {
-        streamableServer.startHttpServer();
-      }
-    } else {
+    if (!configuration.enabled()) {
       log.warn("MCP server is disabled, please check your configuration file.");
+      return;
+    }
+
+    McpServer mcpServer = null;
+    switch (configuration.mode()) {
+      case STDIO -> mcpServer = new McpStdioServer(configuration);
+      case SSE -> mcpServer = new McpSseServer(configuration);
+      case STREAMABLE -> mcpServer = new McpStreamableServer(configuration);
+    }
+
+    Objects.requireNonNull(mcpServer, "mcpServer must not be null");
+    McpSyncServer mcpSyncServer = mcpServer.createSyncServer();
+    mcpServer.registerComponents(mcpSyncServer);
+
+    if (mcpServer instanceof McpSseServer sseServer) {
+      sseServer.startHttpServer();
+    } else if (mcpServer instanceof McpStreamableServer streamableServer) {
+      streamableServer.startHttpServer();
     }
   }
 }
