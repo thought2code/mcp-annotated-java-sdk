@@ -28,7 +28,11 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("unused")
 public final class McpApplication {
 
+  /** The logger instance for this class. */
   public static final Logger log = LoggerFactory.getLogger(McpApplication.class);
+
+  /** The default file name for the MCP server configuration file. */
+  private static final String DEFAULT_CONFIG_FILE_NAME = "mcp-server.yml";
 
   private McpApplication() {}
 
@@ -40,13 +44,28 @@ public final class McpApplication {
    *
    * @param mainClass the main class of the application, used as the base for reflection scanning
    * @param args the command-line arguments passed to the application
+   * @param configFileName the name of the configuration file to load
    */
   @SuppressWarnings("unused")
-  public static void run(Class<?> mainClass, String[] args) {
+  public static void run(Class<?> mainClass, String[] args, String configFileName) {
     log.info("Running {} with args: {}", mainClass.getSimpleName(), args);
     ReflectionsProvider.initializeReflectionsInstance(mainClass);
     ResourceBundleProvider.loadResourceBundle(mainClass);
-    startMcpServer();
+    startMcpServer(configFileName);
+  }
+
+  /**
+   * Runs the MCP application with the specified main class and command-line arguments using the
+   * default configuration file.
+   *
+   * <p>This method initializes the reflection provider, loads the resource bundle, and starts the
+   * MCP server based on the configuration settings.
+   *
+   * @param mainClass the main class of the application, used as the base for reflection scanning
+   * @param args the command-line arguments passed to the application
+   */
+  public static void run(Class<?> mainClass, String[] args) {
+    run(mainClass, args, DEFAULT_CONFIG_FILE_NAME);
   }
 
   /**
@@ -55,7 +74,7 @@ public final class McpApplication {
    * <p>This method performs the following steps:
    *
    * <ol>
-   *   <li>Loads the MCP server configuration from configuration file
+   *   <li>Loads the MCP server configuration from the specified configuration file
    *   <li>Validates if the MCP server is enabled in the configuration
    *   <li>Creates the appropriate server instance based on the configured mode:
    *       <ul>
@@ -70,13 +89,14 @@ public final class McpApplication {
    * <p>If the MCP server is disabled in the configuration, a warning message will be logged and no
    * server will be started.
    *
+   * @param configFileName the name of the configuration file to load
    * @see McpConfigurationLoader
    * @see McpServerConfiguration
    * @see McpServer
    * @see McpSyncServer
    */
-  private static void startMcpServer() {
-    McpConfigurationLoader configurationLoader = new McpConfigurationLoader();
+  private static void startMcpServer(String configFileName) {
+    McpConfigurationLoader configurationLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configurationLoader.loadConfig();
     log.info("Starting MCP server with config: {}", JacksonHelper.toJsonString(configuration));
 

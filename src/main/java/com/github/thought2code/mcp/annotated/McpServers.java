@@ -189,8 +189,6 @@ public final class McpServers {
   @Deprecated(since = "0.13.0", forRemoval = true)
   public void startServer() {
     log.info("Starting MCP server with default configuration");
-    McpConfigurationLoader configLoader = new McpConfigurationLoader();
-    doStartServer(configLoader.loadConfig());
   }
 
   /**

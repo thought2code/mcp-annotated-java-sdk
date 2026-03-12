@@ -24,15 +24,8 @@ import org.slf4j.LoggerFactory;
  */
 public record McpConfigurationLoader(String configFileName) {
 
+  /** The logger instance for this class. */
   private static final Logger log = LoggerFactory.getLogger(McpConfigurationLoader.class);
-
-  /** The default file name for the MCP server configuration file. */
-  private static final String DEFAULT_CONFIG_FILE_NAME = "mcp-server.yml";
-
-  /** Constructs a YAMLConfigurationLoader with the default configuration file name. */
-  public McpConfigurationLoader() {
-    this(DEFAULT_CONFIG_FILE_NAME);
-  }
 
   /**
    * Loads the MCP server configuration from the specified YAML file.
