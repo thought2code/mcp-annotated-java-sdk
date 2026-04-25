@@ -115,11 +115,6 @@ public final class McpApplication {
     Objects.requireNonNull(mcpServer, "mcpServer must not be null");
     McpSyncServer mcpSyncServer = mcpServer.createSyncServer();
     mcpServer.registerComponents(mcpSyncServer);
-
-    if (mcpServer instanceof McpSseServer sseServer) {
-      sseServer.startHttpServer();
-    } else if (mcpServer instanceof McpStreamableServer streamableServer) {
-      streamableServer.startHttpServer();
-    }
+    mcpServer.start();
   }
 }

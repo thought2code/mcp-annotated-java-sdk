@@ -118,8 +118,24 @@ public class McpStreamableServer extends McpServerBase {
    * @see JettyHttpServer
    * @see HttpServletStreamableServerTransportProvider
    * @see #createSyncSpecification()
+   * @deprecated Use {@link #start()} instead.
    */
+  @Deprecated(since = "0.14.0", forRemoval = true)
   public void startHttpServer() {
+    start();
+  }
+
+  /**
+   * Starts the Streamable HTTP server to accept incoming connections.
+   *
+   * <p>This method creates a Jetty HTTP server configured with the streamable transport provider
+   * and binds it to the configured port. The server begins accepting connections immediately.
+   *
+   * @see JettyHttpServer
+   * @see HttpServletStreamableServerTransportProvider
+   */
+  @Override
+  public void start() {
     log.info(
         "Starting Jetty-based MCP Streamable server on http://{}:{}{}",
         InetHelper.findFirstNonLoopbackAddress().getHostAddress(),

@@ -66,4 +66,16 @@ public interface McpServer {
    * @param mcpSyncServer the synchronous server instance to register components with
    */
   void registerComponents(McpSyncServer mcpSyncServer);
+
+  /**
+   * Starts the MCP server.
+   *
+   * <p>For HTTP-based server modes (SSE, STREAMABLE), this method starts the underlying HTTP server
+   * to accept incoming connections. For STDIO mode, this method is a no-op since the transport is
+   * tied to standard input/output and starts automatically when the sync server is created.
+   *
+   * <p>Implementations that require explicit startup (e.g., HTTP servers) should override this
+   * method to start their transport layer. The default implementation does nothing.
+   */
+  default void start() {}
 }

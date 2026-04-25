@@ -87,8 +87,24 @@ public class McpSseServer extends McpServerBase {
    *
    * @see JettyHttpServer
    * @see HttpServletSseServerTransportProvider
+   * @deprecated Use {@link #start()} instead.
    */
+  @Deprecated(since = "0.14.0", forRemoval = true)
   public void startHttpServer() {
+    start();
+  }
+
+  /**
+   * Starts the SSE HTTP server to accept incoming connections.
+   *
+   * <p>This method creates a Jetty HTTP server configured with the SSE transport provider and binds
+   * it to the configured port. The server begins accepting connections immediately.
+   *
+   * @see JettyHttpServer
+   * @see HttpServletSseServerTransportProvider
+   */
+  @Override
+  public void start() {
     log.info(
         "Starting Jetty-based MCP SSE server on http://{}:{}{}",
         InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
