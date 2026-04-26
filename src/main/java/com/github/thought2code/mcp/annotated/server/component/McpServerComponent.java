@@ -15,7 +15,6 @@ import java.lang.reflect.Method;
  *
  * <ul>
  *   <li>Creating a component instance from a method using {@link #from(Method)}
- *   <li>Registering the component with the server using {@link #register()}
  * </ul>
  *
  * @param <T> the type of component this interface creates (e.g., McpSchema.Resource,
@@ -37,14 +36,4 @@ public interface McpServerComponent<T> {
    * @return a component instance of type {@code T} created from the method
    */
   T from(Method method);
-
-  /**
-   * Registers all components of this type with the MCP server.
-   *
-   * <p>This method scans for methods annotated with the appropriate annotation(s) for this
-   * component type and registers them with the server. The exact behavior depends on the
-   * implementation, but typically involves reflection to discover annotated methods and
-   * registration of created components with the server instance.
-   */
-  void register();
 }

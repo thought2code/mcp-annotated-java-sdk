@@ -3,13 +3,11 @@ package com.github.thought2code.mcp.annotated.server;
 import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
 import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.server.component.McpServerCompletion;
-import com.github.thought2code.mcp.annotated.server.component.McpServerPrompt;
-import com.github.thought2code.mcp.annotated.server.component.McpServerResource;
-import com.github.thought2code.mcp.annotated.server.component.McpServerTool;
+import com.github.thought2code.mcp.annotated.server.component.*;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.time.Duration;
+import java.util.ServiceLoader;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,17 +102,18 @@ public abstract class McpServerBase implements McpServer {
    * prompts, and tools. Each component type is handled by its respective registration class which
    * scans for annotated methods and registers them with the server.
    *
-   * @param mcpSyncServer the synchronous server instance to register components with
+   * @param server the synchronous server instance to register components with
    * @see McpServerResource
    * @see McpServerPrompt
    * @see McpServerTool
    */
   @Override
-  public void registerComponents(McpSyncServer mcpSyncServer) {
+  public void registerComponents(McpSyncServer server) {
     log.info("Registering MCP server components");
-    new McpServerResource(mcpSyncServer).register();
-    new McpServerPrompt(mcpSyncServer).register();
-    new McpServerTool(mcpSyncServer).register();
+    ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
+    for (McpComponentRegistrar registrar : loader) {
+      registrar.register(server);
+    }
     log.info("MCP server components registered successfully");
   }
 

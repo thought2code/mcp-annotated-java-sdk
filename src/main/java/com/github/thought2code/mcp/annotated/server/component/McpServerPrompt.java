@@ -45,20 +45,16 @@ import org.slf4j.LoggerFactory;
  * @see McpSchema.PromptArgument
  */
 public class McpServerPrompt
-    extends McpServerComponentBase<McpServerFeatures.SyncPromptSpecification> {
+    extends McpServerComponentBase<McpServerFeatures.SyncPromptSpecification>
+    implements McpComponentRegistrar {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerPrompt.class);
 
   /** The converter for MCP prompt parameters. */
   private final McpPromptParameterConverter parameterConverter;
 
-  /**
-   * Constructs a new {@link McpServerPrompt} with the specified MCP server.
-   *
-   * @param mcpSyncServer the MCP synchronous server to use for prompt registration
-   */
-  public McpServerPrompt(McpSyncServer mcpSyncServer) {
-    super(mcpSyncServer);
+  /** Constructor that initializes the prompt parameter converter. */
+  public McpServerPrompt() {
     this.parameterConverter = new McpPromptParameterConverter();
   }
 
@@ -100,20 +96,23 @@ public class McpServerPrompt
   }
 
   /**
-   * Registers all prompt components with the MCP server.
+   * Registers all discovered components of this type with the given MCP server.
    *
-   * <p>This method scans for all methods annotated with {@link McpPrompt} and registers them as
-   * prompt components with the MCP server. It uses reflection to discover annotated methods and
-   * creates prompt specifications for each method.
+   * <p>This method scans for methods annotated with the appropriate annotation(s) for this
+   * component type and registers them with the server. The exact discovery and registration
+   * mechanism depends on the implementation.
+   *
+   * @param server the {@link McpSyncServer} instance to register the components with; must not be
+   *     {@code null}
    */
   @Override
-  public void register() {
+  public void register(McpSyncServer server) {
     Set<Method> methods = ReflectionsProvider.getMethodsAnnotatedWith(McpPrompt.class);
     methods.forEach(
         method -> {
           log.debug("Registering prompt method: {}", method.toGenericString());
           McpServerFeatures.SyncPromptSpecification prompt = from(method);
-          mcpSyncServer.get().addPrompt(prompt);
+          server.addPrompt(prompt);
           log.debug("Prompt {} registered successfully", prompt.prompt().name());
         });
   }

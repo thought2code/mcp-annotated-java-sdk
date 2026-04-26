@@ -39,18 +39,10 @@ import org.slf4j.LoggerFactory;
  * @see McpSchema.ResourceContents
  */
 public class McpServerResource
-    extends McpServerComponentBase<McpServerFeatures.SyncResourceSpecification> {
+    extends McpServerComponentBase<McpServerFeatures.SyncResourceSpecification>
+    implements McpComponentRegistrar {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerResource.class);
-
-  /**
-   * Constructs a new {@link McpServerResource} with the specified MCP server.
-   *
-   * @param mcpSyncServer the MCP synchronous server to use for resource registration
-   */
-  public McpServerResource(McpSyncServer mcpSyncServer) {
-    super(mcpSyncServer);
-  }
 
   /**
    * Creates a synchronous resource specification from the specified method.
@@ -96,20 +88,23 @@ public class McpServerResource
   }
 
   /**
-   * Registers all resource components with the MCP server.
+   * Registers all discovered components of this type with the given MCP server.
    *
-   * <p>This method scans for all methods annotated with {@link McpResource} and registers them as
-   * resource components with the MCP server. It uses reflection to discover annotated methods and
-   * creates resource specifications for each method.
+   * <p>This method scans for methods annotated with the appropriate annotation(s) for this
+   * component type and registers them with the server. The exact discovery and registration
+   * mechanism depends on the implementation.
+   *
+   * @param server the {@link McpSyncServer} instance to register the components with; must not be
+   *     {@code null}
    */
   @Override
-  public void register() {
+  public void register(McpSyncServer server) {
     Set<Method> methods = ReflectionsProvider.getMethodsAnnotatedWith(McpResource.class);
     methods.forEach(
         method -> {
           log.debug("Registering resource method: {}", method.toGenericString());
           McpServerFeatures.SyncResourceSpecification resource = from(method);
-          mcpSyncServer.get().addResource(resource);
+          server.addResource(resource);
           log.debug("Resource {} registered successfully", resource.resource().name());
         });
   }

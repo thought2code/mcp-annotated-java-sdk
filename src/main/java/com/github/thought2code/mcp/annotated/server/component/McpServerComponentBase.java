@@ -1,10 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
-import com.github.thought2code.mcp.annotated.util.Immutable;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
-import io.modelcontextprotocol.server.McpSyncServer;
 import java.util.ResourceBundle;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Abstract base class that provides common functionality for MCP server components
@@ -30,22 +27,11 @@ import org.jetbrains.annotations.NotNull;
  * @see ResourceBundle
  */
 public abstract class McpServerComponentBase<T> implements McpServerComponent<T> {
-  /**
-   * The MCP synchronous server instance wrapped in an {@link Immutable} wrapper for avoiding
-   * EI_EXPOSE_REP2 issue.
-   */
-  protected final Immutable<McpSyncServer> mcpSyncServer;
-
   /** Resource bundle for i18n support */
   private final ResourceBundle bundle;
 
-  /**
-   * Constructs a new {@link McpServerComponentBase} with the specified MCP server.
-   *
-   * @param mcpSyncServer the MCP synchronous server instance to be used by this component
-   */
-  public McpServerComponentBase(@NotNull McpSyncServer mcpSyncServer) {
-    this.mcpSyncServer = Immutable.of(mcpSyncServer);
+  /** Constructor that initializes the resource bundle for i18n support. */
+  public McpServerComponentBase() {
     this.bundle = ResourceBundleProvider.getResourceBundle();
   }
 
