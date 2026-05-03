@@ -13,6 +13,10 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
 import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
+import com.github.thought2code.mcp.annotated.server.McpServer;
+import com.github.thought2code.mcp.annotated.server.McpSseServer;
+import com.github.thought2code.mcp.annotated.server.McpStdioServer;
+import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.test.TestMcpStdioServer;
 import com.github.thought2code.mcp.annotated.test.TestMcpToolsStructuredContent;
@@ -33,15 +37,36 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class McpServersTest {
+class McpApplicationTest {
 
-  McpServers servers = McpServers.run(McpServersTest.class, new String[] {});
+  static McpApplicationContext context;
 
   Duration requestTimeout = Duration.ofSeconds(60);
 
   @BeforeAll
   static void setup() {
     System.setProperty("mcp.server.testing", "true");
+    context = McpApplicationContext.from(McpApplicationTest.class);
+  }
+
+  private void startServer(McpServerConfiguration configuration) {
+    if (!configuration.enabled()) {
+      return;
+    }
+    McpServer mcpServer =
+        switch (configuration.mode()) {
+          case STDIO -> new McpStdioServer(configuration, context);
+          case SSE -> new McpSseServer(configuration, context);
+          case STREAMABLE -> new McpStreamableServer(configuration, context);
+        };
+    var syncServer = mcpServer.createSyncServer();
+    mcpServer.registerComponents(syncServer);
+    mcpServer.start();
+  }
+
+  private void startServer(String configFileName) {
+    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
+    startServer(configLoader.loadConfig());
   }
 
   @Test
@@ -80,7 +105,7 @@ class McpServersTest {
             .sseEndpoint("/sse")
             .build();
 
-    servers.startSseServer(configuration);
+    startServer(configuration.mode(ServerMode.SSE).build());
 
     try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
       verify(client);
@@ -104,7 +129,7 @@ class McpServersTest {
             .endpoint("/mcp/message")
             .build();
 
-    servers.startStreamableServer(configuration);
+    startServer(configuration.mode(ServerMode.STREAMABLE).build());
 
     try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
       verify(client);
@@ -117,7 +142,6 @@ class McpServersTest {
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
-    assertDoesNotThrow(() -> servers.startServer());
   }
 
   @Test
@@ -125,7 +149,7 @@ class McpServersTest {
     String configFileName = "test-mcp-server-disabled.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> servers.startServer(configFileName));
+    assertDoesNotThrow(() -> startServer(configFileName));
     assertFalse(configuration.enabled());
   }
 
@@ -134,7 +158,7 @@ class McpServersTest {
     String configFileName = "test-mcp-server-enable-stdio-mode.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> servers.startServer(configFileName));
+    assertDoesNotThrow(() -> startServer(configFileName));
     assertEquals(ServerMode.STDIO, configuration.mode());
   }
 
@@ -143,7 +167,7 @@ class McpServersTest {
     String configFileName = "test-mcp-server-enable-http-sse-mode.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> servers.startServer(configFileName));
+    assertDoesNotThrow(() -> startServer(configFileName));
     assertEquals(ServerMode.SSE, configuration.mode());
   }
 
@@ -152,14 +176,14 @@ class McpServersTest {
     String configFileName = "test-mcp-server-enable-streamable-http-mode.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> servers.startServer(configFileName));
+    assertDoesNotThrow(() -> startServer(configFileName));
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
   }
 
   @Test
   void testStartServer_enableUnknownMode_shouldThrowException() {
     String configFileName = "test-mcp-server-enable-unknown-mode.yml";
-    assertThrows(McpServerConfigurationException.class, () -> servers.startServer(configFileName));
+    assertThrows(McpServerConfigurationException.class, () -> startServer(configFileName));
   }
 
   private void verify(McpSyncClient client) {
