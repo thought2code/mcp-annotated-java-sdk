@@ -70,7 +70,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartStdioServer_shouldSucceed() {
+  void startStdioServer_succeeds() {
     TestMcpStdioServer.main(new String[] {}); // just for jacoco coverage report
 
     String classpath = System.getProperty("java.class.path");
@@ -89,7 +89,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartSseServer_shouldSucceed() {
+  void startSseServer_succeeds() {
     final int port = new Random().nextInt(8000, 9000);
 
     McpServerConfiguration.Builder configuration =
@@ -113,7 +113,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartStreamableServer_shouldSucceed() {
+  void startStreamableServer_succeeds() {
     final int port = new Random().nextInt(8000, 9000);
 
     McpServerConfiguration.Builder configuration =
@@ -137,7 +137,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartServer_useDefaultConfigFileName_shouldSucceed() {
+  void startServer_withDefaultConfig_succeeds() {
     String configFileName = "mcp-server.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
@@ -145,7 +145,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartServer_disabledMCP_shouldSucceed() {
+  void startServer_whenDisabled_succeeds() {
     String configFileName = "test-mcp-server-disabled.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
@@ -154,7 +154,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartServer_enableStdioMode_shouldSucceed() {
+  void startServer_withStdioMode_succeeds() {
     String configFileName = "test-mcp-server-enable-stdio-mode.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
@@ -163,7 +163,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartServer_enableHttpSseMode_shouldSucceed() {
+  void startServer_withSseMode_succeeds() {
     String configFileName = "test-mcp-server-enable-http-sse-mode.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
@@ -172,7 +172,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartServer_enableStreamableHttpMode_shouldSucceed() {
+  void startServer_withStreamableMode_succeeds() {
     String configFileName = "test-mcp-server-enable-streamable-http-mode.yml";
     McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configLoader.loadConfig();
@@ -181,7 +181,7 @@ class McpApplicationTest {
   }
 
   @Test
-  void testStartServer_enableUnknownMode_shouldThrowException() {
+  void startServer_withUnknownMode_throwsException() {
     String configFileName = "test-mcp-server-enable-unknown-mode.yml";
     assertThrows(McpServerConfigurationException.class, () -> startServer(configFileName));
   }
