@@ -9,10 +9,9 @@ import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpSyncServer;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Main application class for the MCP (Model Context Protocol) annotated server.

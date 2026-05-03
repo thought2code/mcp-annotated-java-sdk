@@ -3,12 +3,11 @@ package com.github.thought2code.mcp.annotated.server.component;
 import com.github.thought2code.mcp.annotated.annotation.McpI18nEnabled;
 import com.github.thought2code.mcp.annotated.util.Immutable;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A provider class for managing internationalization (i18n) resource bundles.

@@ -40,7 +40,7 @@ public class McpServerCompletion {
    * functionality.
    *
    * <p>The method uses reflection to discover annotated methods and creates specifications through
-   * the {@link #from(Method)} method.
+   * the {@link #from(Method, McpApplicationContext)} method.
    *
    * @param context the application context for component discovery and localization
    * @return a list of synchronous completion specifications for all discovered completion methods
@@ -54,7 +54,7 @@ public class McpServerCompletion {
     methods.addAll(context.getMethodsAnnotatedWith(McpPromptCompletion.class));
     methods.addAll(context.getMethodsAnnotatedWith(McpResourceCompletion.class));
     List<McpServerFeatures.SyncCompletionSpecification> completions = new ArrayList<>();
-    methods.forEach(method -> completions.add(from(method)));
+    methods.forEach(method -> completions.add(from(method, context)));
     return completions;
   }
 
@@ -74,6 +74,7 @@ public class McpServerCompletion {
    * </ul>
    *
    * @param method the method to create completion specification for
+   * @param context the application context for component discovery and localization
    * @return a synchronous completion specification for the MCP server
    * @throws McpServerComponentRegistrationException if the method signature is invalid
    * @see McpCompleteCompletion
@@ -81,7 +82,8 @@ public class McpServerCompletion {
    * @see McpPromptCompletion
    * @see McpResourceCompletion
    */
-  private static McpServerFeatures.SyncCompletionSpecification from(Method method) {
+  private static McpServerFeatures.SyncCompletionSpecification from(
+      Method method, McpApplicationContext context) {
     // Use reflection cache for performance optimization
     MethodCache methodCache = MethodCache.of(method);
 
@@ -98,7 +100,7 @@ public class McpServerCompletion {
           "Completion method must have exactly one parameter of type McpSchema.CompleteRequest.CompleteArgument");
     }
 
-    Object instance = MethodInvoker.createInstance(methodCache.getDeclaringClass());
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
     McpSchema.CompleteReference reference = createCompleteReference(methodCache);
     return new McpServerFeatures.SyncCompletionSpecification(
         reference, (exchange, request) -> invoke(instance, methodCache, request));

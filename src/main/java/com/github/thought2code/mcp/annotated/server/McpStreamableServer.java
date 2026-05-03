@@ -7,10 +7,9 @@ import com.github.thought2code.mcp.annotated.util.InetHelper;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
 
 /**
  * An MCP server implementation that operates in Streamable HTTP mode.

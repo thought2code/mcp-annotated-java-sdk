@@ -1,17 +1,16 @@
 package com.github.thought2code.mcp.annotated.reflect;
 
-import com.github.thought2code.mcp.annotated.annotation.McpServerApplication;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.reflections.scanners.Scanners.FieldsAnnotated;
+import static org.reflections.scanners.Scanners.MethodsAnnotated;
 
+import com.github.thought2code.mcp.annotated.annotation.McpServerApplication;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Set;
-
-import static org.reflections.scanners.Scanners.FieldsAnnotated;
-import static org.reflections.scanners.Scanners.MethodsAnnotated;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A provider class for reflection operations using the Reflections library.

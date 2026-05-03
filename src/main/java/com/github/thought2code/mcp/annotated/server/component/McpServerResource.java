@@ -10,12 +10,11 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MCP server component for handling resource-related operations.
@@ -66,7 +65,7 @@ public class McpServerResource
 
     // Use reflection cache for performance optimization
     MethodCache methodCache = MethodCache.of(method);
-    Object instance = MethodInvoker.createInstance(methodCache.getDeclaringClass());
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
 
     McpResource res = methodCache.getMcpResourceAnnotation();
     final String name = StringHelper.defaultIfBlank(res.name(), methodCache.getMethodName());

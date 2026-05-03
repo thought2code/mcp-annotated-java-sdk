@@ -4,17 +4,18 @@ import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoade
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
+import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.server.McpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
+import com.github.thought2code.mcp.annotated.server.component.ResourceBundleProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.util.Assert;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 /**
  * Singleton class that provides methods to start and manage MCP (Model Context Protocol) servers.
@@ -85,7 +86,6 @@ public final class McpServers {
     McpApplicationContext context = McpApplicationContext.from(mainClass);
     McpServers servers = new McpServers(context);
     log.info("{} initialized successfully", mainClass.getSimpleName());
-
     return servers;
   }
 

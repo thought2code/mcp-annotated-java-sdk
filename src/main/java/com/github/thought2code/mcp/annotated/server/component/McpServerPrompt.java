@@ -12,15 +12,14 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MCP server component for handling prompt-related operations.
@@ -54,7 +53,7 @@ public class McpServerPrompt
   private final McpPromptParameterConverter parameterConverter;
 
   /** Constructor that initializes the prompt parameter converter. */
-  private McpServerPrompt() {
+  public McpServerPrompt() {
     this.parameterConverter = new McpPromptParameterConverter();
   }
 
@@ -80,7 +79,7 @@ public class McpServerPrompt
 
     // Use reflection cache for performance optimization
     MethodCache methodCache = MethodCache.of(method);
-    Object instance = MethodInvoker.createInstance(methodCache.getDeclaringClass());
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
 
     McpPrompt promptMethod = methodCache.getMcpPromptAnnotation();
     final String name =

@@ -16,9 +16,6 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -28,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MCP server component for handling tool-related operations.
@@ -65,7 +64,7 @@ public class McpServerTool
   private final McpToolParameterConverter parameterConverter;
 
   /** Constructor that initializes the tool parameter converter. */
-  private McpServerTool() {
+  public McpServerTool() {
     this.parameterConverter = new McpToolParameterConverter();
   }
 
@@ -94,7 +93,7 @@ public class McpServerTool
 
     // Use reflection cache for performance optimization
     MethodCache methodCache = MethodCache.of(method);
-    Object instance = MethodInvoker.createInstance(methodCache.getDeclaringClass());
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
 
     McpTool toolMethod = methodCache.getMcpToolAnnotation();
     final String name = StringHelper.defaultIfBlank(toolMethod.name(), methodCache.getMethodName());

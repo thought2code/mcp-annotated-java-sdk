@@ -1,6 +1,8 @@
 package com.github.thought2code.mcp.annotated;
 
 import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
+import com.github.thought2code.mcp.annotated.server.component.DefaultMcpComponentInstanceFactory;
+import com.github.thought2code.mcp.annotated.server.component.McpComponentInstanceFactory;
 import com.github.thought2code.mcp.annotated.server.component.ResourceBundleProvider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -16,24 +18,26 @@ import java.util.Set;
  * JVM.
  */
 public final class McpApplicationContext {
-  /** The application entry class used for package scanning and i18n configuration. */
-  private final Class<?> mainClass;
-
   /** The reflections provider used to scan the application's classpath for annotated components. */
   private final ReflectionsProvider reflectionsProvider;
 
   /** The resource bundle provider used to load i18n messages. */
   private final ResourceBundleProvider resourceBundleProvider;
 
+  /** The factory used to create or locate annotated component instances. */
+  private final McpComponentInstanceFactory componentInstanceFactory;
+
   private McpApplicationContext(
-      Class<?> mainClass,
       ReflectionsProvider reflectionsProvider,
-      ResourceBundleProvider resourceBundleProvider) {
-    this.mainClass = Objects.requireNonNull(mainClass, "mainClass must not be null");
+      ResourceBundleProvider resourceBundleProvider,
+      McpComponentInstanceFactory componentInstanceFactory) {
     this.reflectionsProvider =
         Objects.requireNonNull(reflectionsProvider, "reflectionsProvider must not be null");
     this.resourceBundleProvider =
         Objects.requireNonNull(resourceBundleProvider, "resourceBundleProvider must not be null");
+    this.componentInstanceFactory =
+        Objects.requireNonNull(
+            componentInstanceFactory, "componentInstanceFactory must not be null");
   }
 
   /**
@@ -47,7 +51,8 @@ public final class McpApplicationContext {
         ReflectionsProvider.initializeReflectionsInstance(mainClass);
     ResourceBundleProvider resourceBundleProvider =
         ResourceBundleProvider.loadResourceBundle(mainClass);
-    return new McpApplicationContext(mainClass, reflectionsProvider, resourceBundleProvider);
+    return new McpApplicationContext(
+        reflectionsProvider, resourceBundleProvider, DefaultMcpComponentInstanceFactory.create());
   }
 
   /**
@@ -79,5 +84,15 @@ public final class McpApplicationContext {
    */
   public String getLocalizedString(String i18nKey, String defaultValue) {
     return resourceBundleProvider.getString(i18nKey, defaultValue);
+  }
+
+  /**
+   * Returns a component instance for the specified component class.
+   *
+   * @param componentClass the class declaring annotated MCP component methods
+   * @return the component instance to invoke
+   */
+  public Object getComponentInstance(Class<?> componentClass) {
+    return componentInstanceFactory.getInstance(componentClass);
   }
 }
