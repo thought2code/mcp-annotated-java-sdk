@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
 import com.github.thought2code.mcp.annotated.util.InetHelper;
@@ -40,12 +41,13 @@ public class McpSseServer extends McpServerBase {
   private int port;
 
   /**
-   * Constructs a new {@link McpSseServer} with the specified configuration.
+   * Constructs a new {@link McpSseServer} with the specified configuration and application context.
    *
    * @param configuration the server configuration containing SSE settings
+   * @param context the application-scoped runtime context
    */
-  public McpSseServer(McpServerConfiguration configuration) {
-    super(configuration);
+  public McpSseServer(McpServerConfiguration configuration, McpApplicationContext context) {
+    super(configuration, context);
   }
 
   /**

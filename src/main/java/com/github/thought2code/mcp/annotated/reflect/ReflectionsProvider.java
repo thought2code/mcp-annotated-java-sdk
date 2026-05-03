@@ -1,16 +1,17 @@
 package com.github.thought2code.mcp.annotated.reflect;
 
-import static org.reflections.scanners.Scanners.FieldsAnnotated;
-import static org.reflections.scanners.Scanners.MethodsAnnotated;
-
 import com.github.thought2code.mcp.annotated.annotation.McpServerApplication;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Set;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.reflections.scanners.Scanners.FieldsAnnotated;
+import static org.reflections.scanners.Scanners.MethodsAnnotated;
 
 /**
  * A provider class for reflection operations using the Reflections library.
@@ -19,9 +20,9 @@ import org.slf4j.LoggerFactory;
  * scan for annotated methods and fields in a specified package. It uses the Reflections library to
  * perform runtime scanning of classpath components.
  *
- * <p>The class maintains a singleton {@link Reflections} instance that is initialized with a base
- * package derived from the main application class or the {@link McpServerApplication} annotation.
- * The scanning is configured to look for annotated methods and fields.
+ * <p>Each provider instance owns one {@link Reflections} instance initialized with a base package
+ * derived from the main application class or the {@link McpServerApplication} annotation. The
+ * scanning is configured to look for annotated methods and fields.
  *
  * <p>Key features:
  *
@@ -32,27 +33,19 @@ import org.slf4j.LoggerFactory;
  *   <li>Retrieves fields annotated with specific annotations
  * </ul>
  *
- * <p>This class follows the utility class pattern with a private constructor to prevent
- * instantiation.
- *
  * @author codeboyzhou
  * @see Reflections
  * @see McpServerApplication
- * @see Method
- * @see Field
  */
 public final class ReflectionsProvider {
 
   private static final Logger log = LoggerFactory.getLogger(ReflectionsProvider.class);
 
-  /** The singleton Reflections instance used for scanning and reflection operations. */
-  private static Reflections reflections;
-
-  /** Private constructor to prevent instantiation of this utility class. */
-  private ReflectionsProvider() {}
+  /** The {@link Reflections} instance used for scanning and reflection operations. */
+  private final Reflections reflections;
 
   /**
-   * Initializes the Reflections instance with the specified main class.
+   * Initializes the {@link Reflections} instance with the specified main class.
    *
    * <p>This method determines the base package for reflection scanning by examining the provided
    * main class. The base package can be configured in three ways:
@@ -72,12 +65,7 @@ public final class ReflectionsProvider {
    * @see McpServerApplication
    * @see Reflections
    */
-  public static void initializeReflectionsInstance(Class<?> mainClass) {
-    if (reflections != null) {
-      log.warn("Reflections instance is already initialized");
-      return;
-    }
-
+  private ReflectionsProvider(Class<?> mainClass) {
     log.info("Initializing Reflections instance");
     String basePackage = mainClass.getPackageName();
     McpServerApplication application = mainClass.getAnnotation(McpServerApplication.class);
@@ -94,6 +82,16 @@ public final class ReflectionsProvider {
   }
 
   /**
+   * Creates a new provider initialized for the specified main class.
+   *
+   * @param mainClass the main application class used to determine the base package
+   * @return a new reflection provider
+   */
+  public static ReflectionsProvider initializeReflectionsInstance(Class<?> mainClass) {
+    return new ReflectionsProvider(mainClass);
+  }
+
+  /**
    * Retrieves all methods annotated with the specified annotation.
    *
    * <p>This method uses the initialized Reflections instance to scan the configured base package
@@ -107,7 +105,7 @@ public final class ReflectionsProvider {
    * @see Reflections#getMethodsAnnotatedWith(Class)
    * @see Method
    */
-  public static Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotation) {
+  public Set<Method> getMethodsAnnotatedWith(Class<? extends Annotation> annotation) {
     return reflections.getMethodsAnnotatedWith(annotation);
   }
 
@@ -125,7 +123,7 @@ public final class ReflectionsProvider {
    * @see Reflections#getFieldsAnnotatedWith(Class)
    * @see Field
    */
-  public static Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotation) {
+  public Set<Field> getFieldsAnnotatedWith(Class<? extends Annotation> annotation) {
     return reflections.getFieldsAnnotatedWith(annotation);
   }
 }

@@ -1,16 +1,21 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
 import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.server.component.*;
+import com.github.thought2code.mcp.annotated.server.component.McpComponentRegistrar;
+import com.github.thought2code.mcp.annotated.server.component.McpServerCompletion;
+import com.github.thought2code.mcp.annotated.server.component.McpServerPrompt;
+import com.github.thought2code.mcp.annotated.server.component.McpServerResource;
+import com.github.thought2code.mcp.annotated.server.component.McpServerTool;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import java.time.Duration;
-import java.util.ServiceLoader;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.ServiceLoader;
 
 /**
  * Abstract base class that provides a common implementation for MCP (Model Context Protocol)
@@ -46,14 +51,19 @@ public abstract class McpServerBase implements McpServer {
   /** The server configuration used by this MCP server. */
   protected final McpServerConfiguration configuration;
 
+  /** Application-scoped runtime context used for discovery and localization. */
+  protected final McpApplicationContext context;
+
   /**
-   * Constructs a new {@link McpServerBase} with the specified configuration.
+   * Constructs a new {@link McpServerBase} with the specified configuration and application
+   * context.
    *
-   * @param configuration the server configuration containing all settings for the MCP server,
-   *     including capabilities, timeouts, and transport settings
+   * @param configuration the server configuration
+   * @param context the application-scoped runtime context for component discovery and localization
    */
-  public McpServerBase(@NotNull McpServerConfiguration configuration) {
+  public McpServerBase(McpServerConfiguration configuration, McpApplicationContext context) {
     this.configuration = configuration;
+    this.context = context;
   }
 
   /**
@@ -112,7 +122,7 @@ public abstract class McpServerBase implements McpServer {
     log.info("Registering MCP server components");
     ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
     for (McpComponentRegistrar registrar : loader) {
-      registrar.register(server);
+      registrar.register(server, context);
     }
     log.info("MCP server components registered successfully");
   }
@@ -143,7 +153,7 @@ public abstract class McpServerBase implements McpServer {
     McpSyncServer mcpSyncServer =
         createSyncSpecification()
             .capabilities(serverCapabilities)
-            .completions(McpServerCompletion.all())
+            .completions(McpServerCompletion.all(context))
             .instructions(configuration.instructions())
             .serverInfo(configuration.name(), configuration.version())
             .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))

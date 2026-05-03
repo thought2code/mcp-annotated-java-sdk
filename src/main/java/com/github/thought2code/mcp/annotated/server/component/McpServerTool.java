@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaDefinition;
 import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaProperty;
 import com.github.thought2code.mcp.annotated.annotation.McpTool;
@@ -8,7 +9,6 @@ import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.server.converter.McpToolParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -16,6 +16,9 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -25,16 +28,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * MCP server component for handling tool-related operations.
  *
- * <p>This class extends {@link McpServerComponentBase} and implements the functionality for
- * creating and registering tool components with an MCP server. It processes methods annotated with
- * {@link McpTool} and creates appropriate tool specifications that can be used to execute
- * operations for LLM interactions.
+ * <p>This class implements the functionality for creating and registering tool components with an
+ * MCP server. It processes methods annotated with {@link McpTool} and creates appropriate tool
+ * specifications that can be used to execute operations for LLM interactions.
  *
  * <p>The class handles:
  *
@@ -56,8 +56,8 @@ import org.slf4j.LoggerFactory;
  * @see McpSchema.JsonSchema
  * @see McpStructuredContent
  */
-public class McpServerTool extends McpServerComponentBase<McpServerFeatures.SyncToolSpecification>
-    implements McpComponentRegistrar {
+public class McpServerTool
+    implements McpServerComponent<McpServerFeatures.SyncToolSpecification>, McpComponentRegistrar {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerTool.class);
 
@@ -65,7 +65,7 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
   private final McpToolParameterConverter parameterConverter;
 
   /** Constructor that initializes the tool parameter converter. */
-  public McpServerTool() {
+  private McpServerTool() {
     this.parameterConverter = new McpToolParameterConverter();
   }
 
@@ -78,13 +78,15 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
    * input parameters and output types, and creates a tool specification with appropriate metadata.
    *
    * @param method the method annotated with {@link McpTool} to create a specification from
+   * @param context the application context for component discovery and localization
    * @return a synchronous tool specification for the MCP server
    * @see McpTool
    * @see McpSchema.Tool
    * @see McpSchema.JsonSchema
    */
   @Override
-  public McpServerFeatures.SyncToolSpecification from(Method method) {
+  public McpServerFeatures.SyncToolSpecification from(
+      Method method, McpApplicationContext context) {
     log.info(
         "Creating tool specification for method: {}.{}",
         method.getDeclaringClass().getSimpleName(),
@@ -96,11 +98,12 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
 
     McpTool toolMethod = methodCache.getMcpToolAnnotation();
     final String name = StringHelper.defaultIfBlank(toolMethod.name(), methodCache.getMethodName());
-    final String title = localizeAttribute(toolMethod.title(), name);
-    final String description = localizeAttribute(toolMethod.description(), name);
+    final String title = context.getLocalizedString(toolMethod.title(), name);
+    final String description = context.getLocalizedString(toolMethod.description(), name);
 
-    McpSchema.JsonSchema inputSchema = createJsonSchema(methodCache.getParameters());
-    Map<String, Object> outputSchema = createJsonSchemaDefinition(methodCache.getReturnType());
+    McpSchema.JsonSchema inputSchema = createJsonSchema(context, methodCache.getParameters());
+    Map<String, Object> outputSchema =
+        createJsonSchemaDefinition(context, methodCache.getReturnType());
     McpSchema.Tool tool =
         McpSchema.Tool.builder()
             .name(name)
@@ -125,16 +128,16 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
    * component type and registers them with the server. The exact discovery and registration
    * mechanism depends on the implementation.
    *
-   * @param server the {@link McpSyncServer} instance to register the components with; must not be
-   *     {@code null}
+   * @param server the {@link McpSyncServer} instance to register the components with
+   * @param context the application context for component discovery and localization
    */
   @Override
-  public void register(McpSyncServer server) {
-    Set<Method> methods = ReflectionsProvider.getMethodsAnnotatedWith(McpTool.class);
+  public void register(McpSyncServer server, McpApplicationContext context) {
+    Set<Method> methods = context.getMethodsAnnotatedWith(McpTool.class);
     methods.forEach(
         method -> {
           log.debug("Registering tool method: {}", method.toGenericString());
-          McpServerFeatures.SyncToolSpecification tool = from(method);
+          McpServerFeatures.SyncToolSpecification tool = from(method, context);
           server.addTool(tool);
           log.debug("Tool {} registered successfully", tool.tool().name());
         });
@@ -193,6 +196,7 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
    * input parameters for a tool. It handles both primitive types and complex types annotated with
    * {@link McpJsonSchemaDefinition}.
    *
+   * @param context the application context for localization
    * @param methodParams the array of method parameters to create a schema for
    * @return a JSON schema describing the tool's input parameters
    * @see McpToolParam
@@ -200,7 +204,8 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
    * @see McpJsonSchemaProperty
    * @see JavaTypeToJsonSchemaMapper
    */
-  private McpSchema.JsonSchema createJsonSchema(Parameter[] methodParams) {
+  private McpSchema.JsonSchema createJsonSchema(
+      McpApplicationContext context, Parameter[] methodParams) {
     Map<String, Object> properties = new LinkedHashMap<>();
     Map<String, Object> definitions = new LinkedHashMap<>();
     List<String> required = new ArrayList<>();
@@ -215,11 +220,12 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
         if (definitionClass.isAnnotationPresent(McpJsonSchemaDefinition.class)) {
           final String definitionClassName = definitionClass.getSimpleName();
           property.put("$ref", "#/definitions/" + definitionClassName);
-          Map<String, Object> definition = createJsonSchemaDefinition(definitionClass);
+          Map<String, Object> definition = createJsonSchemaDefinition(context, definitionClass);
           definitions.put(definitionClassName, definition);
         } else {
           property.put("type", JavaTypeToJsonSchemaMapper.getJsonSchemaType(definitionClass));
-          property.put("description", localizeAttribute(toolParam.description(), parameterName));
+          property.put(
+              "description", context.getLocalizedString(toolParam.description(), parameterName));
         }
         properties.put(parameterName, property);
 
@@ -247,21 +253,22 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
    * annotated with {@link McpJsonSchemaProperty} and includes them in the schema with appropriate
    * types and descriptions.
    *
+   * @param context the application context for localization
    * @param definitionClass the class to create a JSON schema definition for
    * @return a JSON schema definition describing the class structure
    * @see McpJsonSchemaDefinition
    * @see McpJsonSchemaProperty
    * @see JavaTypeToJsonSchemaMapper
    */
-  private Map<String, Object> createJsonSchemaDefinition(Class<?> definitionClass) {
+  private Map<String, Object> createJsonSchemaDefinition(
+      McpApplicationContext context, Class<?> definitionClass) {
     Map<String, Object> definitionJsonSchema = new HashMap<>();
     definitionJsonSchema.put("type", JavaTypeToJsonSchemaMapper.OBJECT.getJsonSchemaType());
 
     Map<String, Object> properties = new LinkedHashMap<>();
     List<String> required = new ArrayList<>();
 
-    Set<Field> definitionFields =
-        ReflectionsProvider.getFieldsAnnotatedWith(McpJsonSchemaProperty.class);
+    Set<Field> definitionFields = context.getFieldsAnnotatedWith(McpJsonSchemaProperty.class);
     List<Field> fields =
         definitionFields.stream().filter(f -> f.getDeclaringClass() == definitionClass).toList();
 
@@ -274,7 +281,8 @@ public class McpServerTool extends McpServerComponentBase<McpServerFeatures.Sync
       Map<String, Object> fieldProperties = new HashMap<>();
       final String fieldName = StringHelper.defaultIfBlank(property.name(), field.getName());
       fieldProperties.put("type", JavaTypeToJsonSchemaMapper.getJsonSchemaType(field.getType()));
-      fieldProperties.put("description", localizeAttribute(property.description(), fieldName));
+      fieldProperties.put(
+          "description", context.getLocalizedString(property.description(), fieldName));
 
       properties.put(fieldName, fieldProperties);
 

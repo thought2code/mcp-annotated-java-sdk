@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import io.modelcontextprotocol.server.McpSyncServer;
 
 /**
@@ -21,8 +22,8 @@ public interface McpComponentRegistrar {
    * component type and registers them with the server. The exact discovery and registration
    * mechanism depends on the implementation.
    *
-   * @param server the {@link McpSyncServer} instance to register the components with; must not be
-   *     {@code null}
+   * @param server the {@link McpSyncServer} instance to register the components with
+   * @param context the application context for component discovery and localization
    */
-  void register(McpSyncServer server);
+  void register(McpSyncServer server, McpApplicationContext context);
 }

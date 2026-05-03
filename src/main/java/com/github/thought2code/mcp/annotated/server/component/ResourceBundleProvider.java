@@ -3,11 +3,12 @@ package com.github.thought2code.mcp.annotated.server.component;
 import com.github.thought2code.mcp.annotated.annotation.McpI18nEnabled;
 import com.github.thought2code.mcp.annotated.util.Immutable;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A provider class for managing internationalization (i18n) resource bundles.
@@ -16,17 +17,14 @@ import org.slf4j.LoggerFactory;
  * internationalization in MCP server applications. It uses the {@link McpI18nEnabled} annotation to
  * configure the resource bundle base name.
  *
- * <p>The class maintains a singleton {@link ResourceBundle} instance that is loaded from the
- * specified base name using the default locale. The resource bundle can be accessed through a
- * supplier for lazy evaluation and thread safety.
+ * <p>Each provider instance maintains a {@link ResourceBundle} loaded from the specified base name
+ * using the default locale.
  *
  * <p>Key features:
  *
  * <ul>
  *   <li>Loads resource bundles based on {@link McpI18nEnabled} annotation configuration
- *   <li>Provides a supplier for accessing the loaded resource bundle
  *   <li>Supports default locale for resource bundle resolution
- *   <li>Follows the utility class pattern with a private constructor
  * </ul>
  *
  * @author codeboyzhou
@@ -38,14 +36,12 @@ public final class ResourceBundleProvider {
 
   public static final Logger log = LoggerFactory.getLogger(ResourceBundleProvider.class);
 
-  /**
-   * The singleton ResourceBundle instance loaded for i18n support, wrapped in an {@link Immutable}
-   * wrapper for avoiding EI_EXPOSE_REP2 issue.
-   */
-  private static Immutable<ResourceBundle> bundle;
+  /** The {@link ResourceBundle} instance loaded for this application context. */
+  private final Immutable<ResourceBundle> bundle;
 
-  /** Private constructor to prevent instantiation of this utility class. */
-  private ResourceBundleProvider() {}
+  private ResourceBundleProvider(ResourceBundle bundle) {
+    this.bundle = bundle == null ? null : Immutable.of(bundle);
+  }
 
   /**
    * Loads a resource bundle based on the {@link McpI18nEnabled} annotation on the main class.
@@ -65,16 +61,11 @@ public final class ResourceBundleProvider {
    * @see ResourceBundle#getBundle(String, Locale)
    * @see Locale#getDefault()
    */
-  public static void loadResourceBundle(Class<?> mainClass) {
-    if (bundle != null) {
-      log.warn("Resource bundle is already loaded");
-      return;
-    }
-
+  public static ResourceBundleProvider loadResourceBundle(Class<?> mainClass) {
     McpI18nEnabled mcpI18nEnabled = mainClass.getAnnotation(McpI18nEnabled.class);
     if (mcpI18nEnabled == null) {
       log.info("McpI18nEnabled annotation is not present on the main class, skip i18n support.");
-      return;
+      return new ResourceBundleProvider(null);
     }
 
     final String baseName = mcpI18nEnabled.resourceBundleBaseName();
@@ -83,21 +74,23 @@ public final class ResourceBundleProvider {
     }
 
     log.info("Loading resource bundle with base name: {}", baseName);
-    bundle = Immutable.of(ResourceBundle.getBundle(baseName, Locale.getDefault()));
+    ResourceBundle resourceBundle = ResourceBundle.getBundle(baseName, Locale.getDefault());
     log.info("Resource bundle loaded successfully with base name: {}", baseName);
+    return new ResourceBundleProvider(resourceBundle);
   }
 
   /**
-   * Returns the loaded resource bundle instance.
+   * Retrieves the string with the specified i18n key using the resource bundle, or returns the
+   * default value if the key is not found in the bundle.
    *
-   * <p>This method returns the currently loaded {@link ResourceBundle} instance, if the main class
-   * was not annotated with {@link McpI18nEnabled}, this method returns {@code null}.
-   *
-   * @return the loaded resource bundle instance, or {@code null} if not loaded
-   * @see ResourceBundle
-   * @see #loadResourceBundle(Class)
+   * @param i18nKey the i18n key of the attribute to localize
+   * @param defaultValue the default value to return if the i18n key is not found in the bundle
+   * @return the localized value of the attribute, or the default value if the i18n key is not found
    */
-  public static ResourceBundle getResourceBundle() {
-    return bundle == null ? null : bundle.get();
+  public String getString(String i18nKey, String defaultValue) {
+    if (bundle != null && bundle.get().containsKey(i18nKey)) {
+      return bundle.get().getString(i18nKey);
+    }
+    return StringHelper.defaultIfBlank(i18nKey, defaultValue);
   }
 }

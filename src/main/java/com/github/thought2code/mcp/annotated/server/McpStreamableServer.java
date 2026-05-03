@@ -1,14 +1,16 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
 import com.github.thought2code.mcp.annotated.util.InetHelper;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
-import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
 
 /**
  * An MCP server implementation that operates in Streamable HTTP mode.
@@ -53,19 +55,14 @@ public class McpStreamableServer extends McpServerBase {
   private int port;
 
   /**
-   * Constructs a new {@link McpStreamableServer} with the specified configuration.
-   *
-   * <p>The constructor initializes the server with the provided configuration, which contains all
-   * necessary settings for the streamable HTTP server including port number, endpoint path,
-   * keep-alive interval, and other transport options.
+   * Constructs a new {@link McpStreamableServer} with the specified configuration and application
+   * context.
    *
    * @param configuration the server configuration containing streamable settings
-   * @throws NullPointerException if the configuration is null
-   * @see McpServerConfiguration
-   * @see McpServerStreamable
+   * @param context the application-scoped runtime context
    */
-  public McpStreamableServer(McpServerConfiguration configuration) {
-    super(configuration);
+  public McpStreamableServer(McpServerConfiguration configuration, McpApplicationContext context) {
+    super(configuration, context);
   }
 
   /**

@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
@@ -31,12 +32,14 @@ import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
  */
 public class McpStdioServer extends McpServerBase {
   /**
-   * Constructs a new {@link McpStdioServer} with the specified configuration.
+   * Constructs a new {@link McpStdioServer} with the specified configuration and application
+   * context.
    *
    * @param configuration the server configuration
+   * @param context the application-scoped runtime context
    */
-  public McpStdioServer(McpServerConfiguration configuration) {
-    super(configuration);
+  public McpStdioServer(McpServerConfiguration configuration, McpApplicationContext context) {
+    super(configuration, context);
   }
 
   /**

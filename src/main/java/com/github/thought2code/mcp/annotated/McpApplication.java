@@ -3,17 +3,16 @@ package com.github.thought2code.mcp.annotated;
 import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
-import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.server.McpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
-import com.github.thought2code.mcp.annotated.server.component.ResourceBundleProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpSyncServer;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * Main application class for the MCP (Model Context Protocol) annotated server.
@@ -45,13 +44,13 @@ public final class McpApplication {
    * @param mainClass the main class of the application, used as the base for reflection scanning
    * @param args the command-line arguments passed to the application
    * @param configFileName the name of the configuration file to load
+   * @see McpApplicationContext
    */
   @SuppressWarnings("unused")
   public static void run(Class<?> mainClass, String[] args, String configFileName) {
     log.info("Running {} with args: {}", mainClass.getSimpleName(), args);
-    ReflectionsProvider.initializeReflectionsInstance(mainClass);
-    ResourceBundleProvider.loadResourceBundle(mainClass);
-    startMcpServer(configFileName);
+    McpApplicationContext context = McpApplicationContext.from(mainClass);
+    startMcpServer(configFileName, context);
   }
 
   /**
@@ -90,12 +89,14 @@ public final class McpApplication {
    * server will be started.
    *
    * @param configFileName the name of the configuration file to load
+   * @param context the application context for component discovery and localization
+   * @see McpApplicationContext
    * @see McpConfigurationLoader
    * @see McpServerConfiguration
    * @see McpServer
    * @see McpSyncServer
    */
-  private static void startMcpServer(String configFileName) {
+  private static void startMcpServer(String configFileName, McpApplicationContext context) {
     McpConfigurationLoader configurationLoader = new McpConfigurationLoader(configFileName);
     McpServerConfiguration configuration = configurationLoader.loadConfig();
     log.info("Starting MCP server with config: {}", JacksonHelper.toJsonString(configuration));
@@ -107,9 +108,9 @@ public final class McpApplication {
 
     McpServer mcpServer = null;
     switch (configuration.mode()) {
-      case STDIO -> mcpServer = new McpStdioServer(configuration);
-      case SSE -> mcpServer = new McpSseServer(configuration);
-      case STREAMABLE -> mcpServer = new McpStreamableServer(configuration);
+      case STDIO -> mcpServer = new McpStdioServer(configuration, context);
+      case SSE -> mcpServer = new McpSseServer(configuration, context);
+      case STREAMABLE -> mcpServer = new McpStreamableServer(configuration, context);
     }
 
     Objects.requireNonNull(mcpServer, "mcpServer must not be null");

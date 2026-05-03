@@ -1,33 +1,33 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpPrompt;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.server.converter.McpPromptParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * MCP server component for handling prompt-related operations.
  *
- * <p>This class extends {@link McpServerComponentBase} and implements the functionality for
- * creating and registering prompt components with an MCP server. It processes methods annotated
- * with {@link McpPrompt} and creates appropriate prompt specifications that can be used to generate
- * interactive prompts for LLM interactions.
+ * <p>This class implements the functionality for creating and registering prompt components with an
+ * MCP server. It processes methods annotated with {@link McpPrompt} and creates appropriate prompt
+ * specifications that can be used to generate interactive prompts for LLM interactions.
  *
  * <p>The class handles:
  *
@@ -45,8 +45,8 @@ import org.slf4j.LoggerFactory;
  * @see McpSchema.PromptArgument
  */
 public class McpServerPrompt
-    extends McpServerComponentBase<McpServerFeatures.SyncPromptSpecification>
-    implements McpComponentRegistrar {
+    implements McpServerComponent<McpServerFeatures.SyncPromptSpecification>,
+        McpComponentRegistrar {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerPrompt.class);
 
@@ -54,7 +54,7 @@ public class McpServerPrompt
   private final McpPromptParameterConverter parameterConverter;
 
   /** Constructor that initializes the prompt parameter converter. */
-  public McpServerPrompt() {
+  private McpServerPrompt() {
     this.parameterConverter = new McpPromptParameterConverter();
   }
 
@@ -67,13 +67,15 @@ public class McpServerPrompt
    * appropriate prompt arguments.
    *
    * @param method the method annotated with {@link McpPrompt} to create a specification from
+   * @param context the application context for component discovery and localization
    * @return a synchronous prompt specification for the MCP server
    * @see McpPrompt
    * @see McpSchema.Prompt
    * @see McpSchema.PromptArgument
    */
   @Override
-  public McpServerFeatures.SyncPromptSpecification from(Method method) {
+  public McpServerFeatures.SyncPromptSpecification from(
+      Method method, McpApplicationContext context) {
     log.info("Creating prompt specification for method: {}", method.toGenericString());
 
     // Use reflection cache for performance optimization
@@ -83,10 +85,11 @@ public class McpServerPrompt
     McpPrompt promptMethod = methodCache.getMcpPromptAnnotation();
     final String name =
         StringHelper.defaultIfBlank(promptMethod.name(), methodCache.getMethodName());
-    final String title = localizeAttribute(promptMethod.title(), name);
-    final String description = localizeAttribute(promptMethod.description(), name);
+    final String title = context.getLocalizedString(promptMethod.title(), name);
+    final String description = context.getLocalizedString(promptMethod.description(), name);
 
-    List<McpSchema.PromptArgument> promptArgs = createPromptArguments(methodCache.getParameters());
+    List<McpSchema.PromptArgument> promptArgs =
+        createPromptArguments(context, methodCache.getParameters());
     McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, promptArgs);
 
     log.info("Prompt specification created: {}", JacksonHelper.toJsonString(prompt));
@@ -102,16 +105,16 @@ public class McpServerPrompt
    * component type and registers them with the server. The exact discovery and registration
    * mechanism depends on the implementation.
    *
-   * @param server the {@link McpSyncServer} instance to register the components with; must not be
-   *     {@code null}
+   * @param server the {@link McpSyncServer} instance to register the components with
+   * @param context the application context for component discovery and localization
    */
   @Override
-  public void register(McpSyncServer server) {
-    Set<Method> methods = ReflectionsProvider.getMethodsAnnotatedWith(McpPrompt.class);
+  public void register(McpSyncServer server, McpApplicationContext context) {
+    Set<Method> methods = context.getMethodsAnnotatedWith(McpPrompt.class);
     methods.forEach(
         method -> {
           log.debug("Registering prompt method: {}", method.toGenericString());
-          McpServerFeatures.SyncPromptSpecification prompt = from(method);
+          McpServerFeatures.SyncPromptSpecification prompt = from(method, context);
           server.addPrompt(prompt);
           log.debug("Prompt {} registered successfully", prompt.prompt().name());
         });
@@ -167,15 +170,16 @@ public class McpServerPrompt
    * @see McpPromptParam
    * @see McpSchema.PromptArgument
    */
-  private List<McpSchema.PromptArgument> createPromptArguments(Parameter[] methodParams) {
+  private List<McpSchema.PromptArgument> createPromptArguments(
+      McpApplicationContext context, Parameter[] methodParams) {
     List<McpSchema.PromptArgument> promptArguments = new ArrayList<>(methodParams.length);
 
     for (Parameter param : methodParams) {
       if (param.isAnnotationPresent(McpPromptParam.class)) {
         McpPromptParam promptParam = param.getAnnotation(McpPromptParam.class);
         final String name = promptParam.name();
-        final String title = localizeAttribute(promptParam.title(), name);
-        final String description = localizeAttribute(promptParam.description(), name);
+        final String title = context.getLocalizedString(promptParam.title(), name);
+        final String description = context.getLocalizedString(promptParam.description(), name);
         final boolean required = promptParam.required();
         promptArguments.add(new McpSchema.PromptArgument(name, title, description, required));
       }

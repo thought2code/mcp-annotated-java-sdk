@@ -4,18 +4,17 @@ import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoade
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
-import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.server.McpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
-import com.github.thought2code.mcp.annotated.server.component.ResourceBundleProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.util.Assert;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * Singleton class that provides methods to start and manage MCP (Model Context Protocol) servers.
@@ -50,11 +49,13 @@ public final class McpServers {
 
   private static final Logger log = LoggerFactory.getLogger(McpServers.class);
 
-  /** The singleton instance of McpServers. */
-  private static McpServers servers;
+  /** Application-scoped runtime context. */
+  private final McpApplicationContext context;
 
   /** Private constructor to prevent instantiation of this singleton class. */
-  private McpServers() {}
+  private McpServers(McpApplicationContext context) {
+    this.context = context;
+  }
 
   /**
    * Initializes the McpServers singleton with the specified main class.
@@ -80,15 +81,9 @@ public final class McpServers {
    */
   @Deprecated(since = "0.13.0", forRemoval = true)
   public static McpServers run(Class<?> mainClass, String[] args) {
-    if (servers != null) {
-      log.warn("{} is already initialized", mainClass.getSimpleName());
-      return servers;
-    }
-
     log.info("Initializing {} with args: {}", mainClass.getSimpleName(), args);
-    ReflectionsProvider.initializeReflectionsInstance(mainClass);
-    ResourceBundleProvider.loadResourceBundle(mainClass);
-    servers = new McpServers();
+    McpApplicationContext context = McpApplicationContext.from(mainClass);
+    McpServers servers = new McpServers(context);
     log.info("{} initialized successfully", mainClass.getSimpleName());
 
     return servers;
@@ -219,9 +214,9 @@ public final class McpServers {
     if (configuration.enabled()) {
       McpServer mcpServer = null;
       switch (configuration.mode()) {
-        case STDIO -> mcpServer = new McpStdioServer(configuration);
-        case SSE -> mcpServer = new McpSseServer(configuration);
-        case STREAMABLE -> mcpServer = new McpStreamableServer(configuration);
+        case STDIO -> mcpServer = new McpStdioServer(configuration, context);
+        case SSE -> mcpServer = new McpSseServer(configuration, context);
+        case STREAMABLE -> mcpServer = new McpStreamableServer(configuration, context);
       }
 
       Objects.requireNonNull(mcpServer, "mcpServer must not be null");

@@ -1,28 +1,28 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * MCP server component for handling resource-related operations.
  *
- * <p>This class extends {@link McpServerComponentBase} and implements the functionality for
- * creating and registering resource components with an MCP server. It processes methods annotated
- * with {@link McpResource} and creates appropriate resource specifications that can be used to
- * expose data to LLM interactions.
+ * <p>This class implements the functionality for creating and registering resource components with
+ * an MCP server. It processes methods annotated with {@link McpResource} and creates appropriate
+ * resource specifications that can be used to expose data to LLM interactions.
  *
  * <p>The class handles:
  *
@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
  * @see McpSchema.ResourceContents
  */
 public class McpServerResource
-    extends McpServerComponentBase<McpServerFeatures.SyncResourceSpecification>
-    implements McpComponentRegistrar {
+    implements McpServerComponent<McpServerFeatures.SyncResourceSpecification>,
+        McpComponentRegistrar {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerResource.class);
 
@@ -53,13 +53,15 @@ public class McpServerResource
    * resource specification with appropriate metadata.
    *
    * @param method the method annotated with {@link McpResource} to create a specification from
+   * @param context the application context for component discovery and localization
    * @return a synchronous resource specification for the MCP server
    * @see McpResource
    * @see McpSchema.Resource
    * @see McpSchema.Annotations
    */
   @Override
-  public McpServerFeatures.SyncResourceSpecification from(Method method) {
+  public McpServerFeatures.SyncResourceSpecification from(
+      Method method, McpApplicationContext context) {
     log.info("Creating resource specification for method: {}", method.toGenericString());
 
     // Use reflection cache for performance optimization
@@ -68,8 +70,8 @@ public class McpServerResource
 
     McpResource res = methodCache.getMcpResourceAnnotation();
     final String name = StringHelper.defaultIfBlank(res.name(), methodCache.getMethodName());
-    final String title = localizeAttribute(res.title(), name);
-    final String description = localizeAttribute(res.description(), name);
+    final String title = context.getLocalizedString(res.title(), name);
+    final String description = context.getLocalizedString(res.description(), name);
 
     McpSchema.Resource resource =
         McpSchema.Resource.builder()
@@ -94,16 +96,16 @@ public class McpServerResource
    * component type and registers them with the server. The exact discovery and registration
    * mechanism depends on the implementation.
    *
-   * @param server the {@link McpSyncServer} instance to register the components with; must not be
-   *     {@code null}
+   * @param server the {@link McpSyncServer} instance to register the components with
+   * @param context the application context for component discovery and localization
    */
   @Override
-  public void register(McpSyncServer server) {
-    Set<Method> methods = ReflectionsProvider.getMethodsAnnotatedWith(McpResource.class);
+  public void register(McpSyncServer server, McpApplicationContext context) {
+    Set<Method> methods = context.getMethodsAnnotatedWith(McpResource.class);
     methods.forEach(
         method -> {
           log.debug("Registering resource method: {}", method.toGenericString());
-          McpServerFeatures.SyncResourceSpecification resource = from(method);
+          McpServerFeatures.SyncResourceSpecification resource = from(method, context);
           server.addResource(resource);
           log.debug("Resource {} registered successfully", resource.resource().name());
         });

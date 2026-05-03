@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import java.lang.reflect.Method;
 
 /**
@@ -14,12 +15,14 @@ import java.lang.reflect.Method;
  * <p>Typical usage involves:
  *
  * <ul>
- *   <li>Creating a component instance from a method using {@link #from(Method)}
+ *   <li>Creating a component instance from a method using {@link #from(Method,
+ *       McpApplicationContext)}
  * </ul>
  *
  * @param <T> the type of component this interface creates (e.g., McpSchema.Resource,
  *     McpSchema.Prompt, McpSchema.Tool)
  * @author codeboyzhou
+ * @see McpApplicationContext
  * @see McpServerResource
  * @see McpServerPrompt
  * @see McpServerTool
@@ -33,7 +36,8 @@ public interface McpServerComponent<T> {
    * created depends on the implementation of this interface.
    *
    * @param method the annotated method to create a component from
+   * @param context the application context for component discovery and localization
    * @return a component instance of type {@code T} created from the method
    */
-  T from(Method method);
+  T from(Method method, McpApplicationContext context);
 }

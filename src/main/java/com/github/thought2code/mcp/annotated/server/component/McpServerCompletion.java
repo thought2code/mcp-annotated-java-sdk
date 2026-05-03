@@ -1,12 +1,12 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.ReflectionsProvider;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.lang.reflect.Method;
@@ -42,15 +42,17 @@ public class McpServerCompletion {
    * <p>The method uses reflection to discover annotated methods and creates specifications through
    * the {@link #from(Method)} method.
    *
+   * @param context the application context for component discovery and localization
    * @return a list of synchronous completion specifications for all discovered completion methods
    * @see McpPromptCompletion
    * @see McpResourceCompletion
    * @see McpServerFeatures.SyncCompletionSpecification
    */
-  public static List<McpServerFeatures.SyncCompletionSpecification> all() {
+  public static List<McpServerFeatures.SyncCompletionSpecification> all(
+      McpApplicationContext context) {
     Set<Method> methods = new HashSet<>();
-    methods.addAll(ReflectionsProvider.getMethodsAnnotatedWith(McpPromptCompletion.class));
-    methods.addAll(ReflectionsProvider.getMethodsAnnotatedWith(McpResourceCompletion.class));
+    methods.addAll(context.getMethodsAnnotatedWith(McpPromptCompletion.class));
+    methods.addAll(context.getMethodsAnnotatedWith(McpResourceCompletion.class));
     List<McpServerFeatures.SyncCompletionSpecification> completions = new ArrayList<>();
     methods.forEach(method -> completions.add(from(method)));
     return completions;
