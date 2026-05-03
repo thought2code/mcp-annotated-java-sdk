@@ -1,0 +1,6 @@
+root = true
+
+[*.java]
+ij_java_names_count_to_use_import_on_demand = 65535
+ij_java_class_count_to_use_import_on_demand = 65535
+ij_java_packages_to_use_import_on_demand = unset
