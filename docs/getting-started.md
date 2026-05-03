@@ -41,6 +41,7 @@ mode: STDIO
 name: my-first-mcp-server
 version: 1.0.0
 type: SYNC
+instructions: You are a helpful AI assistant
 request-timeout: 20000
 capabilities:
   resource: true
@@ -159,16 +160,23 @@ streamable:
 
 ## Configuration Properties
 
-| Property              | Description                               | Default      |
-|-----------------------|-------------------------------------------|--------------|
-| `enabled`             | Enable/disable MCP server                 | `true`       |
-| `mode`                | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE` |
-| `name`                | Server name                               | `mcp-server` |
-| `version`             | Server version                            | `1.0.0`      |
-| `type`                | Server type: `SYNC`, `ASYNC`              | `SYNC`       |
-| `request-timeout`     | Request timeout in milliseconds           | `20000`      |
-| `capabilities`        | Enable resources, prompts, tools          | all `true`   |
-| `change-notification` | Enable change notifications               | all `true`   |
+| Property                          | Description                               | Default      |
+|-----------------------------------|-------------------------------------------|--------------|
+| `enabled`                         | Enable/disable MCP server                 | `true`       |
+| `mode`                            | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE` |
+| `name`                            | Server name                               | `mcp-server` |
+| `version`                         | Server version                            | `1.0.0`      |
+| `type`                            | Server type: `SYNC`, `ASYNC`              | `SYNC`       |
+| `instructions`                    | Instructions for the LLM client           | (empty)      |
+| `request-timeout`                 | Request timeout in milliseconds           | `20000`      |
+| `capabilities.resource`           | Enable resource support                   | `true`       |
+| `capabilities.subscribe-resource` | Enable resource subscription              | `true`       |
+| `capabilities.prompt`             | Enable prompt support                     | `true`       |
+| `capabilities.tool`               | Enable tool support                       | `true`       |
+| `capabilities.completion`         | Enable completion support                 | `true`       |
+| `change-notification.resource`    | Notify clients on resource change         | `true`       |
+| `change-notification.prompt`      | Notify clients on prompt change           | `true`       |
+| `change-notification.tool`        | Notify clients on tool change             | `true`       |
 
 ## Profile-based Configuration
 
