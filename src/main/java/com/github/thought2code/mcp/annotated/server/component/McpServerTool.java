@@ -13,6 +13,7 @@ import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.server.converter.McpToolParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
+import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * MCP server component for handling tool-related operations.
@@ -121,6 +123,53 @@ public class McpServerTool
   }
 
   /**
+   * Creates an asynchronous tool specification from the specified method.
+   *
+   * <p>This method processes a method annotated with {@link McpTool} and creates a {@link
+   * McpServerFeatures.AsyncToolSpecification} that can be registered with the MCP async server. The
+   * handler wraps the synchronous invocation result in a {@link Mono}.
+   *
+   * @param method the method annotated with {@link McpTool} to create a specification from
+   * @param context the application context for component discovery and localization
+   * @return an asynchronous tool specification for the MCP server
+   */
+  public McpServerFeatures.AsyncToolSpecification fromAsync(
+      Method method, McpApplicationContext context) {
+    log.info(
+        "Creating async tool specification for method: {}.{}",
+        method.getDeclaringClass().getSimpleName(),
+        method.getName());
+
+    MethodCache methodCache = MethodCache.of(method);
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+
+    McpTool toolMethod = methodCache.getMcpToolAnnotation();
+    final String name = StringHelper.defaultIfBlank(toolMethod.name(), methodCache.getMethodName());
+    final String title = context.getLocalizedString(toolMethod.title(), name);
+    final String description = context.getLocalizedString(toolMethod.description(), name);
+
+    McpSchema.JsonSchema inputSchema = createJsonSchema(context, methodCache.getParameters());
+    Map<String, Object> outputSchema =
+        createJsonSchemaDefinition(context, methodCache.getReturnType());
+    McpSchema.Tool tool =
+        McpSchema.Tool.builder()
+            .name(name)
+            .title(title)
+            .description(description)
+            .inputSchema(inputSchema)
+            .outputSchema(outputSchema)
+            .build();
+
+    log.info("Async tool specification created: {}", JacksonHelper.toJsonString(tool));
+
+    return McpServerFeatures.AsyncToolSpecification.builder()
+        .tool(tool)
+        .callHandler(
+            (exchange, request) -> Mono.fromCallable(() -> invoke(instance, methodCache, request)))
+        .build();
+  }
+
+  /**
    * Registers all discovered components of this type with the given MCP server.
    *
    * <p>This method scans for methods annotated with the appropriate annotation(s) for this
@@ -139,6 +188,18 @@ public class McpServerTool
           McpServerFeatures.SyncToolSpecification tool = from(method, context);
           server.addTool(tool);
           log.debug("Tool {} registered successfully", tool.tool().name());
+        });
+  }
+
+  @Override
+  public void register(McpAsyncServer server, McpApplicationContext context) {
+    Set<Method> methods = context.getMethodsAnnotatedWith(McpTool.class);
+    methods.forEach(
+        method -> {
+          log.debug("Registering async tool method: {}", method.toGenericString());
+          McpServerFeatures.AsyncToolSpecification tool = fromAsync(method, context);
+          server.addTool(tool).subscribe();
+          log.debug("Async tool {} registered successfully", tool.tool().name());
         });
   }
 

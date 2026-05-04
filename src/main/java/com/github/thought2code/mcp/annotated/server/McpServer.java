@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
 
@@ -45,6 +46,17 @@ public interface McpServer {
   io.modelcontextprotocol.server.McpServer.SyncSpecification<?> createSyncSpecification();
 
   /**
+   * Creates and returns the asynchronous specification for this MCP server.
+   *
+   * <p>The async specification contains the transport provider and other configuration details
+   * needed to create an asynchronous MCP server instance.
+   *
+   * @return the asynchronous specification for the server
+   * @see io.modelcontextprotocol.server.McpServer.AsyncSpecification
+   */
+  io.modelcontextprotocol.server.McpServer.AsyncSpecification<?> createAsyncSpecification();
+
+  /**
    * Creates and returns a fully configured MCP synchronous server instance.
    *
    * <p>This method should create a server instance with all necessary configurations applied,
@@ -54,6 +66,17 @@ public interface McpServer {
    * @see McpSyncServer
    */
   McpSyncServer createSyncServer();
+
+  /**
+   * Creates and returns a fully configured MCP asynchronous server instance.
+   *
+   * <p>This method should create a server instance with all necessary configurations applied,
+   * including server info, capabilities, and transport settings.
+   *
+   * @return a fully configured MCP asynchronous server
+   * @see McpAsyncServer
+   */
+  McpAsyncServer createAsyncServer();
 
   /**
    * Registers all MCP server components (resources, prompts, tools) with the specified synchronous
@@ -66,6 +89,18 @@ public interface McpServer {
    * @param mcpSyncServer the synchronous server instance to register components with
    */
   void registerComponents(McpSyncServer mcpSyncServer);
+
+  /**
+   * Registers all MCP server components (resources, prompts, tools) with the specified asynchronous
+   * server instance.
+   *
+   * <p>This method should scan for annotated methods and register them as appropriate MCP
+   * components with the server. Components are discovered using reflection and registered through
+   * the component registry.
+   *
+   * @param mcpAsyncServer the asynchronous server instance to register components with
+   */
+  void registerComponents(McpAsyncServer mcpAsyncServer);
 
   /**
    * Starts the MCP server.

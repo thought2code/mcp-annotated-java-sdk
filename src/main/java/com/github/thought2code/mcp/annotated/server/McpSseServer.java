@@ -81,6 +81,31 @@ public class McpSseServer extends McpServerBase {
   }
 
   /**
+   * Creates and returns an asynchronous specification for SSE mode.
+   *
+   * <p>This method creates an {@link McpServer.AsyncSpecification} that uses Server-Sent Events
+   * transport provider for real-time communication. It reuses the same transport provider
+   * configuration as the sync specification.
+   *
+   * @return an asynchronous specification configured for SSE transport
+   * @see HttpServletSseServerTransportProvider
+   */
+  @Override
+  public McpServer.AsyncSpecification<?> createAsyncSpecification() {
+    log.warn("HTTP SSE mode has been deprecated, recommend to use Stream HTTP server instead.");
+    McpServerSSE sse = configuration.sse();
+    port = sse.port();
+    transportProvider =
+        HttpServletSseServerTransportProvider.builder()
+            .jsonMapper(McpJsonDefaults.getMapper())
+            .baseUrl(sse.baseUrl())
+            .sseEndpoint(sse.endpoint())
+            .messageEndpoint(sse.messageEndpoint())
+            .build();
+    return McpServer.async(transportProvider);
+  }
+
+  /**
    * Starts the SSE HTTP server to accept incoming connections.
    *
    * <p>This method creates a Jetty HTTP server configured with the SSE transport provider and binds

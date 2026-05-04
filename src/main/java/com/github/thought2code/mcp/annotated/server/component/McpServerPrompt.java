@@ -9,6 +9,7 @@ import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
 import com.github.thought2code.mcp.annotated.server.converter.McpPromptParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
+import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * MCP server component for handling prompt-related operations.
@@ -98,6 +100,42 @@ public class McpServerPrompt
   }
 
   /**
+   * Creates an asynchronous prompt specification from the specified method.
+   *
+   * <p>This method processes a method annotated with {@link McpPrompt} and creates a {@link
+   * McpServerFeatures.AsyncPromptSpecification} that can be registered with the MCP async server.
+   * The handler wraps the synchronous invocation result in a {@link Mono}.
+   *
+   * @param method the method annotated with {@link McpPrompt} to create a specification from
+   * @param context the application context for component discovery and localization
+   * @return an asynchronous prompt specification for the MCP server
+   */
+  public McpServerFeatures.AsyncPromptSpecification fromAsync(
+      Method method, McpApplicationContext context) {
+    log.info("Creating async prompt specification for method: {}", method.toGenericString());
+
+    MethodCache methodCache = MethodCache.of(method);
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+
+    McpPrompt promptMethod = methodCache.getMcpPromptAnnotation();
+    final String name =
+        StringHelper.defaultIfBlank(promptMethod.name(), methodCache.getMethodName());
+    final String title = context.getLocalizedString(promptMethod.title(), name);
+    final String description = context.getLocalizedString(promptMethod.description(), name);
+
+    List<McpSchema.PromptArgument> promptArgs =
+        createPromptArguments(context, methodCache.getParameters());
+    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, promptArgs);
+
+    log.info("Async prompt specification created: {}", JacksonHelper.toJsonString(prompt));
+
+    return new McpServerFeatures.AsyncPromptSpecification(
+        prompt,
+        (exchange, request) ->
+            Mono.fromCallable(() -> invoke(instance, methodCache, description, request)));
+  }
+
+  /**
    * Registers all discovered components of this type with the given MCP server.
    *
    * <p>This method scans for methods annotated with the appropriate annotation(s) for this
@@ -116,6 +154,18 @@ public class McpServerPrompt
           McpServerFeatures.SyncPromptSpecification prompt = from(method, context);
           server.addPrompt(prompt);
           log.debug("Prompt {} registered successfully", prompt.prompt().name());
+        });
+  }
+
+  @Override
+  public void register(McpAsyncServer server, McpApplicationContext context) {
+    Set<Method> methods = context.getMethodsAnnotatedWith(McpPrompt.class);
+    methods.forEach(
+        method -> {
+          log.debug("Registering async prompt method: {}", method.toGenericString());
+          McpServerFeatures.AsyncPromptSpecification prompt = fromAsync(method, context);
+          server.addPrompt(prompt).subscribe();
+          log.debug("Async prompt {} registered successfully", prompt.prompt().name());
         });
   }
 

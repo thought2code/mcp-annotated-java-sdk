@@ -6,9 +6,7 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotifi
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.server.component.McpComponentRegistrar;
 import com.github.thought2code.mcp.annotated.server.component.McpServerCompletion;
-import com.github.thought2code.mcp.annotated.server.component.McpServerPrompt;
-import com.github.thought2code.mcp.annotated.server.component.McpServerResource;
-import com.github.thought2code.mcp.annotated.server.component.McpServerTool;
+import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.time.Duration;
@@ -29,12 +27,13 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *   <li>Defining server capabilities based on configuration
- *   <li>Registering MCP components (resources, prompts, tools)
- *   <li>Creating a configured synchronous server instance
+ *   <li>Registering MCP components (resources, prompts, tools) with both sync and async servers
+ *   <li>Creating a configured synchronous or asynchronous server instance
  * </ul>
  *
- * <p>Concrete implementations need only provide the specific synchronization specification for
- * their transport mechanism by implementing the {@link #createSyncSpecification()} method.
+ * <p>Concrete implementations need only provide the specific synchronization/asynchronous
+ * specification for their transport mechanism by implementing the {@link
+ * #createSyncSpecification()} and {@link #createAsyncSpecification()} methods.
  *
  * @author codeboyzhou
  * @see McpServer
@@ -112,18 +111,35 @@ public abstract class McpServerBase implements McpServer {
    * scans for annotated methods and registers them with the server.
    *
    * @param server the synchronous server instance to register components with
-   * @see McpServerResource
-   * @see McpServerPrompt
-   * @see McpServerTool
    */
   @Override
   public void registerComponents(McpSyncServer server) {
-    log.info("Registering MCP server components");
+    log.info("Registering MCP server components (sync)");
     ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
     for (McpComponentRegistrar registrar : loader) {
       registrar.register(server, context);
     }
-    log.info("MCP server components registered successfully");
+    log.info("MCP server components registered successfully (sync)");
+  }
+
+  /**
+   * Registers all MCP server components with the specified asynchronous server.
+   *
+   * <p>This method creates and registers the three main types of MCP components: resources,
+   * prompts, and tools. Each component type is handled by its respective registration class which
+   * scans for annotated methods and registers them with the server. Registration is performed
+   * asynchronously and each registration is subscribed to immediately.
+   *
+   * @param server the asynchronous server instance to register components with
+   */
+  @Override
+  public void registerComponents(McpAsyncServer server) {
+    log.info("Registering MCP server components (async)");
+    ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
+    for (McpComponentRegistrar registrar : loader) {
+      registrar.register(server, context);
+    }
+    log.info("MCP server components registered successfully (async)");
   }
 
   /**
@@ -133,7 +149,8 @@ public abstract class McpServerBase implements McpServer {
    *
    * <ul>
    *   <li>The server capabilities defined by {@link #defineCapabilities()}
-   *   <li>All available completion specifications from {@link McpServerCompletion#all()}
+   *   <li>All available completion specifications from {@link
+   *       McpServerCompletion#allSync(McpApplicationContext)}
    *   <li>Server information (name, version) from the configuration
    *   <li>Instructions and request timeout from the configuration
    * </ul>
@@ -152,12 +169,48 @@ public abstract class McpServerBase implements McpServer {
     McpSyncServer mcpSyncServer =
         createSyncSpecification()
             .capabilities(serverCapabilities)
-            .completions(McpServerCompletion.all(context))
+            .completions(McpServerCompletion.allSync(context))
             .instructions(configuration.instructions())
             .serverInfo(configuration.name(), configuration.version())
             .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
             .build();
     log.info("Created McpSyncServer successfully with name: {}", configuration.name());
     return mcpSyncServer;
+  }
+
+  /**
+   * Creates and returns a fully configured MCP asynchronous server instance.
+   *
+   * <p>This method builds an asynchronous server by combining:
+   *
+   * <ul>
+   *   <li>The server capabilities defined by {@link #defineCapabilities()}
+   *   <li>All available async completion specifications from {@link
+   *       McpServerCompletion#allAsync(McpApplicationContext)}
+   *   <li>Server information (name, version) from the configuration
+   *   <li>Instructions and request timeout from the configuration
+   * </ul>
+   *
+   * <p>The method uses the asynchronous specification provided by the concrete implementation
+   * through {@link #createAsyncSpecification()}.
+   *
+   * @return a fully configured MCP asynchronous server ready to start
+   * @see McpAsyncServer
+   * @see McpServerCompletion
+   */
+  @Override
+  public McpAsyncServer createAsyncServer() {
+    log.info("Creating McpAsyncServer with name: {}", configuration.name());
+    McpSchema.ServerCapabilities serverCapabilities = defineCapabilities();
+    McpAsyncServer mcpAsyncServer =
+        createAsyncSpecification()
+            .capabilities(serverCapabilities)
+            .completions(McpServerCompletion.allAsync(context))
+            .instructions(configuration.instructions())
+            .serverInfo(configuration.name(), configuration.version())
+            .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
+            .build();
+    log.info("Created McpAsyncServer successfully with name: {}", configuration.name());
+    return mcpAsyncServer;
   }
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import reactor.core.publisher.Mono;
 
 /**
  * MCP server component for handling completion requests.
@@ -32,15 +33,12 @@ import java.util.Set;
  */
 public class McpServerCompletion {
   /**
-   * Retrieves all completion specifications from methods annotated with completion annotations.
+   * Retrieves all synchronous completion specifications from methods annotated with completion
+   * annotations.
    *
    * <p>This static method scans for all methods annotated with either {@link McpPromptCompletion}
-   * or {@link McpResourceCompletion} annotations and creates completion specifications for each.
-   * The resulting specifications can be registered with an MCP server to provide auto-completion
-   * functionality.
-   *
-   * <p>The method uses reflection to discover annotated methods and creates specifications through
-   * the {@link #from(Method, McpApplicationContext)} method.
+   * or {@link McpResourceCompletion} annotations and creates synchronous completion specifications
+   * for each.
    *
    * @param context the application context for component discovery and localization
    * @return a list of synchronous completion specifications for all discovered completion methods
@@ -48,13 +46,37 @@ public class McpServerCompletion {
    * @see McpResourceCompletion
    * @see McpServerFeatures.SyncCompletionSpecification
    */
-  public static List<McpServerFeatures.SyncCompletionSpecification> all(
+  public static List<McpServerFeatures.SyncCompletionSpecification> allSync(
       McpApplicationContext context) {
     Set<Method> methods = new HashSet<>();
     methods.addAll(context.getMethodsAnnotatedWith(McpPromptCompletion.class));
     methods.addAll(context.getMethodsAnnotatedWith(McpResourceCompletion.class));
     List<McpServerFeatures.SyncCompletionSpecification> completions = new ArrayList<>();
-    methods.forEach(method -> completions.add(from(method, context)));
+    methods.forEach(method -> completions.add(fromSync(method, context)));
+    return completions;
+  }
+
+  /**
+   * Retrieves all asynchronous completion specifications from methods annotated with completion
+   * annotations.
+   *
+   * <p>This static method scans for all methods annotated with either {@link McpPromptCompletion}
+   * or {@link McpResourceCompletion} annotations and creates asynchronous completion specifications
+   * for each.
+   *
+   * @param context the application context for component discovery and localization
+   * @return a list of asynchronous completion specifications for all discovered completion methods
+   * @see McpPromptCompletion
+   * @see McpResourceCompletion
+   * @see McpServerFeatures.AsyncCompletionSpecification
+   */
+  public static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
+      McpApplicationContext context) {
+    Set<Method> methods = new HashSet<>();
+    methods.addAll(context.getMethodsAnnotatedWith(McpPromptCompletion.class));
+    methods.addAll(context.getMethodsAnnotatedWith(McpResourceCompletion.class));
+    List<McpServerFeatures.AsyncCompletionSpecification> completions = new ArrayList<>();
+    methods.forEach(method -> completions.add(fromAsync(method, context)));
     return completions;
   }
 
@@ -65,26 +87,13 @@ public class McpServerCompletion {
    * completion handlers, then creates a {@link McpServerFeatures.SyncCompletionSpecification} that
    * can be registered with the MCP server.
    *
-   * <p>The method must:
-   *
-   * <ul>
-   *   <li>Return {@link McpCompleteCompletion}
-   *   <li>Have exactly one parameter of type {@link McpSchema.CompleteRequest.CompleteArgument}
-   *   <li>Be annotated with either {@link McpPromptCompletion} or {@link McpResourceCompletion}
-   * </ul>
-   *
    * @param method the method to create completion specification for
    * @param context the application context for component discovery and localization
    * @return a synchronous completion specification for the MCP server
    * @throws McpServerComponentRegistrationException if the method signature is invalid
-   * @see McpCompleteCompletion
-   * @see McpSchema.CompleteRequest.CompleteArgument
-   * @see McpPromptCompletion
-   * @see McpResourceCompletion
    */
-  private static McpServerFeatures.SyncCompletionSpecification from(
+  private static McpServerFeatures.SyncCompletionSpecification fromSync(
       Method method, McpApplicationContext context) {
-    // Use reflection cache for performance optimization
     MethodCache methodCache = MethodCache.of(method);
 
     Class<?> returnType = methodCache.getReturnType();
@@ -104,6 +113,43 @@ public class McpServerCompletion {
     McpSchema.CompleteReference reference = createCompleteReference(methodCache);
     return new McpServerFeatures.SyncCompletionSpecification(
         reference, (exchange, request) -> invoke(instance, methodCache, request));
+  }
+
+  /**
+   * Creates an asynchronous completion specification for the given method.
+   *
+   * <p>This method validates the method signature to ensure it meets the requirements for
+   * completion handlers, then creates a {@link McpServerFeatures.AsyncCompletionSpecification} that
+   * can be registered with the MCP async server. The handler wraps the synchronous invocation
+   * result in a {@link Mono}.
+   *
+   * @param method the method to create completion specification for
+   * @param context the application context for component discovery and localization
+   * @return an asynchronous completion specification for the MCP server
+   * @throws McpServerComponentRegistrationException if the method signature is invalid
+   */
+  private static McpServerFeatures.AsyncCompletionSpecification fromAsync(
+      Method method, McpApplicationContext context) {
+    MethodCache methodCache = MethodCache.of(method);
+
+    Class<?> returnType = methodCache.getReturnType();
+    if (returnType != McpCompleteCompletion.class) {
+      throw new McpServerComponentRegistrationException(
+          "Completion method must return McpCompleteCompletion");
+    }
+
+    Parameter[] parameters = methodCache.getParameters();
+    if (parameters.length != 1
+        || parameters[0].getType() != McpSchema.CompleteRequest.CompleteArgument.class) {
+      throw new McpServerComponentRegistrationException(
+          "Completion method must have exactly one parameter of type McpSchema.CompleteRequest.CompleteArgument");
+    }
+
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+    McpSchema.CompleteReference reference = createCompleteReference(methodCache);
+    return new McpServerFeatures.AsyncCompletionSpecification(
+        reference,
+        (exchange, request) -> Mono.fromCallable(() -> invoke(instance, methodCache, request)));
   }
 
   /**

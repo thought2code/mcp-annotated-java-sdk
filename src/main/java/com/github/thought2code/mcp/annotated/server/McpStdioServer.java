@@ -57,4 +57,20 @@ public class McpStdioServer extends McpServerBase {
   public McpServer.SyncSpecification<?> createSyncSpecification() {
     return McpServer.sync(new StdioServerTransportProvider(McpJsonDefaults.getMapper()));
   }
+
+  /**
+   * Creates and returns an asynchronous specification for STDIO mode.
+   *
+   * <p>This method creates an {@link McpServer.AsyncSpecification} that uses standard input/output
+   * transport provider for communication. The transport provider is configured with the default
+   * JSON mapper for message serialization and deserialization.
+   *
+   * @return an asynchronous specification configured for STDIO transport
+   * @see StdioServerTransportProvider
+   * @see McpJsonDefaults
+   */
+  @Override
+  public McpServer.AsyncSpecification<?> createAsyncSpecification() {
+    return McpServer.async(new StdioServerTransportProvider(McpJsonDefaults.getMapper()));
+  }
 }

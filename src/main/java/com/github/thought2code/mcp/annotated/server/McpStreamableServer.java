@@ -101,6 +101,30 @@ public class McpStreamableServer extends McpServerBase {
   }
 
   /**
+   * Creates and returns an asynchronous specification for Streamable HTTP mode.
+   *
+   * <p>This method creates an {@link McpServer.AsyncSpecification} that uses HTTP streaming
+   * transport provider for communication. It reuses the same transport provider configuration as
+   * the sync specification.
+   *
+   * @return an asynchronous specification configured for HTTP streaming transport
+   * @see HttpServletStreamableServerTransportProvider
+   */
+  @Override
+  public McpServer.AsyncSpecification<?> createAsyncSpecification() {
+    McpServerStreamable streamable = configuration.streamable();
+    port = streamable.port();
+    transportProvider =
+        HttpServletStreamableServerTransportProvider.builder()
+            .jsonMapper(McpJsonDefaults.getMapper())
+            .mcpEndpoint(streamable.mcpEndpoint())
+            .disallowDelete(streamable.disallowDelete())
+            .keepAliveInterval(Duration.ofMillis(streamable.keepAliveInterval()))
+            .build();
+    return McpServer.async(transportProvider);
+  }
+
+  /**
    * Starts the Streamable HTTP server to accept incoming connections.
    *
    * <p>This method creates a Jetty HTTP server configured with the streamable transport provider

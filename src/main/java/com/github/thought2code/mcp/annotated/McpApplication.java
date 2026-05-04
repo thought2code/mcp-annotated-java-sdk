@@ -3,11 +3,13 @@ package com.github.thought2code.mcp.annotated;
 import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
+import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.McpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
+import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -113,8 +115,19 @@ public final class McpApplication {
     }
 
     Objects.requireNonNull(mcpServer, "mcpServer must not be null");
-    McpSyncServer mcpSyncServer = mcpServer.createSyncServer();
-    mcpServer.registerComponents(mcpSyncServer);
+
+    ServerType serverType = configuration.type();
+    switch (serverType) {
+      case SYNC -> {
+        McpSyncServer mcpSyncServer = mcpServer.createSyncServer();
+        mcpServer.registerComponents(mcpSyncServer);
+      }
+      case ASYNC -> {
+        McpAsyncServer mcpAsyncServer = mcpServer.createAsyncServer();
+        mcpServer.registerComponents(mcpAsyncServer);
+      }
+    }
+
     mcpServer.start();
   }
 }

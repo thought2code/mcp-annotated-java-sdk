@@ -7,6 +7,7 @@ import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
+import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * MCP server component for handling resource-related operations.
@@ -89,6 +91,46 @@ public class McpServerResource
   }
 
   /**
+   * Creates an asynchronous resource specification from the specified method.
+   *
+   * <p>This method processes a method annotated with {@link McpResource} and creates a {@link
+   * McpServerFeatures.AsyncResourceSpecification} that can be registered with the MCP async server.
+   * The handler wraps the synchronous invocation result in a {@link Mono}.
+   *
+   * @param method the method annotated with {@link McpResource} to create a specification from
+   * @param context the application context for component discovery and localization
+   * @return an asynchronous resource specification for the MCP server
+   */
+  public McpServerFeatures.AsyncResourceSpecification fromAsync(
+      Method method, McpApplicationContext context) {
+    log.info("Creating async resource specification for method: {}", method.toGenericString());
+
+    MethodCache methodCache = MethodCache.of(method);
+    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+
+    McpResource res = methodCache.getMcpResourceAnnotation();
+    final String name = StringHelper.defaultIfBlank(res.name(), methodCache.getMethodName());
+    final String title = context.getLocalizedString(res.title(), name);
+    final String description = context.getLocalizedString(res.description(), name);
+
+    McpSchema.Resource resource =
+        McpSchema.Resource.builder()
+            .uri(res.uri())
+            .name(name)
+            .title(title)
+            .description(description)
+            .mimeType(res.mimeType())
+            .annotations(new McpSchema.Annotations(List.of(res.roles()), res.priority()))
+            .build();
+
+    log.info("Async resource specification created: {}", JacksonHelper.toJsonString(resource));
+
+    return new McpServerFeatures.AsyncResourceSpecification(
+        resource,
+        (exchange, request) -> Mono.fromCallable(() -> invoke(instance, methodCache, resource)));
+  }
+
+  /**
    * Registers all discovered components of this type with the given MCP server.
    *
    * <p>This method scans for methods annotated with the appropriate annotation(s) for this
@@ -107,6 +149,18 @@ public class McpServerResource
           McpServerFeatures.SyncResourceSpecification resource = from(method, context);
           server.addResource(resource);
           log.debug("Resource {} registered successfully", resource.resource().name());
+        });
+  }
+
+  @Override
+  public void register(McpAsyncServer server, McpApplicationContext context) {
+    Set<Method> methods = context.getMethodsAnnotatedWith(McpResource.class);
+    methods.forEach(
+        method -> {
+          log.debug("Registering async resource method: {}", method.toGenericString());
+          McpServerFeatures.AsyncResourceSpecification resource = fromAsync(method, context);
+          server.addResource(resource).subscribe();
+          log.debug("Async resource {} registered successfully", resource.resource().name());
         });
   }
 
