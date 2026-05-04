@@ -101,27 +101,6 @@ public class McpStreamableServer extends McpServerBase {
   }
 
   /**
-   * Starts the Jetty HTTP server with the configured transport provider.
-   *
-   * <p>This method creates a new {@link JettyHttpServer} instance, configures it with the transport
-   * provider created by {@link #createSyncSpecification()}, binds it to the configured port, and
-   * starts the server. The server will begin accepting incoming HTTP connections for MCP streaming
-   * communication.
-   *
-   * <p>This method should be called after {@link #createSyncSpecification()} has been invoked to
-   * ensure the transport provider is properly initialized.
-   *
-   * @see JettyHttpServer
-   * @see HttpServletStreamableServerTransportProvider
-   * @see #createSyncSpecification()
-   * @deprecated Use {@link #start()} instead.
-   */
-  @Deprecated(since = "0.14.0", forRemoval = true)
-  public void startHttpServer() {
-    start();
-  }
-
-  /**
    * Starts the Streamable HTTP server to accept incoming connections.
    *
    * <p>This method creates a Jetty HTTP server configured with the streamable transport provider

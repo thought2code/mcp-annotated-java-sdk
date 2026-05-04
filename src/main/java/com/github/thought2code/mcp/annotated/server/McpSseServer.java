@@ -81,22 +81,6 @@ public class McpSseServer extends McpServerBase {
   }
 
   /**
-   * Starts the HTTP server for SSE mode.
-   *
-   * <p>This method creates and starts a Jetty HTTP server that handles SSE connections. The server
-   * is configured with the transport provider and bound to the port specified in the server
-   * configuration.
-   *
-   * @see JettyHttpServer
-   * @see HttpServletSseServerTransportProvider
-   * @deprecated Use {@link #start()} instead.
-   */
-  @Deprecated(since = "0.14.0", forRemoval = true)
-  public void startHttpServer() {
-    start();
-  }
-
-  /**
    * Starts the SSE HTTP server to accept incoming connections.
    *
    * <p>This method creates a Jetty HTTP server configured with the SSE transport provider and binds

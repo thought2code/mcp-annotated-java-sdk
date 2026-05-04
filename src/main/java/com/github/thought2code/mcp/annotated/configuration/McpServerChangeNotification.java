@@ -28,13 +28,13 @@ public record McpServerChangeNotification(
   /** Builder class for {@code McpServerChangeNotification}. */
   public static class Builder {
     /** The resource change notification flag. */
-    private Boolean resource = true;
+    private Boolean resource = McpServerDefaults.CHANGE_NOTIFICATION_ENABLED;
 
     /** The prompt change notification flag. */
-    private Boolean prompt = true;
+    private Boolean prompt = McpServerDefaults.CHANGE_NOTIFICATION_ENABLED;
 
     /** The tool change notification flag. */
-    private Boolean tool = true;
+    private Boolean tool = McpServerDefaults.CHANGE_NOTIFICATION_ENABLED;
 
     /**
      * Sets the resource change notification flag.

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
-import java.time.Duration;
 
 /**
  * This record represents the configuration of an MCP (Model Context Protocol) server.
@@ -46,25 +45,25 @@ public record McpServerConfiguration(
     private String profile = StringHelper.EMPTY;
 
     /** The enabled status. */
-    private Boolean enabled = true;
+    private Boolean enabled = McpServerDefaults.ENABLED;
 
     /** The server mode. */
-    private ServerMode mode = ServerMode.STREAMABLE;
+    private ServerMode mode = McpServerDefaults.MODE;
 
     /** The server name. */
-    private String name = "mcp-server";
+    private String name = McpServerDefaults.NAME;
 
     /** The server version. */
-    private String version = "1.0.0";
+    private String version = McpServerDefaults.VERSION;
 
     /** The server type. */
-    private ServerType type = ServerType.SYNC;
+    private ServerType type = McpServerDefaults.TYPE;
 
     /** The server instructions. */
-    private String instructions = StringHelper.EMPTY;
+    private String instructions = McpServerDefaults.INSTRUCTIONS;
 
     /** The request timeout. */
-    private Long requestTimeout = Duration.ofSeconds(20).toMillis();
+    private Long requestTimeout = McpServerDefaults.REQUEST_TIMEOUT;
 
     /** The server capabilities. */
     private McpServerCapabilities capabilities = McpServerCapabilities.builder().build();

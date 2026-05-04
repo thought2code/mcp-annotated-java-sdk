@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.configuration.McpServerDefaults;
 import jakarta.servlet.http.HttpServlet;
 import java.util.Objects;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
@@ -33,7 +34,7 @@ public class JettyHttpServer {
   private HttpServlet mcpTransportProvider;
 
   /** Port to bind Jetty HTTP server. */
-  private int port = 8080;
+  private int port = McpServerDefaults.PORT;
 
   /** Jetty server instance. */
   private Server server;

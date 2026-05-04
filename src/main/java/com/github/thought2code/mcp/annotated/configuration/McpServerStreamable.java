@@ -1,7 +1,6 @@
 package com.github.thought2code.mcp.annotated.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.Duration;
 
 /**
  * This record represents the streamable http server configuration for an MCP (Model Context
@@ -32,16 +31,16 @@ public record McpServerStreamable(
   /** Builder class for {@code McpServerStreamable}. */
   public static class Builder {
     /** The MCP endpoint. */
-    private String mcpEndpoint = "/mcp/message";
+    private String mcpEndpoint = McpServerDefaults.STREAMABLE_MCP_ENDPOINT;
 
     /** The disallow delete flag. */
-    private Boolean disallowDelete = false;
+    private Boolean disallowDelete = McpServerDefaults.STREAMABLE_DISALLOW_DELETE;
 
     /** The keep-alive interval. */
-    private Long keepAliveInterval = Duration.ofSeconds(20).toMillis();
+    private Long keepAliveInterval = McpServerDefaults.STREAMABLE_KEEP_ALIVE_INTERVAL;
 
     /** The port. */
-    private Integer port = 8080;
+    private Integer port = McpServerDefaults.PORT;
 
     /**
      * Sets the MCP endpoint.

@@ -1,7 +1,6 @@
 package com.github.thought2code.mcp.annotated.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.thought2code.mcp.annotated.util.StringHelper;
 
 /**
  * This record represents the Server-Sent Events (SSE) configuration for an MCP (Model Context
@@ -31,16 +30,16 @@ public record McpServerSSE(
   /** Builder class for {@code McpServerSSE}. */
   public static class Builder {
     /** The message endpoint. */
-    private String messageEndpoint = "/mcp/message";
+    private String messageEndpoint = McpServerDefaults.SSE_MESSAGE_ENDPOINT;
 
     /** The endpoint. */
-    private String endpoint = "/sse";
+    private String endpoint = McpServerDefaults.SSE_ENDPOINT;
 
     /** The base URL. */
-    private String baseUrl = StringHelper.EMPTY;
+    private String baseUrl = McpServerDefaults.SSE_BASE_URL;
 
     /** The port. */
-    private Integer port = 8080;
+    private Integer port = McpServerDefaults.PORT;
 
     /**
      * Sets the message endpoint.

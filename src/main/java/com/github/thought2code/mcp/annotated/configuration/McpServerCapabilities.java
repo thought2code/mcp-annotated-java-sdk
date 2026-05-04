@@ -26,19 +26,19 @@ public record McpServerCapabilities(
   /** Builder class for {@code McpServerCapabilities}. */
   public static class Builder {
     /** The resource capability. */
-    private Boolean resource = true;
+    private Boolean resource = McpServerDefaults.CAPABILITY_ENABLED;
 
     /** The subscribe-resource capability. */
-    private Boolean subscribeResource = true;
+    private Boolean subscribeResource = McpServerDefaults.CAPABILITY_ENABLED;
 
     /** The prompt capability. */
-    private Boolean prompt = true;
+    private Boolean prompt = McpServerDefaults.CAPABILITY_ENABLED;
 
     /** The tool capability. */
-    private Boolean tool = true;
+    private Boolean tool = McpServerDefaults.CAPABILITY_ENABLED;
 
     /** The completion capability. */
-    private Boolean completion = true;
+    private Boolean completion = McpServerDefaults.CAPABILITY_ENABLED;
 
     /**
      * Sets the resource capability.

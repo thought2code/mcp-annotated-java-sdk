@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public final class McpApplication {
 
   /** The logger instance for this class. */
-  public static final Logger log = LoggerFactory.getLogger(McpApplication.class);
+  private static final Logger log = LoggerFactory.getLogger(McpApplication.class);
 
   /** The default file name for the MCP server configuration file. */
   private static final String DEFAULT_CONFIG_FILE_NAME = "mcp-server.yml";
