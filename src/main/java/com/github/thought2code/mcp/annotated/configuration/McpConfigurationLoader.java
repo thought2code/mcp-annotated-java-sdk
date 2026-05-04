@@ -53,7 +53,9 @@ public record McpConfigurationLoader(String configFileName) {
         JacksonHelper.fromYaml(profileConfigFile, McpServerConfiguration.class);
     log.info("Profile configuration loaded successfully from file: {}", profileConfigFileName);
 
-    return McpConfigurationMerger.merge(baseConfig, profileConfig);
+    McpServerConfiguration mergedConfig = McpConfigurationMerger.merge(baseConfig, profileConfig);
+    McpConfigurationChecker.check(mergedConfig);
+    return mergedConfig;
   }
 
   /**

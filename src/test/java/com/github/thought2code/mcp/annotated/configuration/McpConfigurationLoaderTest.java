@@ -3,10 +3,12 @@ package com.github.thought2code.mcp.annotated.configuration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
+import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import org.junit.jupiter.api.Test;
 
 class McpConfigurationLoaderTest {
@@ -34,5 +36,14 @@ class McpConfigurationLoaderTest {
     assertTrue(configuration.streamable().disallowDelete());
     assertEquals(30000L, configuration.streamable().keepAliveInterval());
     assertEquals(9004, configuration.streamable().port());
+  }
+
+  @Test
+  void testLoadConfig_withProfile_shouldFailValidationWhenMergedConfigIsInvalid() {
+    final String configFileName = "test-mcp-server-with-invalid-profile.yml";
+    McpConfigurationLoader loader = new McpConfigurationLoader(configFileName);
+    McpServerConfigurationException e =
+        assertThrows(McpServerConfigurationException.class, loader::loadConfig);
+    assertTrue(e.getMessage().contains("subscribe-resource"));
   }
 }

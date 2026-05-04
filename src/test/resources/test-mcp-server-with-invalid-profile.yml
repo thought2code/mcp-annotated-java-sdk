@@ -1,0 +1,22 @@
+profile: dev
+enabled: true
+mode: STREAMABLE
+name: mcp-server
+version: 1.0.0
+type: SYNC
+instructions: You are a helpful AI assistant
+request-timeout: 60000
+capabilities:
+  resource: true
+  prompt: true
+  tool: true
+  completion: true
+change-notification:
+  resource: true
+  prompt: true
+  tool: true
+streamable:
+  mcp-endpoint: /mcp/message
+  disallow-delete: true
+  keep-alive-interval: 30000
+  port: 9004
