@@ -86,6 +86,7 @@ public class JettyHttpServer {
     } catch (Exception e) {
       log.error("Error starting Jetty-based MCP server", e);
       stop();
+      throw new IllegalStateException("Failed to start Jetty-based MCP server on port " + port, e);
     }
   }
 
@@ -123,10 +124,12 @@ public class JettyHttpServer {
 
   /** Stop Jetty HTTP server. */
   public void stop() {
-    if (server != null && server.isRunning()) {
+    if (server != null) {
       try {
-        server.stop();
-        log.info("Jetty-based MCP server stopped");
+        if (server.isRunning()) {
+          server.stop();
+          log.info("Jetty-based MCP server stopped");
+        }
       } catch (Exception e) {
         log.error("Error stopping Jetty-based MCP server", e);
       } finally {
