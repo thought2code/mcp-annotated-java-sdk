@@ -119,6 +119,7 @@ public class JettyHttpServer {
       server.join();
     } catch (InterruptedException e) {
       log.error("Error joining Jetty-based MCP server", e);
+      Thread.currentThread().interrupt();
     }
   }
 
