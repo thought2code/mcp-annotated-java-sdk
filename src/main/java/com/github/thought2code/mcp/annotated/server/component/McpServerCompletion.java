@@ -5,8 +5,8 @@ import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
+import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.lang.reflect.Method;
@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /**
@@ -32,6 +34,9 @@ import reactor.core.publisher.Mono;
  * @author codeboyzhou
  */
 public class McpServerCompletion {
+
+  private static final Logger log = LoggerFactory.getLogger(McpServerCompletion.class);
+
   /**
    * Retrieves all synchronous completion specifications from methods annotated with completion
    * annotations.
@@ -94,25 +99,25 @@ public class McpServerCompletion {
    */
   private static McpServerFeatures.SyncCompletionSpecification fromSync(
       Method method, McpApplicationContext context) {
-    MethodCache methodCache = MethodCache.of(method);
+    log.info("Creating sync completion specification for method: {}", method.toGenericString());
 
-    Class<?> returnType = methodCache.getReturnType();
+    Class<?> returnType = method.getReturnType();
     if (returnType != McpCompleteCompletion.class) {
       throw new McpServerComponentRegistrationException(
           "Completion method must return McpCompleteCompletion");
     }
 
-    Parameter[] parameters = methodCache.getParameters();
+    Parameter[] parameters = method.getParameters();
     if (parameters.length != 1
         || parameters[0].getType() != McpSchema.CompleteRequest.CompleteArgument.class) {
       throw new McpServerComponentRegistrationException(
           "Completion method must have exactly one parameter of type McpSchema.CompleteRequest.CompleteArgument");
     }
 
-    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
-    McpSchema.CompleteReference reference = createCompleteReference(methodCache);
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
+    McpSchema.CompleteReference reference = createCompleteReference(method);
     return new McpServerFeatures.SyncCompletionSpecification(
-        reference, (exchange, request) -> invoke(instance, methodCache, request));
+        reference, (exchange, request) -> invoke(instance, method, request));
   }
 
   /**
@@ -130,26 +135,26 @@ public class McpServerCompletion {
    */
   private static McpServerFeatures.AsyncCompletionSpecification fromAsync(
       Method method, McpApplicationContext context) {
-    MethodCache methodCache = MethodCache.of(method);
+    log.info("Creating async completion specification for method: {}", method.toGenericString());
 
-    Class<?> returnType = methodCache.getReturnType();
+    Class<?> returnType = method.getReturnType();
     if (returnType != McpCompleteCompletion.class) {
       throw new McpServerComponentRegistrationException(
           "Completion method must return McpCompleteCompletion");
     }
 
-    Parameter[] parameters = methodCache.getParameters();
+    Parameter[] parameters = method.getParameters();
     if (parameters.length != 1
         || parameters[0].getType() != McpSchema.CompleteRequest.CompleteArgument.class) {
       throw new McpServerComponentRegistrationException(
           "Completion method must have exactly one parameter of type McpSchema.CompleteRequest.CompleteArgument");
     }
 
-    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
-    McpSchema.CompleteReference reference = createCompleteReference(methodCache);
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
+    McpSchema.CompleteReference reference = createCompleteReference(method);
     return new McpServerFeatures.AsyncCompletionSpecification(
         reference,
-        (exchange, request) -> Mono.fromCallable(() -> invoke(instance, methodCache, request)));
+        (exchange, request) -> Mono.fromCallable(() -> invoke(instance, method, request)));
   }
 
   /**
@@ -164,7 +169,7 @@ public class McpServerCompletion {
    * the MCP client.
    *
    * @param instance the object instance containing the completion method
-   * @param methodCache the cached method information for efficient invocation
+   * @param method the completion method to invoke
    * @param request the completion request containing the argument
    * @return the completion result in MCP schema format
    * @throws RuntimeException if the method invocation fails
@@ -173,10 +178,11 @@ public class McpServerCompletion {
    * @see Invocation
    */
   private static McpSchema.CompleteResult invoke(
-      Object instance, MethodCache methodCache, McpSchema.CompleteRequest request) {
+      Object instance, Method method, McpSchema.CompleteRequest request) {
 
+    MethodMetadata metadata = MethodMetadata.of(method);
     McpSchema.CompleteRequest.CompleteArgument argument = request.argument();
-    Invocation invocation = MethodInvoker.invoke(instance, methodCache, argument);
+    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, argument);
     McpCompleteCompletion completion = (McpCompleteCompletion) invocation.result();
     return new McpSchema.CompleteResult(
         new McpSchema.CompleteResult.CompleteCompletion(
@@ -194,7 +200,7 @@ public class McpServerCompletion {
    * McpResourceCompletion}. If neither annotation is present, it returns null, though this should
    * never happen in normal operation due to prior validation.
    *
-   * @param methodCache the cached method information containing annotations
+   * @param method the method object to examine annotations
    * @return a completion reference (either {@link McpSchema.PromptReference} or {@link
    *     McpSchema.ResourceReference}), or null if no valid annotation is found
    * @see McpPromptCompletion
@@ -202,15 +208,15 @@ public class McpServerCompletion {
    * @see McpSchema.PromptReference
    * @see McpSchema.ResourceReference
    */
-  private static McpSchema.CompleteReference createCompleteReference(MethodCache methodCache) {
-    McpPromptCompletion prompt = methodCache.getMcpPromptCompletionAnnotation();
+  private static McpSchema.CompleteReference createCompleteReference(Method method) {
+    McpPromptCompletion prompt = method.getAnnotation(McpPromptCompletion.class);
     if (prompt != null) {
       final String name = prompt.name();
       final String title = prompt.title();
       return new McpSchema.PromptReference(McpSchema.PromptReference.TYPE, name, title);
     }
 
-    McpResourceCompletion resource = methodCache.getMcpResourceCompletionAnnotation();
+    McpResourceCompletion resource = method.getAnnotation(McpResourceCompletion.class);
     if (resource != null) {
       final String uri = resource.uri();
       return new McpSchema.ResourceReference(McpSchema.ResourceReference.TYPE, uri);

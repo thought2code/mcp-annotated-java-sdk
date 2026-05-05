@@ -4,8 +4,8 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpPrompt;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
+import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import com.github.thought2code.mcp.annotated.server.converter.McpPromptParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
@@ -77,26 +77,22 @@ public class McpServerPrompt
   @Override
   public McpServerFeatures.SyncPromptSpecification from(
       Method method, McpApplicationContext context) {
-    log.info("Creating prompt specification for method: {}", method.toGenericString());
+    log.info("Creating sync prompt specification for method: {}", method.toGenericString());
 
-    // Use reflection cache for performance optimization
-    MethodCache methodCache = MethodCache.of(method);
-    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+    McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
+    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
+    final String title = context.getLocalizedString(mcpPrompt.title(), name);
+    final String description = context.getLocalizedString(mcpPrompt.description(), name);
 
-    McpPrompt promptMethod = methodCache.getMcpPromptAnnotation();
-    final String name =
-        StringHelper.defaultIfBlank(promptMethod.name(), methodCache.getMethodName());
-    final String title = context.getLocalizedString(promptMethod.title(), name);
-    final String description = context.getLocalizedString(promptMethod.description(), name);
+    List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
+    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
 
-    List<McpSchema.PromptArgument> promptArgs =
-        createPromptArguments(context, methodCache.getParameters());
-    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, promptArgs);
+    log.info("Sync prompt specification created: {}", JacksonHelper.toJsonString(prompt));
 
-    log.info("Prompt specification created: {}", JacksonHelper.toJsonString(prompt));
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
 
     return new McpServerFeatures.SyncPromptSpecification(
-        prompt, (exchange, request) -> invoke(instance, methodCache, description, request));
+        prompt, (exchange, request) -> invoke(instance, method, description, request));
   }
 
   /**
@@ -114,25 +110,22 @@ public class McpServerPrompt
       Method method, McpApplicationContext context) {
     log.info("Creating async prompt specification for method: {}", method.toGenericString());
 
-    MethodCache methodCache = MethodCache.of(method);
-    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+    McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
+    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
+    final String title = context.getLocalizedString(mcpPrompt.title(), name);
+    final String description = context.getLocalizedString(mcpPrompt.description(), name);
 
-    McpPrompt promptMethod = methodCache.getMcpPromptAnnotation();
-    final String name =
-        StringHelper.defaultIfBlank(promptMethod.name(), methodCache.getMethodName());
-    final String title = context.getLocalizedString(promptMethod.title(), name);
-    final String description = context.getLocalizedString(promptMethod.description(), name);
-
-    List<McpSchema.PromptArgument> promptArgs =
-        createPromptArguments(context, methodCache.getParameters());
-    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, promptArgs);
+    List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
+    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
 
     log.info("Async prompt specification created: {}", JacksonHelper.toJsonString(prompt));
+
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
 
     return new McpServerFeatures.AsyncPromptSpecification(
         prompt,
         (exchange, request) ->
-            Mono.fromCallable(() -> invoke(instance, methodCache, description, request)));
+            Mono.fromCallable(() -> invoke(instance, method, description, request)));
   }
 
   /**
@@ -148,25 +141,23 @@ public class McpServerPrompt
   @Override
   public void register(McpSyncServer server, McpApplicationContext context) {
     Set<Method> methods = context.getMethodsAnnotatedWith(McpPrompt.class);
-    methods.forEach(
-        method -> {
-          log.debug("Registering prompt method: {}", method.toGenericString());
-          McpServerFeatures.SyncPromptSpecification prompt = from(method, context);
-          server.addPrompt(prompt);
-          log.debug("Prompt {} registered successfully", prompt.prompt().name());
-        });
+    for (Method method : methods) {
+      log.debug("Registering prompt method: {}", method.toGenericString());
+      McpServerFeatures.SyncPromptSpecification prompt = from(method, context);
+      server.addPrompt(prompt);
+      log.debug("Prompt {} registered successfully", prompt.prompt().name());
+    }
   }
 
   @Override
   public void register(McpAsyncServer server, McpApplicationContext context) {
     Set<Method> methods = context.getMethodsAnnotatedWith(McpPrompt.class);
-    methods.forEach(
-        method -> {
-          log.debug("Registering async prompt method: {}", method.toGenericString());
-          McpServerFeatures.AsyncPromptSpecification prompt = fromAsync(method, context);
-          server.addPrompt(prompt).subscribe();
-          log.debug("Async prompt {} registered successfully", prompt.prompt().name());
-        });
+    for (Method method : methods) {
+      log.debug("Registering async prompt method: {}", method.toGenericString());
+      McpServerFeatures.AsyncPromptSpecification prompt = fromAsync(method, context);
+      server.addPrompt(prompt).subscribe();
+      log.debug("Async prompt {} registered successfully", prompt.prompt().name());
+    }
   }
 
   /**
@@ -177,7 +168,7 @@ public class McpServerPrompt
    * result is then wrapped in a {@link McpSchema.GetPromptResult} with the prompt description.
    *
    * @param instance the object instance containing the prompt method
-   * @param methodCache the cached method information for efficient invocation
+   * @param method the prompt method to invoke
    * @param description the description of the prompt
    * @param request the prompt request containing the arguments
    * @return the result of the prompt invocation
@@ -186,16 +177,15 @@ public class McpServerPrompt
    * @see McpSchema.Content
    */
   private McpSchema.GetPromptResult invoke(
-      Object instance,
-      MethodCache methodCache,
-      String description,
-      McpSchema.GetPromptRequest request) {
+      Object instance, Method method, String description, McpSchema.GetPromptRequest request) {
 
     log.debug("Handling MCP GetPromptRequest: {}", JacksonHelper.toJsonString(request));
 
+    MethodMetadata metadata = MethodMetadata.of(method);
+    Parameter[] parameters = metadata.getParameters();
     Map<String, Object> arguments = request.arguments();
-    List<Object> params = parameterConverter.convertAll(methodCache.getParameters(), arguments);
-    Invocation invocation = MethodInvoker.invoke(instance, methodCache, params);
+    List<Object> params = parameterConverter.convertAll(parameters, arguments);
+    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, params);
 
     McpSchema.Content content = new McpSchema.TextContent(invocation.result().toString());
     McpSchema.PromptMessage message = new McpSchema.PromptMessage(McpSchema.Role.USER, content);

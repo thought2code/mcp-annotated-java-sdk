@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
  * pattern with a private constructor to prevent instantiation.
  *
  * @author codeboyzhou
- * @see MethodCache
  * @see Invocation
  * @see Method
  */
@@ -77,20 +76,21 @@ public final class MethodInvoker {
    * messages. The method signature is logged for debugging purposes when an error occurs.
    *
    * @param instance the instance on which to invoke the method
-   * @param methodCache the method cache containing the method metadata
+   * @param method the reflected method to invoke
+   * @param metadata the method metadata (cached)
    * @param params the list of parameters to pass to the method
    * @return an InvocationResult containing the method result or error information
-   * @see MethodCache
+   * @see MethodMetadata
    * @see Invocation
    * @see Method#invoke(Object, Object...)
    */
-  public static Invocation invoke(Object instance, MethodCache methodCache, List<Object> params) {
-    Method method = methodCache.getMethod();
+  public static Invocation invoke(
+      Object instance, Method method, MethodMetadata metadata, List<Object> params) {
     Invocation.Builder builder = Invocation.builder();
     try {
       Object result = method.invoke(instance, params.toArray());
 
-      Class<?> returnType = method.getReturnType();
+      Class<?> returnType = metadata.getReturnType();
       if (returnType == void.class || returnType == Void.class) {
         return builder.result("The method call succeeded but has a void return type").build();
       }
@@ -98,7 +98,7 @@ public final class MethodInvoker {
       final String resultIfNull = "The method call succeeded but the return value is null";
       return builder.result(Objects.requireNonNullElse(result, resultIfNull)).build();
     } catch (Exception e) {
-      final String message = "Error invoking method: " + methodCache.getMethodSignature();
+      final String message = "Error invoking method: " + method.toGenericString();
       final String result = McpServerError.METHOD_INVOCATION_ERROR.toString();
       Invocation invocation = builder.result(result).isError(true).build();
       log.error(message, e);
@@ -111,17 +111,16 @@ public final class MethodInvoker {
    * parameters.
    *
    * <p>This is a convenience method that invokes a method with an empty parameter list. It
-   * delegates to {@link #invoke(Object, MethodCache, List)} with an empty list.
+   * delegates to {@link #invoke(Object, Method, MethodMetadata, List)} with an empty list.
    *
    * @param instance the instance on which to invoke the method
-   * @param methodCache the method cache containing the method metadata
+   * @param method the reflected method to invoke
+   * @param metadata the method metadata (cached)
    * @return an InvocationResult containing the method result or error information
-   * @see #invoke(Object, MethodCache, List)
-   * @see MethodCache
-   * @see Invocation
+   * @see #invoke(Object, Method, MethodMetadata, List)
    */
-  public static Invocation invoke(Object instance, MethodCache methodCache) {
-    return invoke(instance, methodCache, List.of());
+  public static Invocation invoke(Object instance, Method method, MethodMetadata metadata) {
+    return invoke(instance, method, metadata, List.of());
   }
 
   /**
@@ -130,24 +129,24 @@ public final class MethodInvoker {
    *
    * <p>This is a convenience method for invoking methods that take a single {@link
    * McpSchema.CompleteRequest.CompleteArgument} parameter. It wraps the argument in a list and
-   * delegates to {@link #invoke(Object, MethodCache, List)}.
+   * delegates to {@link #invoke(Object, Method, MethodMetadata, List)}.
    *
    * <p>This method is typically used for MCP completion operations where a single completion
    * argument needs to be passed to the method.
    *
    * @param instance the instance on which to invoke the method
-   * @param methodCache the method cache containing the method metadata
+   * @param method the reflected method to invoke
+   * @param metadata the method metadata (cached)
    * @param argument the completion argument to pass to the method
    * @return an InvocationResult containing the method result or error information
-   * @see #invoke(Object, MethodCache, List)
+   * @see #invoke(Object, Method, MethodMetadata, List)
    * @see McpSchema.CompleteRequest.CompleteArgument
-   * @see MethodCache
-   * @see Invocation
    */
   public static Invocation invoke(
       Object instance,
-      MethodCache methodCache,
+      Method method,
+      MethodMetadata metadata,
       McpSchema.CompleteRequest.CompleteArgument argument) {
-    return invoke(instance, methodCache, List.of(argument));
+    return invoke(instance, method, metadata, List.of(argument));
   }
 }

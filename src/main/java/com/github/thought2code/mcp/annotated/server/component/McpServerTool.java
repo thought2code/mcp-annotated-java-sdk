@@ -7,8 +7,8 @@ import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
 import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodCache;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
+import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.server.converter.McpToolParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -88,23 +88,15 @@ public class McpServerTool
   @Override
   public McpServerFeatures.SyncToolSpecification from(
       Method method, McpApplicationContext context) {
-    log.info(
-        "Creating tool specification for method: {}.{}",
-        method.getDeclaringClass().getSimpleName(),
-        method.getName());
+    log.info("Creating sync tool specification for method: {}", method.toGenericString());
 
-    // Use reflection cache for performance optimization
-    MethodCache methodCache = MethodCache.of(method);
-    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+    McpTool mcpTool = method.getAnnotation(McpTool.class);
+    final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
+    final String title = context.getLocalizedString(mcpTool.title(), name);
+    final String description = context.getLocalizedString(mcpTool.description(), name);
 
-    McpTool toolMethod = methodCache.getMcpToolAnnotation();
-    final String name = StringHelper.defaultIfBlank(toolMethod.name(), methodCache.getMethodName());
-    final String title = context.getLocalizedString(toolMethod.title(), name);
-    final String description = context.getLocalizedString(toolMethod.description(), name);
-
-    McpSchema.JsonSchema inputSchema = createJsonSchema(context, methodCache.getParameters());
-    Map<String, Object> outputSchema =
-        createJsonSchemaDefinition(context, methodCache.getReturnType());
+    McpSchema.JsonSchema inputSchema = createJsonSchema(context, method.getParameters());
+    Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
     McpSchema.Tool tool =
         McpSchema.Tool.builder()
             .name(name)
@@ -114,11 +106,13 @@ public class McpServerTool
             .outputSchema(outputSchema)
             .build();
 
-    log.info("Tool specification created: {}", JacksonHelper.toJsonString(tool));
+    log.info("Sync tool specification created: {}", JacksonHelper.toJsonString(tool));
+
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
 
     return McpServerFeatures.SyncToolSpecification.builder()
         .tool(tool)
-        .callHandler((exchange, request) -> invoke(instance, methodCache, request))
+        .callHandler((exchange, request) -> invoke(instance, method, request))
         .build();
   }
 
@@ -135,22 +129,15 @@ public class McpServerTool
    */
   public McpServerFeatures.AsyncToolSpecification fromAsync(
       Method method, McpApplicationContext context) {
-    log.info(
-        "Creating async tool specification for method: {}.{}",
-        method.getDeclaringClass().getSimpleName(),
-        method.getName());
+    log.info("Creating async tool specification for method: {}", method.toGenericString());
 
-    MethodCache methodCache = MethodCache.of(method);
-    Object instance = context.getComponentInstance(methodCache.getDeclaringClass());
+    McpTool mcpTool = method.getAnnotation(McpTool.class);
+    final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
+    final String title = context.getLocalizedString(mcpTool.title(), name);
+    final String description = context.getLocalizedString(mcpTool.description(), name);
 
-    McpTool toolMethod = methodCache.getMcpToolAnnotation();
-    final String name = StringHelper.defaultIfBlank(toolMethod.name(), methodCache.getMethodName());
-    final String title = context.getLocalizedString(toolMethod.title(), name);
-    final String description = context.getLocalizedString(toolMethod.description(), name);
-
-    McpSchema.JsonSchema inputSchema = createJsonSchema(context, methodCache.getParameters());
-    Map<String, Object> outputSchema =
-        createJsonSchemaDefinition(context, methodCache.getReturnType());
+    McpSchema.JsonSchema inputSchema = createJsonSchema(context, method.getParameters());
+    Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
     McpSchema.Tool tool =
         McpSchema.Tool.builder()
             .name(name)
@@ -162,10 +149,12 @@ public class McpServerTool
 
     log.info("Async tool specification created: {}", JacksonHelper.toJsonString(tool));
 
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
+
     return McpServerFeatures.AsyncToolSpecification.builder()
         .tool(tool)
         .callHandler(
-            (exchange, request) -> Mono.fromCallable(() -> invoke(instance, methodCache, request)))
+            (exchange, request) -> Mono.fromCallable(() -> invoke(instance, method, request)))
         .build();
   }
 
@@ -182,25 +171,23 @@ public class McpServerTool
   @Override
   public void register(McpSyncServer server, McpApplicationContext context) {
     Set<Method> methods = context.getMethodsAnnotatedWith(McpTool.class);
-    methods.forEach(
-        method -> {
-          log.debug("Registering tool method: {}", method.toGenericString());
-          McpServerFeatures.SyncToolSpecification tool = from(method, context);
-          server.addTool(tool);
-          log.debug("Tool {} registered successfully", tool.tool().name());
-        });
+    for (Method method : methods) {
+      log.debug("Registering tool method: {}", method.toGenericString());
+      McpServerFeatures.SyncToolSpecification tool = from(method, context);
+      server.addTool(tool);
+      log.debug("Tool {} registered successfully", tool.tool().name());
+    }
   }
 
   @Override
   public void register(McpAsyncServer server, McpApplicationContext context) {
     Set<Method> methods = context.getMethodsAnnotatedWith(McpTool.class);
-    methods.forEach(
-        method -> {
-          log.debug("Registering async tool method: {}", method.toGenericString());
-          McpServerFeatures.AsyncToolSpecification tool = fromAsync(method, context);
-          server.addTool(tool).subscribe();
-          log.debug("Async tool {} registered successfully", tool.tool().name());
-        });
+    for (Method method : methods) {
+      log.debug("Registering async tool method: {}", method.toGenericString());
+      McpServerFeatures.AsyncToolSpecification tool = fromAsync(method, context);
+      server.addTool(tool).subscribe();
+      log.debug("Async tool {} registered successfully", tool.tool().name());
+    }
   }
 
   /**
@@ -212,7 +199,7 @@ public class McpServerTool
    * structured content support.
    *
    * @param instance the object instance containing the tool method
-   * @param methodCache the cached method information for efficient invocation
+   * @param method the method to invoke
    * @param request the tool request containing the arguments
    * @return the result of the tool invocation
    * @see McpSchema.CallToolResult
@@ -220,13 +207,15 @@ public class McpServerTool
    * @see McpStructuredContent
    */
   private McpSchema.CallToolResult invoke(
-      Object instance, MethodCache methodCache, McpSchema.CallToolRequest request) {
+      Object instance, Method method, McpSchema.CallToolRequest request) {
 
     log.debug("Handling MCP CallToolRequest: {}", JacksonHelper.toJsonString(request));
 
+    MethodMetadata metadata = MethodMetadata.of(method);
+    Parameter[] parameters = metadata.getParameters();
     Map<String, Object> arguments = request.arguments();
-    List<Object> params = parameterConverter.convertAll(methodCache.getParameters(), arguments);
-    Invocation invocation = MethodInvoker.invoke(instance, methodCache, params);
+    List<Object> params = parameterConverter.convertAll(parameters, arguments);
+    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, params);
 
     Object result = invocation.result();
     String textContent = result.toString();

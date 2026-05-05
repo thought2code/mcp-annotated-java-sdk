@@ -14,9 +14,9 @@ class MethodInvokerTest {
   void invoke_whenMethodThrows_shouldReturnSanitizedError() throws Exception {
     ThrowingComponent instance = new ThrowingComponent();
     Method method = ThrowingComponent.class.getDeclaredMethod("alwaysFails");
-    MethodCache methodCache = MethodCache.of(method);
+    MethodMetadata metadata = MethodMetadata.of(method);
 
-    Invocation invocation = MethodInvoker.invoke(instance, methodCache, List.of());
+    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, List.of());
 
     assertTrue(invocation.isError());
     String result = invocation.result().toString();
