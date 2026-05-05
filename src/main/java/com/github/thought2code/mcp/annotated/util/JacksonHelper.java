@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.util;
 
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import java.io.File;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -91,7 +92,7 @@ public final class JacksonHelper {
       return YAML.readValue(yamlFile, valueType);
     } catch (JacksonException e) {
       final String path = yamlFile.getAbsolutePath();
-      throw new McpServerConfigurationException("Error reading YAML file: " + path, e);
+      throw new McpServerConfigurationException(McpServerError.YAML_READ_ERROR.withDetail(path), e);
     }
   }
 }

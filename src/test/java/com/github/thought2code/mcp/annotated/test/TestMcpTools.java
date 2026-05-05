@@ -67,4 +67,9 @@ public class TestMcpTools {
     return String.format(
         "toolWithMixedParams is called with params: %s, %s", mcpParam, nonMcpParam);
   }
+
+  @McpTool
+  public String toolWithException() {
+    throw new IllegalStateException("sensitive tool failure detail");
+  }
 }

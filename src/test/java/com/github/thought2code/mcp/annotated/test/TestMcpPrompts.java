@@ -67,4 +67,9 @@ public class TestMcpPrompts {
     return String.format(
         "promptWithMixedParams is called with params: %s, %s", mcpParam, nonMcpParam);
   }
+
+  @McpPrompt
+  public String promptWithException() {
+    throw new IllegalStateException("sensitive prompt failure detail");
+  }
 }

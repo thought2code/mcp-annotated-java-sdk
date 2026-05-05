@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
@@ -45,5 +46,14 @@ class McpConfigurationLoaderTest {
     McpServerConfigurationException e =
         assertThrows(McpServerConfigurationException.class, loader::loadConfig);
     assertTrue(e.getMessage().contains("subscribe-resource"));
+  }
+
+  @Test
+  void testLoadConfig_whenConfigFileMissing_shouldUseUnifiedErrorContract() {
+    McpConfigurationLoader loader = new McpConfigurationLoader("missing-config.yml");
+    McpServerConfigurationException e =
+        assertThrows(McpServerConfigurationException.class, loader::loadConfig);
+    assertTrue(e.getMessage().contains(McpServerError.CONFIG_FILE_NOT_FOUND.getCode()));
+    assertTrue(e.getMessage().contains("missing-config.yml"));
   }
 }

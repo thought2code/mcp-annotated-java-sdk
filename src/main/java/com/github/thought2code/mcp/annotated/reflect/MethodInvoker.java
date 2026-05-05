@@ -1,7 +1,7 @@
 package com.github.thought2code.mcp.annotated.reflect;
 
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
-import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -55,7 +55,8 @@ public final class MethodInvoker {
     try {
       return clazz.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
-      throw new McpServerException("Failed to create instance of " + clazz.getName(), e);
+      throw new McpServerException(
+          McpServerError.COMPONENT_INSTANCE_CREATE_ERROR.withDetail(clazz.getName()), e);
     }
   }
 
@@ -97,19 +98,10 @@ public final class MethodInvoker {
       final String resultIfNull = "The method call succeeded but the return value is null";
       return builder.result(Objects.requireNonNullElse(result, resultIfNull)).build();
     } catch (Exception e) {
-      StringBuilder causes = new StringBuilder();
-      Throwable cause = e.getCause();
-      while (cause != null) {
-        causes.append("Caused by: ").append(cause).append(StringHelper.NewLine);
-        cause = cause.getCause();
-      }
-
       final String message = "Error invoking method: " + methodCache.getMethodSignature();
-      final String result = message + StringHelper.NewLine + causes;
+      final String result = McpServerError.METHOD_INVOCATION_ERROR.toString();
       Invocation invocation = builder.result(result).isError(true).build();
-
       log.error(message, e);
-
       return invocation;
     }
   }

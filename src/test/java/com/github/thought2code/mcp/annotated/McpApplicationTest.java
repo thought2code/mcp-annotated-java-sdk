@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
 import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
 import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.server.McpServer;
@@ -256,7 +258,7 @@ class McpApplicationTest {
 
   private void verifyPromptsRegistered(McpSyncClient client) {
     List<McpSchema.Prompt> prompts = client.listPrompts().prompts();
-    assertEquals(10, prompts.size());
+    assertEquals(11, prompts.size());
 
     verifyPromptRegistered(prompts, "promptWithDefaultName", "title", "description", 0);
     verifyPromptRegistered(
@@ -285,6 +287,8 @@ class McpApplicationTest {
         prompts, "promptWithVoidReturn", "promptWithVoidReturn", "promptWithVoidReturn", 0);
     verifyPromptRegistered(
         prompts, "promptWithReturnNull", "promptWithReturnNull", "promptWithReturnNull", 0);
+    verifyPromptRegistered(
+        prompts, "promptWithException", "promptWithException", "promptWithException", 0);
   }
 
   private void verifyPromptRegistered(
@@ -341,6 +345,8 @@ class McpApplicationTest {
         "promptWithReturnNull",
         Map.of(),
         "The method call succeeded but the return value is null");
+    verifyPromptCalled(
+        client, "promptWithException", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
   }
 
   private void verifyPromptCalled(
@@ -354,7 +360,7 @@ class McpApplicationTest {
 
   private void verifyToolsRegistered(McpSyncClient client) {
     List<McpSchema.Tool> tools = client.listTools().tools();
-    assertEquals(22, tools.size());
+    assertEquals(23, tools.size());
 
     verifyToolRegistered(tools, "toolWithDefaultName", "title", "description", Map.of());
     verifyToolRegistered(
@@ -463,6 +469,8 @@ class McpApplicationTest {
         "toolWithReturnStructuredContent",
         "toolWithReturnStructuredContent",
         Map.of());
+    verifyToolRegistered(
+        tools, "toolWithException", "toolWithException", "toolWithException", Map.of());
   }
 
   @SuppressWarnings("unchecked")
@@ -590,6 +598,8 @@ class McpApplicationTest {
         Map.of(),
         new TestMcpToolsStructuredContent.TestStructuredContent(1, 2, 3L, 4L, 5.0F, 6.0F, 7.0, 8.0)
             .asTextContent());
+    verifyToolCalledError(
+        client, "toolWithException", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
   }
 
   private void verifyToolCalled(
@@ -604,5 +614,14 @@ class McpApplicationTest {
     if (result.structuredContent() instanceof McpStructuredContent structuredContent) {
       assertEquals(expectedResult, structuredContent.asTextContent());
     }
+  }
+
+  private void verifyToolCalledError(
+      McpSyncClient client, String toolName, Map<String, Object> args, String expectedResult) {
+    McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(toolName, args);
+    McpSchema.CallToolResult result = client.callTool(request);
+    McpSchema.TextContent content = (McpSchema.TextContent) result.content().get(0);
+    assertTrue(result.isError());
+    assertEquals(expectedResult, content.text());
   }
 }

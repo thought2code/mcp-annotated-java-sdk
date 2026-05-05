@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.configuration;
 
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
@@ -70,12 +71,14 @@ public record McpConfigurationLoader(String configFileName) {
       ClassLoader classLoader = McpConfigurationLoader.class.getClassLoader();
       URL configFileUrl = classLoader.getResource(fileName);
       if (configFileUrl == null) {
-        throw new McpServerConfigurationException("Configuration file not found: " + fileName);
+        throw new McpServerConfigurationException(
+            McpServerError.CONFIG_FILE_NOT_FOUND.withDetail(fileName));
       }
       return Paths.get(configFileUrl.toURI());
     } catch (URISyntaxException e) {
       // should never happen
-      throw new McpServerConfigurationException("Invalid configuration file: " + fileName, e);
+      throw new McpServerConfigurationException(
+          McpServerError.INVALID_CONFIG_FILE.withDetail(fileName), e);
     }
   }
 }

@@ -1,6 +1,7 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.configuration.McpServerDefaults;
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import jakarta.servlet.http.HttpServlet;
 import java.util.Objects;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
@@ -86,7 +87,8 @@ public class JettyHttpServer {
     } catch (Exception e) {
       log.error("Error starting Jetty-based MCP server", e);
       stop();
-      throw new IllegalStateException("Failed to start Jetty-based MCP server on port " + port, e);
+      throw new IllegalStateException(
+          McpServerError.JETTY_SERVER_START_ERROR.withDetail("port=" + port), e);
     }
   }
 

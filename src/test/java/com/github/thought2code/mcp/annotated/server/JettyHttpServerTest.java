@@ -3,6 +3,7 @@ package com.github.thought2code.mcp.annotated.server;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -21,7 +22,8 @@ class JettyHttpServerTest {
               IllegalStateException.class,
               () -> server.withTransportProvider(new HttpServlet() {}).bind(occupiedPort).start());
 
-      assertTrue(exception.getMessage().contains("Failed to start Jetty-based MCP server"));
+      assertTrue(
+          exception.getMessage().contains(McpServerError.JETTY_SERVER_START_ERROR.getCode()));
     }
   }
 }
