@@ -3,7 +3,7 @@ package com.github.thought2code.mcp.annotated.server;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
-import com.github.thought2code.mcp.annotated.util.InetHelper;
+import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
@@ -48,10 +48,10 @@ public class McpStreamableServer extends McpServerBase {
   private static final Logger log = LoggerFactory.getLogger(McpStreamableServer.class);
 
   /** The HTTP Streamable server transport provider used by this MCP server. */
-  private HttpServletStreamableServerTransportProvider transportProvider;
+  private final HttpServletStreamableServerTransportProvider transportProvider;
 
   /** The port number on which this MCP server listens for incoming connections. */
-  private int port;
+  private final int port;
 
   /**
    * Constructs a new {@link McpStreamableServer} with the specified configuration and application
@@ -62,6 +62,15 @@ public class McpStreamableServer extends McpServerBase {
    */
   public McpStreamableServer(McpServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
+    McpServerStreamable streamable = configuration.streamable();
+    this.port = streamable.port();
+    this.transportProvider =
+        HttpServletStreamableServerTransportProvider.builder()
+            .jsonMapper(McpJsonDefaults.getMapper())
+            .mcpEndpoint(streamable.mcpEndpoint())
+            .disallowDelete(streamable.disallowDelete())
+            .keepAliveInterval(Duration.ofMillis(streamable.keepAliveInterval()))
+            .build();
   }
 
   /**
@@ -88,15 +97,6 @@ public class McpStreamableServer extends McpServerBase {
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
-    McpServerStreamable streamable = configuration.streamable();
-    port = streamable.port();
-    transportProvider =
-        HttpServletStreamableServerTransportProvider.builder()
-            .jsonMapper(McpJsonDefaults.getMapper())
-            .mcpEndpoint(streamable.mcpEndpoint())
-            .disallowDelete(streamable.disallowDelete())
-            .keepAliveInterval(Duration.ofMillis(streamable.keepAliveInterval()))
-            .build();
     return McpServer.sync(transportProvider);
   }
 
@@ -112,15 +112,6 @@ public class McpStreamableServer extends McpServerBase {
    */
   @Override
   public McpServer.AsyncSpecification<?> createAsyncSpecification() {
-    McpServerStreamable streamable = configuration.streamable();
-    port = streamable.port();
-    transportProvider =
-        HttpServletStreamableServerTransportProvider.builder()
-            .jsonMapper(McpJsonDefaults.getMapper())
-            .mcpEndpoint(streamable.mcpEndpoint())
-            .disallowDelete(streamable.disallowDelete())
-            .keepAliveInterval(Duration.ofMillis(streamable.keepAliveInterval()))
-            .build();
     return McpServer.async(transportProvider);
   }
 
@@ -135,12 +126,7 @@ public class McpStreamableServer extends McpServerBase {
    */
   @Override
   public void start() {
-    log.info(
-        "Starting Jetty-based MCP Streamable server on http://{}:{}{}",
-        InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
-        configuration.streamable().port(),
-        configuration.streamable().mcpEndpoint());
-    JettyHttpServer httpServer = new JettyHttpServer();
-    httpServer.withTransportProvider(transportProvider).bind(port).start();
+    final String mcpEndpoint = configuration.streamable().mcpEndpoint();
+    startHttpServer(ServerMode.STREAMABLE, mcpEndpoint, transportProvider, port);
   }
 }

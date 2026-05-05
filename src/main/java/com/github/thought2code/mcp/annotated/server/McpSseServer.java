@@ -3,7 +3,7 @@ package com.github.thought2code.mcp.annotated.server;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
-import com.github.thought2code.mcp.annotated.util.InetHelper;
+import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
@@ -35,10 +35,10 @@ public class McpSseServer extends McpServerBase {
   private static final Logger log = LoggerFactory.getLogger(McpSseServer.class);
 
   /** The HTTP SSE server transport provider used by this MCP server. */
-  private HttpServletSseServerTransportProvider transportProvider;
+  private final HttpServletSseServerTransportProvider transportProvider;
 
   /** The port number used by this MCP server. */
-  private int port;
+  private final int port;
 
   /**
    * Constructs a new {@link McpSseServer} with the specified configuration and application context.
@@ -48,6 +48,15 @@ public class McpSseServer extends McpServerBase {
    */
   public McpSseServer(McpServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
+    McpServerSSE sse = configuration.sse();
+    this.port = sse.port();
+    this.transportProvider =
+        HttpServletSseServerTransportProvider.builder()
+            .jsonMapper(McpJsonDefaults.getMapper())
+            .baseUrl(sse.baseUrl())
+            .sseEndpoint(sse.endpoint())
+            .messageEndpoint(sse.messageEndpoint())
+            .build();
   }
 
   /**
@@ -68,15 +77,6 @@ public class McpSseServer extends McpServerBase {
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
     log.warn("HTTP SSE mode has been deprecated, recommend to use Stream HTTP server instead.");
-    McpServerSSE sse = configuration.sse();
-    port = sse.port();
-    transportProvider =
-        HttpServletSseServerTransportProvider.builder()
-            .jsonMapper(McpJsonDefaults.getMapper())
-            .baseUrl(sse.baseUrl())
-            .sseEndpoint(sse.endpoint())
-            .messageEndpoint(sse.messageEndpoint())
-            .build();
     return McpServer.sync(transportProvider);
   }
 
@@ -93,15 +93,6 @@ public class McpSseServer extends McpServerBase {
   @Override
   public McpServer.AsyncSpecification<?> createAsyncSpecification() {
     log.warn("HTTP SSE mode has been deprecated, recommend to use Stream HTTP server instead.");
-    McpServerSSE sse = configuration.sse();
-    port = sse.port();
-    transportProvider =
-        HttpServletSseServerTransportProvider.builder()
-            .jsonMapper(McpJsonDefaults.getMapper())
-            .baseUrl(sse.baseUrl())
-            .sseEndpoint(sse.endpoint())
-            .messageEndpoint(sse.messageEndpoint())
-            .build();
     return McpServer.async(transportProvider);
   }
 
@@ -116,12 +107,7 @@ public class McpSseServer extends McpServerBase {
    */
   @Override
   public void start() {
-    log.info(
-        "Starting Jetty-based MCP SSE server on http://{}:{}{}",
-        InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
-        configuration.sse().port(),
-        configuration.sse().endpoint());
-    JettyHttpServer httpServer = new JettyHttpServer();
-    httpServer.withTransportProvider(transportProvider).bind(port).start();
+    final String endpointPath = configuration.sse().endpoint();
+    startHttpServer(ServerMode.SSE, endpointPath, transportProvider, port);
   }
 }

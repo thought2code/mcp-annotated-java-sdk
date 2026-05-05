@@ -4,11 +4,14 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
 import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.server.component.McpComponentRegistrar;
 import com.github.thought2code.mcp.annotated.server.component.McpServerCompletion;
+import com.github.thought2code.mcp.annotated.util.InetHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
+import jakarta.servlet.http.HttpServlet;
 import java.time.Duration;
 import java.util.ServiceLoader;
 import org.slf4j.Logger;
@@ -212,5 +215,27 @@ public abstract class McpServerBase implements McpServer {
             .build();
     log.info("Created McpAsyncServer successfully with name: {}", configuration.name());
     return mcpAsyncServer;
+  }
+
+  /**
+   * Starts a Jetty HTTP server with a transport provider.
+   *
+   * <p>This helper centralizes the shared HTTP startup lifecycle for SSE and Streamable modes so
+   * concrete servers only provide transport-specific configuration.
+   *
+   * @param serverMode server mode used in startup logs
+   * @param endpointPath endpoint path used in startup logs
+   * @param transportProvider transport servlet to register
+   * @param port server port
+   */
+  protected final void startHttpServer(
+      ServerMode serverMode, String endpointPath, HttpServlet transportProvider, int port) {
+    log.info(
+        "Starting Jetty-based MCP {} server on http://{}:{}{}",
+        serverMode.name(),
+        InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
+        port,
+        endpointPath);
+    new JettyHttpServer().withTransportProvider(transportProvider).bind(port).start();
   }
 }
