@@ -33,6 +33,9 @@ public final class McpServerDefaults {
     throw new UnsupportedOperationException("Utility class should not be instantiated");
   }
 
+  /** Default file name for the MCP server configuration file. */
+  public static final String CONFIG_FILE_NAME = "mcp-server.yml";
+
   /** Default server enabled status. */
   public static final boolean ENABLED = true;
 

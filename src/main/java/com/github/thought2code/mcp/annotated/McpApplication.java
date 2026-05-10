@@ -2,6 +2,7 @@ package com.github.thought2code.mcp.annotated;
 
 import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.McpServerDefaults;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.McpServer;
@@ -28,13 +29,11 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("unused")
 public final class McpApplication {
 
-  /** The logger instance for this class. */
   private static final Logger log = LoggerFactory.getLogger(McpApplication.class);
 
-  /** The default file name for the MCP server configuration file. */
-  private static final String DEFAULT_CONFIG_FILE_NAME = "mcp-server.yml";
-
-  private McpApplication() {}
+  private McpApplication() {
+    throw new UnsupportedOperationException("Main application class should not be instantiated");
+  }
 
   /**
    * Runs the MCP application with the specified main class and command-line arguments.
@@ -65,7 +64,7 @@ public final class McpApplication {
    * @param args the command-line arguments passed to the application
    */
   public static void run(Class<?> mainClass, String[] args) {
-    run(mainClass, args, DEFAULT_CONFIG_FILE_NAME);
+    run(mainClass, args, McpServerDefaults.CONFIG_FILE_NAME);
   }
 
   /**
