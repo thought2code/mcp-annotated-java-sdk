@@ -58,7 +58,9 @@ import reactor.core.publisher.Mono;
  * @see McpStructuredContent
  */
 public class McpServerTool
-    implements McpServerComponent<McpServerFeatures.SyncToolSpecification>, McpComponentRegistrar {
+    extends AbstractDualModeComponentRegistrar<
+        McpServerFeatures.SyncToolSpecification, McpServerFeatures.AsyncToolSpecification>
+    implements McpServerComponent<McpServerFeatures.SyncToolSpecification> {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerTool.class);
 
@@ -158,36 +160,43 @@ public class McpServerTool
         .build();
   }
 
-  /**
-   * Registers all discovered components of this type with the given MCP server.
-   *
-   * <p>This method scans for methods annotated with the appropriate annotation(s) for this
-   * component type and registers them with the server. The exact discovery and registration
-   * mechanism depends on the implementation.
-   *
-   * @param server the {@link McpSyncServer} instance to register the components with
-   * @param context the application context for component discovery and localization
-   */
   @Override
-  public void register(McpSyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(McpTool.class);
-    for (Method method : methods) {
-      log.debug("Registering tool method: {}", method.toGenericString());
-      McpServerFeatures.SyncToolSpecification tool = from(method, context);
-      server.addTool(tool);
-      log.debug("Tool {} registered successfully", tool.tool().name());
-    }
+  protected Class<McpTool> annotationType() {
+    return McpTool.class;
   }
 
   @Override
-  public void register(McpAsyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(McpTool.class);
-    for (Method method : methods) {
-      log.debug("Registering async tool method: {}", method.toGenericString());
-      McpServerFeatures.AsyncToolSpecification tool = fromAsync(method, context);
-      server.addTool(tool).subscribe();
-      log.debug("Async tool {} registered successfully", tool.tool().name());
-    }
+  protected McpServerFeatures.SyncToolSpecification createSyncSpecification(
+      Method method, McpApplicationContext context) {
+    return from(method, context);
+  }
+
+  @Override
+  protected McpServerFeatures.AsyncToolSpecification createAsyncSpecification(
+      Method method, McpApplicationContext context) {
+    return fromAsync(method, context);
+  }
+
+  @Override
+  protected void addSyncSpecification(
+      McpSyncServer server, McpServerFeatures.SyncToolSpecification specification) {
+    server.addTool(specification);
+  }
+
+  @Override
+  protected void addAsyncSpecification(
+      McpAsyncServer server, McpServerFeatures.AsyncToolSpecification specification) {
+    server.addTool(specification).subscribe();
+  }
+
+  @Override
+  protected String syncSpecificationName(McpServerFeatures.SyncToolSpecification specification) {
+    return specification.tool().name();
+  }
+
+  @Override
+  protected String asyncSpecificationName(McpServerFeatures.AsyncToolSpecification specification) {
+    return specification.tool().name();
   }
 
   /**

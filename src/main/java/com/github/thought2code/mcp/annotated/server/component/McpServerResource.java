@@ -13,7 +13,6 @@ import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -40,8 +39,9 @@ import reactor.core.publisher.Mono;
  * @see McpSchema.ResourceContents
  */
 public class McpServerResource
-    implements McpServerComponent<McpServerFeatures.SyncResourceSpecification>,
-        McpComponentRegistrar {
+    extends AbstractDualModeComponentRegistrar<
+        McpServerFeatures.SyncResourceSpecification, McpServerFeatures.AsyncResourceSpecification>
+    implements McpServerComponent<McpServerFeatures.SyncResourceSpecification> {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerResource.class);
 
@@ -129,36 +129,45 @@ public class McpServerResource
         (exchange, request) -> Mono.fromCallable(() -> invoke(instance, method, resource)));
   }
 
-  /**
-   * Registers all discovered components of this type with the given MCP server.
-   *
-   * <p>This method scans for methods annotated with the appropriate annotation(s) for this
-   * component type and registers them with the server. The exact discovery and registration
-   * mechanism depends on the implementation.
-   *
-   * @param server the {@link McpSyncServer} instance to register the components with
-   * @param context the application context for component discovery and localization
-   */
   @Override
-  public void register(McpSyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(McpResource.class);
-    for (Method method : methods) {
-      log.debug("Registering resource method: {}", method.toGenericString());
-      McpServerFeatures.SyncResourceSpecification resource = from(method, context);
-      server.addResource(resource);
-      log.debug("Resource {} registered successfully", resource.resource().name());
-    }
+  protected Class<McpResource> annotationType() {
+    return McpResource.class;
   }
 
   @Override
-  public void register(McpAsyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(McpResource.class);
-    for (Method method : methods) {
-      log.debug("Registering async resource method: {}", method.toGenericString());
-      McpServerFeatures.AsyncResourceSpecification resource = fromAsync(method, context);
-      server.addResource(resource).subscribe();
-      log.debug("Async resource {} registered successfully", resource.resource().name());
-    }
+  protected McpServerFeatures.SyncResourceSpecification createSyncSpecification(
+      Method method, McpApplicationContext context) {
+    return from(method, context);
+  }
+
+  @Override
+  protected McpServerFeatures.AsyncResourceSpecification createAsyncSpecification(
+      Method method, McpApplicationContext context) {
+    return fromAsync(method, context);
+  }
+
+  @Override
+  protected void addSyncSpecification(
+      McpSyncServer server, McpServerFeatures.SyncResourceSpecification specification) {
+    server.addResource(specification);
+  }
+
+  @Override
+  protected void addAsyncSpecification(
+      McpAsyncServer server, McpServerFeatures.AsyncResourceSpecification specification) {
+    server.addResource(specification).subscribe();
+  }
+
+  @Override
+  protected String syncSpecificationName(
+      McpServerFeatures.SyncResourceSpecification specification) {
+    return specification.resource().name();
+  }
+
+  @Override
+  protected String asyncSpecificationName(
+      McpServerFeatures.AsyncResourceSpecification specification) {
+    return specification.resource().name();
   }
 
   /**

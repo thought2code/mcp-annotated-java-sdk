@@ -18,7 +18,6 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -46,8 +45,9 @@ import reactor.core.publisher.Mono;
  * @see McpSchema.PromptArgument
  */
 public class McpServerPrompt
-    implements McpServerComponent<McpServerFeatures.SyncPromptSpecification>,
-        McpComponentRegistrar {
+    extends AbstractDualModeComponentRegistrar<
+        McpServerFeatures.SyncPromptSpecification, McpServerFeatures.AsyncPromptSpecification>
+    implements McpServerComponent<McpServerFeatures.SyncPromptSpecification> {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerPrompt.class);
 
@@ -128,36 +128,44 @@ public class McpServerPrompt
             Mono.fromCallable(() -> invoke(instance, method, description, request)));
   }
 
-  /**
-   * Registers all discovered components of this type with the given MCP server.
-   *
-   * <p>This method scans for methods annotated with the appropriate annotation(s) for this
-   * component type and registers them with the server. The exact discovery and registration
-   * mechanism depends on the implementation.
-   *
-   * @param server the {@link McpSyncServer} instance to register the components with
-   * @param context the application context for component discovery and localization
-   */
   @Override
-  public void register(McpSyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(McpPrompt.class);
-    for (Method method : methods) {
-      log.debug("Registering prompt method: {}", method.toGenericString());
-      McpServerFeatures.SyncPromptSpecification prompt = from(method, context);
-      server.addPrompt(prompt);
-      log.debug("Prompt {} registered successfully", prompt.prompt().name());
-    }
+  protected Class<McpPrompt> annotationType() {
+    return McpPrompt.class;
   }
 
   @Override
-  public void register(McpAsyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(McpPrompt.class);
-    for (Method method : methods) {
-      log.debug("Registering async prompt method: {}", method.toGenericString());
-      McpServerFeatures.AsyncPromptSpecification prompt = fromAsync(method, context);
-      server.addPrompt(prompt).subscribe();
-      log.debug("Async prompt {} registered successfully", prompt.prompt().name());
-    }
+  protected McpServerFeatures.SyncPromptSpecification createSyncSpecification(
+      Method method, McpApplicationContext context) {
+    return from(method, context);
+  }
+
+  @Override
+  protected McpServerFeatures.AsyncPromptSpecification createAsyncSpecification(
+      Method method, McpApplicationContext context) {
+    return fromAsync(method, context);
+  }
+
+  @Override
+  protected void addSyncSpecification(
+      McpSyncServer server, McpServerFeatures.SyncPromptSpecification specification) {
+    server.addPrompt(specification);
+  }
+
+  @Override
+  protected void addAsyncSpecification(
+      McpAsyncServer server, McpServerFeatures.AsyncPromptSpecification specification) {
+    server.addPrompt(specification).subscribe();
+  }
+
+  @Override
+  protected String syncSpecificationName(McpServerFeatures.SyncPromptSpecification specification) {
+    return specification.prompt().name();
+  }
+
+  @Override
+  protected String asyncSpecificationName(
+      McpServerFeatures.AsyncPromptSpecification specification) {
+    return specification.prompt().name();
   }
 
   /**
