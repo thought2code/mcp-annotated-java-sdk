@@ -7,6 +7,7 @@ import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,9 +63,8 @@ public class McpSseServer extends McpServerBase {
   /**
    * Creates and returns a synchronization specification for SSE mode.
    *
-   * <p>This method creates an {@link McpServer.SyncSpecification} that uses Server-Sent Events
-   * transport provider for real-time communication. It configures the transport provider with
-   * SSE-specific settings from the server configuration.
+   * <p>This method creates an {@link McpServer.SyncSpecification} from the shared SSE transport
+   * provider configured during server construction.
    *
    * <p>Note: This method logs a deprecation warning as SSE mode is deprecated in favor of
    * STREAMABLE mode.
@@ -76,24 +76,33 @@ public class McpSseServer extends McpServerBase {
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
-    log.warn("HTTP SSE mode has been deprecated, recommend to use Stream HTTP server instead.");
-    return McpServer.sync(transportProvider);
+    return createSpecification(McpServer::sync);
   }
 
   /**
    * Creates and returns an asynchronous specification for SSE mode.
    *
-   * <p>This method creates an {@link McpServer.AsyncSpecification} that uses Server-Sent Events
-   * transport provider for real-time communication. It reuses the same transport provider
-   * configuration as the sync specification.
+   * <p>This method creates an {@link McpServer.AsyncSpecification} from the same shared SSE
+   * transport provider used by the sync specification.
    *
    * @return an asynchronous specification configured for SSE transport
    * @see HttpServletSseServerTransportProvider
    */
   @Override
   public McpServer.AsyncSpecification<?> createAsyncSpecification() {
+    return createSpecification(McpServer::async);
+  }
+
+  /**
+   * Creates an SSE specification while keeping deprecation warning behavior consistent.
+   *
+   * @param factory factory that maps transport provider to server specification
+   * @return created specification
+   * @param <T> specification type
+   */
+  private <T> T createSpecification(Function<HttpServletSseServerTransportProvider, T> factory) {
     log.warn("HTTP SSE mode has been deprecated, recommend to use Stream HTTP server instead.");
-    return McpServer.async(transportProvider);
+    return factory.apply(transportProvider);
   }
 
   /**

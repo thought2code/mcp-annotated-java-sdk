@@ -5,6 +5,7 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguratio
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
+import java.util.function.Function;
 
 /**
  * MCP server implementation for Standard Input/Output (STDIO) mode.
@@ -31,6 +32,9 @@ import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
  * @see StdioServerTransportProvider
  */
 public class McpStdioServer extends McpServerBase {
+  /** The STDIO transport provider shared by sync and async specifications. */
+  private final StdioServerTransportProvider transportProvider;
+
   /**
    * Constructs a new {@link McpStdioServer} with the specified configuration and application
    * context.
@@ -40,14 +44,14 @@ public class McpStdioServer extends McpServerBase {
    */
   public McpStdioServer(McpServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
+    this.transportProvider = new StdioServerTransportProvider(McpJsonDefaults.getMapper());
   }
 
   /**
    * Creates and returns a synchronization specification for STDIO mode.
    *
-   * <p>This method creates an {@link McpServer.SyncSpecification} that uses standard input/output
-   * transport provider for communication. The transport provider is configured with the default
-   * JSON mapper for message serialization and deserialization.
+   * <p>This method creates an {@link McpServer.SyncSpecification} from the shared STDIO transport
+   * provider configured during server construction.
    *
    * @return a synchronization specification configured for STDIO transport
    * @see StdioServerTransportProvider
@@ -55,15 +59,14 @@ public class McpStdioServer extends McpServerBase {
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
-    return McpServer.sync(new StdioServerTransportProvider(McpJsonDefaults.getMapper()));
+    return createSpecification(McpServer::sync);
   }
 
   /**
    * Creates and returns an asynchronous specification for STDIO mode.
    *
-   * <p>This method creates an {@link McpServer.AsyncSpecification} that uses standard input/output
-   * transport provider for communication. The transport provider is configured with the default
-   * JSON mapper for message serialization and deserialization.
+   * <p>This method creates an {@link McpServer.AsyncSpecification} from the same shared STDIO
+   * transport provider used by the sync specification.
    *
    * @return an asynchronous specification configured for STDIO transport
    * @see StdioServerTransportProvider
@@ -71,6 +74,17 @@ public class McpStdioServer extends McpServerBase {
    */
   @Override
   public McpServer.AsyncSpecification<?> createAsyncSpecification() {
-    return McpServer.async(new StdioServerTransportProvider(McpJsonDefaults.getMapper()));
+    return createSpecification(McpServer::async);
+  }
+
+  /**
+   * Creates a STDIO specification from the shared transport provider.
+   *
+   * @param factory factory that maps transport provider to server specification
+   * @return created specification
+   * @param <T> specification type
+   */
+  private <T> T createSpecification(Function<StdioServerTransportProvider, T> factory) {
+    return factory.apply(transportProvider);
   }
 }

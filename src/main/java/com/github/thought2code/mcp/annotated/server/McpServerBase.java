@@ -5,6 +5,7 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities
 import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
+import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.component.McpComponentRegistrar;
 import com.github.thought2code.mcp.annotated.server.component.McpServerCompletion;
 import com.github.thought2code.mcp.annotated.util.InetHelper;
@@ -14,6 +15,8 @@ import io.modelcontextprotocol.spec.McpSchema;
 import jakarta.servlet.http.HttpServlet;
 import java.time.Duration;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,12 +120,7 @@ public abstract class McpServerBase implements McpServer {
    */
   @Override
   public void registerComponents(McpSyncServer server) {
-    log.info("Registering MCP server components (sync)");
-    ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
-    for (McpComponentRegistrar registrar : loader) {
-      registrar.register(server, context);
-    }
-    log.info("MCP server components registered successfully (sync)");
+    registerComponents(ServerType.SYNC, registrar -> registrar.register(server, context));
   }
 
   /**
@@ -130,19 +128,13 @@ public abstract class McpServerBase implements McpServer {
    *
    * <p>This method creates and registers the three main types of MCP components: resources,
    * prompts, and tools. Each component type is handled by its respective registration class which
-   * scans for annotated methods and registers them with the server. Registration is performed
-   * asynchronously and each registration is subscribed to immediately.
+   * scans for annotated methods and registers them with the server.
    *
    * @param server the asynchronous server instance to register components with
    */
   @Override
   public void registerComponents(McpAsyncServer server) {
-    log.info("Registering MCP server components (async)");
-    ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
-    for (McpComponentRegistrar registrar : loader) {
-      registrar.register(server, context);
-    }
-    log.info("MCP server components registered successfully (async)");
+    registerComponents(ServerType.ASYNC, registrar -> registrar.register(server, context));
   }
 
   /**
@@ -159,7 +151,8 @@ public abstract class McpServerBase implements McpServer {
    * </ul>
    *
    * <p>The method uses the synchronization specification provided by the concrete implementation
-   * through {@link #createSyncSpecification()}.
+   * through {@link #createSyncSpecification()}, while lifecycle logging and capability resolution
+   * are handled by a shared creation template.
    *
    * @return a fully configured MCP synchronous server ready to start
    * @see McpSyncServer
@@ -167,18 +160,16 @@ public abstract class McpServerBase implements McpServer {
    */
   @Override
   public McpSyncServer createSyncServer() {
-    log.info("Creating McpSyncServer with name: {}", configuration.name());
-    McpSchema.ServerCapabilities serverCapabilities = defineCapabilities();
-    McpSyncServer mcpSyncServer =
-        createSyncSpecification()
-            .capabilities(serverCapabilities)
-            .completions(McpServerCompletion.allSync(context))
-            .instructions(configuration.instructions())
-            .serverInfo(configuration.name(), configuration.version())
-            .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
-            .build();
-    log.info("Created McpSyncServer successfully with name: {}", configuration.name());
-    return mcpSyncServer;
+    return createServer(
+        ServerType.SYNC,
+        capabilities ->
+            createSyncSpecification()
+                .capabilities(capabilities)
+                .completions(McpServerCompletion.allSync(context))
+                .instructions(configuration.instructions())
+                .serverInfo(configuration.name(), configuration.version())
+                .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
+                .build());
   }
 
   /**
@@ -195,7 +186,8 @@ public abstract class McpServerBase implements McpServer {
    * </ul>
    *
    * <p>The method uses the asynchronous specification provided by the concrete implementation
-   * through {@link #createAsyncSpecification()}.
+   * through {@link #createAsyncSpecification()}, while lifecycle logging and capability resolution
+   * are handled by a shared creation template.
    *
    * @return a fully configured MCP asynchronous server ready to start
    * @see McpAsyncServer
@@ -203,18 +195,47 @@ public abstract class McpServerBase implements McpServer {
    */
   @Override
   public McpAsyncServer createAsyncServer() {
-    log.info("Creating McpAsyncServer with name: {}", configuration.name());
+    return createServer(
+        ServerType.ASYNC,
+        capabilities ->
+            createAsyncSpecification()
+                .capabilities(capabilities)
+                .completions(McpServerCompletion.allAsync(context))
+                .instructions(configuration.instructions())
+                .serverInfo(configuration.name(), configuration.version())
+                .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
+                .build());
+  }
+
+  /**
+   * Registers all component registrars with a consistent sync/async registration flow.
+   *
+   * @param type registration type used in logs
+   * @param consumer registration action for each discovered registrar
+   */
+  private void registerComponents(ServerType type, Consumer<McpComponentRegistrar> consumer) {
+    log.info("Registering MCP {} server components", type.name());
+    ServiceLoader<McpComponentRegistrar> loader = ServiceLoader.load(McpComponentRegistrar.class);
+    for (McpComponentRegistrar registrar : loader) {
+      consumer.accept(registrar);
+    }
+    log.info("MCP {} server components registered successfully", type.name());
+  }
+
+  /**
+   * Creates a server with shared lifecycle logging and capability definition.
+   *
+   * @param type registration type used in logs
+   * @param factory server builder that consumes resolved capabilities
+   * @return created server instance
+   * @param <T> server type
+   */
+  private <T> T createServer(ServerType type, Function<McpSchema.ServerCapabilities, T> factory) {
+    log.info("Creating MCP {} server with name: {}", type.name(), configuration.name());
     McpSchema.ServerCapabilities serverCapabilities = defineCapabilities();
-    McpAsyncServer mcpAsyncServer =
-        createAsyncSpecification()
-            .capabilities(serverCapabilities)
-            .completions(McpServerCompletion.allAsync(context))
-            .instructions(configuration.instructions())
-            .serverInfo(configuration.name(), configuration.version())
-            .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
-            .build();
-    log.info("Created McpAsyncServer successfully with name: {}", configuration.name());
-    return mcpAsyncServer;
+    T server = factory.apply(serverCapabilities);
+    log.info("Created MCP {} server successfully with name: {}", type.name(), configuration.name());
+    return server;
   }
 
   /**

@@ -8,8 +8,7 @@ import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
 import java.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Function;
 
 /**
  * An MCP server implementation that operates in Streamable HTTP mode.
@@ -45,8 +44,6 @@ import org.slf4j.LoggerFactory;
  */
 public class McpStreamableServer extends McpServerBase {
 
-  private static final Logger log = LoggerFactory.getLogger(McpStreamableServer.class);
-
   /** The HTTP Streamable server transport provider used by this MCP server. */
   private final HttpServletStreamableServerTransportProvider transportProvider;
 
@@ -76,19 +73,8 @@ public class McpStreamableServer extends McpServerBase {
   /**
    * Creates and returns a synchronization specification for Streamable HTTP mode.
    *
-   * <p>This method creates an {@link McpServer.SyncSpecification} that uses HTTP streaming
-   * transport provider for communication. The transport provider is configured with the following
-   * settings from the configuration:
-   *
-   * <ul>
-   *   <li>Port number for binding the HTTP server
-   *   <li>MCP endpoint path for the streaming API
-   *   <li>Whether to disallow delete operations
-   *   <li>Keep-alive interval for maintaining connections
-   * </ul>
-   *
-   * <p>The method also stores the port number and transport provider instance for later use when
-   * starting the HTTP server.
+   * <p>This method creates an {@link McpServer.SyncSpecification} from the shared Streamable
+   * transport provider configured during server construction.
    *
    * @return a synchronization specification configured for HTTP streaming transport
    * @see HttpServletStreamableServerTransportProvider
@@ -97,22 +83,33 @@ public class McpStreamableServer extends McpServerBase {
    */
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
-    return McpServer.sync(transportProvider);
+    return createSpecification(McpServer::sync);
   }
 
   /**
    * Creates and returns an asynchronous specification for Streamable HTTP mode.
    *
-   * <p>This method creates an {@link McpServer.AsyncSpecification} that uses HTTP streaming
-   * transport provider for communication. It reuses the same transport provider configuration as
-   * the sync specification.
+   * <p>This method creates an {@link McpServer.AsyncSpecification} from the same shared Streamable
+   * transport provider used by the sync specification.
    *
    * @return an asynchronous specification configured for HTTP streaming transport
    * @see HttpServletStreamableServerTransportProvider
    */
   @Override
   public McpServer.AsyncSpecification<?> createAsyncSpecification() {
-    return McpServer.async(transportProvider);
+    return createSpecification(McpServer::async);
+  }
+
+  /**
+   * Creates a Streamable specification from the shared transport provider.
+   *
+   * @param factory factory that maps transport provider to server specification
+   * @return created specification
+   * @param <T> specification type
+   */
+  private <T> T createSpecification(
+      Function<HttpServletStreamableServerTransportProvider, T> factory) {
+    return factory.apply(transportProvider);
   }
 
   /**
