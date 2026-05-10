@@ -253,7 +253,7 @@ public abstract class McpServerBase implements McpServer {
       ServerMode serverMode, String endpointPath, HttpServlet transportProvider, int port) {
     log.info(
         "Starting Jetty-based MCP {} server on http://{}:{}{}",
-        serverMode.name(),
+        serverMode.description(),
         InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
         port,
         endpointPath);

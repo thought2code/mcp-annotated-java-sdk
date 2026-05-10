@@ -10,8 +10,18 @@ package com.github.thought2code.mcp.annotated.enums;
 public enum ServerType {
 
   /** The MCP server runs in {@code SYNC} mode. */
-  SYNC,
+  SYNC("Sync"),
 
   /** The MCP server runs in {@code ASYNC} mode. */
-  ASYNC
+  ASYNC("Async");
+
+  private final String description;
+
+  ServerType(String description) {
+    this.description = description;
+  }
+
+  public String description() {
+    return description;
+  }
 }

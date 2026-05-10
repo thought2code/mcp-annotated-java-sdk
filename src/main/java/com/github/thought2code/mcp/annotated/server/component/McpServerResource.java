@@ -2,6 +2,7 @@ package com.github.thought2code.mcp.annotated.server.component;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpResource;
+import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
 import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
@@ -64,7 +65,7 @@ public class McpServerResource
   public McpServerFeatures.SyncResourceSpecification from(
       Method method, McpApplicationContext context) {
     log.info("Creating sync resource specification for method: {}", method.toGenericString());
-    ResourceDefinition definition = createResourceDefinition(method, context, "Sync");
+    ResourceDefinition definition = createResourceDefinition(method, context, ServerType.SYNC);
     return new McpServerFeatures.SyncResourceSpecification(
         definition.resource(),
         (exchange, request) -> invoke(definition.instance(), method, definition.resource()));
@@ -84,7 +85,7 @@ public class McpServerResource
   public McpServerFeatures.AsyncResourceSpecification fromAsync(
       Method method, McpApplicationContext context) {
     log.info("Creating async resource specification for method: {}", method.toGenericString());
-    ResourceDefinition definition = createResourceDefinition(method, context, "Async");
+    ResourceDefinition definition = createResourceDefinition(method, context, ServerType.ASYNC);
     return new McpServerFeatures.AsyncResourceSpecification(
         definition.resource(),
         (exchange, request) ->
@@ -171,11 +172,11 @@ public class McpServerResource
    *
    * @param method annotated resource method
    * @param context application context
-   * @param mode log label (Sync/Async)
+   * @param serverType server type (sync or async)
    * @return resource definition containing metadata and target instance
    */
   private ResourceDefinition createResourceDefinition(
-      Method method, McpApplicationContext context, String mode) {
+      Method method, McpApplicationContext context, ServerType serverType) {
     McpResource mcpResource = method.getAnnotation(McpResource.class);
     final String name = StringHelper.defaultIfBlank(mcpResource.name(), method.getName());
     final String title = context.getLocalizedString(mcpResource.title(), name);
@@ -190,7 +191,10 @@ public class McpServerResource
             .annotations(
                 new McpSchema.Annotations(List.of(mcpResource.roles()), mcpResource.priority()))
             .build();
-    log.info("{} resource specification created: {}", mode, JacksonHelper.toJsonString(resource));
+    log.info(
+        "{} resource specification created: {}",
+        serverType.description(),
+        JacksonHelper.toJsonString(resource));
     Object instance = context.getComponentInstance(method.getDeclaringClass());
     return new ResourceDefinition(resource, instance);
   }

@@ -10,11 +10,21 @@ package com.github.thought2code.mcp.annotated.enums;
 public enum ServerMode {
 
   /** The MCP server runs in {@code STDIO} mode. */
-  STDIO,
+  STDIO("Stdio"),
 
   /** The MCP server runs in http {@code SSE} mode. */
-  SSE,
+  SSE("HTTP SSE"),
 
   /** The MCP server runs in {@code STREAMABLE} http mode. */
-  STREAMABLE
+  STREAMABLE("Streamable HTTP");
+
+  private final String description;
+
+  ServerMode(String description) {
+    this.description = description;
+  }
+
+  public String description() {
+    return description;
+  }
 }

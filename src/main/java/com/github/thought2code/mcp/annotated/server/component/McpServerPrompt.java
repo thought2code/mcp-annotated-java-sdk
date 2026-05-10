@@ -3,6 +3,7 @@ package com.github.thought2code.mcp.annotated.server.component;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpPrompt;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
+import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
 import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
@@ -78,7 +79,7 @@ public class McpServerPrompt
   public McpServerFeatures.SyncPromptSpecification from(
       Method method, McpApplicationContext context) {
     log.info("Creating sync prompt specification for method: {}", method.toGenericString());
-    PromptDefinition definition = createPromptDefinition(method, context, "Sync");
+    PromptDefinition definition = createPromptDefinition(method, context, ServerType.SYNC);
     return new McpServerFeatures.SyncPromptSpecification(
         definition.prompt(),
         (exchange, request) ->
@@ -99,7 +100,7 @@ public class McpServerPrompt
   public McpServerFeatures.AsyncPromptSpecification fromAsync(
       Method method, McpApplicationContext context) {
     log.info("Creating async prompt specification for method: {}", method.toGenericString());
-    PromptDefinition definition = createPromptDefinition(method, context, "Async");
+    PromptDefinition definition = createPromptDefinition(method, context, ServerType.ASYNC);
     return new McpServerFeatures.AsyncPromptSpecification(
         definition.prompt(),
         (exchange, request) ->
@@ -219,18 +220,21 @@ public class McpServerPrompt
    *
    * @param method annotated prompt method
    * @param context application context
-   * @param mode log label (Sync/Async)
+   * @param serverType server type (sync or async)
    * @return prompt definition containing metadata and target instance
    */
   private PromptDefinition createPromptDefinition(
-      Method method, McpApplicationContext context, String mode) {
+      Method method, McpApplicationContext context, ServerType serverType) {
     McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
     final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
     final String title = context.getLocalizedString(mcpPrompt.title(), name);
     final String description = context.getLocalizedString(mcpPrompt.description(), name);
     List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
     McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
-    log.info("{} prompt specification created: {}", mode, JacksonHelper.toJsonString(prompt));
+    log.info(
+        "{} prompt specification created: {}",
+        serverType.description(),
+        JacksonHelper.toJsonString(prompt));
     Object instance = context.getComponentInstance(method.getDeclaringClass());
     return new PromptDefinition(prompt, instance, description);
   }

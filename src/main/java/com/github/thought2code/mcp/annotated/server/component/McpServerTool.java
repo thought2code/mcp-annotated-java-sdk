@@ -6,6 +6,7 @@ import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaProperty;
 import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
 import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
+import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
 import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
@@ -91,7 +92,7 @@ public class McpServerTool
   public McpServerFeatures.SyncToolSpecification from(
       Method method, McpApplicationContext context) {
     log.info("Creating sync tool specification for method: {}", method.toGenericString());
-    ToolDefinition definition = createToolDefinition(method, context, "Sync");
+    ToolDefinition definition = createToolDefinition(method, context, ServerType.SYNC);
     return McpServerFeatures.SyncToolSpecification.builder()
         .tool(definition.tool())
         .callHandler((exchange, request) -> invoke(definition.instance(), method, request))
@@ -112,7 +113,7 @@ public class McpServerTool
   public McpServerFeatures.AsyncToolSpecification fromAsync(
       Method method, McpApplicationContext context) {
     log.info("Creating async tool specification for method: {}", method.toGenericString());
-    ToolDefinition definition = createToolDefinition(method, context, "Async");
+    ToolDefinition definition = createToolDefinition(method, context, ServerType.ASYNC);
     return McpServerFeatures.AsyncToolSpecification.builder()
         .tool(definition.tool())
         .callHandler(
@@ -321,11 +322,11 @@ public class McpServerTool
    *
    * @param method annotated tool method
    * @param context application context
-   * @param mode log label (Sync/Async)
+   * @param serverType server type (sync or async)
    * @return tool definition containing metadata and target instance
    */
   private ToolDefinition createToolDefinition(
-      Method method, McpApplicationContext context, String mode) {
+      Method method, McpApplicationContext context, ServerType serverType) {
     McpTool mcpTool = method.getAnnotation(McpTool.class);
     final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
     final String title = context.getLocalizedString(mcpTool.title(), name);
@@ -340,7 +341,10 @@ public class McpServerTool
             .inputSchema(inputSchema)
             .outputSchema(outputSchema)
             .build();
-    log.info("{} tool specification created: {}", mode, JacksonHelper.toJsonString(tool));
+    log.info(
+        "{} tool specification created: {}",
+        serverType.description(),
+        JacksonHelper.toJsonString(tool));
     Object instance = context.getComponentInstance(method.getDeclaringClass());
     return new ToolDefinition(tool, instance);
   }
