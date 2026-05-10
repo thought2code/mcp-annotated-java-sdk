@@ -91,30 +91,10 @@ public class McpServerTool
   public McpServerFeatures.SyncToolSpecification from(
       Method method, McpApplicationContext context) {
     log.info("Creating sync tool specification for method: {}", method.toGenericString());
-
-    McpTool mcpTool = method.getAnnotation(McpTool.class);
-    final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
-    final String title = context.getLocalizedString(mcpTool.title(), name);
-    final String description = context.getLocalizedString(mcpTool.description(), name);
-
-    McpSchema.JsonSchema inputSchema = createJsonSchema(context, method.getParameters());
-    Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
-    McpSchema.Tool tool =
-        McpSchema.Tool.builder()
-            .name(name)
-            .title(title)
-            .description(description)
-            .inputSchema(inputSchema)
-            .outputSchema(outputSchema)
-            .build();
-
-    log.info("Sync tool specification created: {}", JacksonHelper.toJsonString(tool));
-
-    Object instance = context.getComponentInstance(method.getDeclaringClass());
-
+    ToolDefinition definition = createToolDefinition(method, context, "Sync");
     return McpServerFeatures.SyncToolSpecification.builder()
-        .tool(tool)
-        .callHandler((exchange, request) -> invoke(instance, method, request))
+        .tool(definition.tool())
+        .callHandler((exchange, request) -> invoke(definition.instance(), method, request))
         .build();
   }
 
@@ -132,31 +112,12 @@ public class McpServerTool
   public McpServerFeatures.AsyncToolSpecification fromAsync(
       Method method, McpApplicationContext context) {
     log.info("Creating async tool specification for method: {}", method.toGenericString());
-
-    McpTool mcpTool = method.getAnnotation(McpTool.class);
-    final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
-    final String title = context.getLocalizedString(mcpTool.title(), name);
-    final String description = context.getLocalizedString(mcpTool.description(), name);
-
-    McpSchema.JsonSchema inputSchema = createJsonSchema(context, method.getParameters());
-    Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
-    McpSchema.Tool tool =
-        McpSchema.Tool.builder()
-            .name(name)
-            .title(title)
-            .description(description)
-            .inputSchema(inputSchema)
-            .outputSchema(outputSchema)
-            .build();
-
-    log.info("Async tool specification created: {}", JacksonHelper.toJsonString(tool));
-
-    Object instance = context.getComponentInstance(method.getDeclaringClass());
-
+    ToolDefinition definition = createToolDefinition(method, context, "Async");
     return McpServerFeatures.AsyncToolSpecification.builder()
-        .tool(tool)
+        .tool(definition.tool())
         .callHandler(
-            (exchange, request) -> Mono.fromCallable(() -> invoke(instance, method, request)))
+            (exchange, request) ->
+                Mono.fromCallable(() -> invoke(definition.instance(), method, request)))
         .build();
   }
 
@@ -354,4 +315,36 @@ public class McpServerTool
 
     return definitionJsonSchema;
   }
+
+  /**
+   * Creates the shared tool definition used by sync and async specifications.
+   *
+   * @param method annotated tool method
+   * @param context application context
+   * @param mode log label (Sync/Async)
+   * @return tool definition containing metadata and target instance
+   */
+  private ToolDefinition createToolDefinition(
+      Method method, McpApplicationContext context, String mode) {
+    McpTool mcpTool = method.getAnnotation(McpTool.class);
+    final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
+    final String title = context.getLocalizedString(mcpTool.title(), name);
+    final String description = context.getLocalizedString(mcpTool.description(), name);
+    McpSchema.JsonSchema inputSchema = createJsonSchema(context, method.getParameters());
+    Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
+    McpSchema.Tool tool =
+        McpSchema.Tool.builder()
+            .name(name)
+            .title(title)
+            .description(description)
+            .inputSchema(inputSchema)
+            .outputSchema(outputSchema)
+            .build();
+    log.info("{} tool specification created: {}", mode, JacksonHelper.toJsonString(tool));
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
+    return new ToolDefinition(tool, instance);
+  }
+
+  /** Tool definition containing metadata and target instance. */
+  private record ToolDefinition(McpSchema.Tool tool, Object instance) {}
 }

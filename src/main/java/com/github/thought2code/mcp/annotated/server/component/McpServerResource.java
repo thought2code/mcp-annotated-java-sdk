@@ -64,29 +64,10 @@ public class McpServerResource
   public McpServerFeatures.SyncResourceSpecification from(
       Method method, McpApplicationContext context) {
     log.info("Creating sync resource specification for method: {}", method.toGenericString());
-
-    McpResource mcpResource = method.getAnnotation(McpResource.class);
-    final String name = StringHelper.defaultIfBlank(mcpResource.name(), method.getName());
-    final String title = context.getLocalizedString(mcpResource.title(), name);
-    final String description = context.getLocalizedString(mcpResource.description(), name);
-
-    McpSchema.Resource resource =
-        McpSchema.Resource.builder()
-            .uri(mcpResource.uri())
-            .name(name)
-            .title(title)
-            .description(description)
-            .mimeType(mcpResource.mimeType())
-            .annotations(
-                new McpSchema.Annotations(List.of(mcpResource.roles()), mcpResource.priority()))
-            .build();
-
-    log.info("Sync resource specification created: {}", JacksonHelper.toJsonString(resource));
-
-    Object instance = context.getComponentInstance(method.getDeclaringClass());
-
+    ResourceDefinition definition = createResourceDefinition(method, context, "Sync");
     return new McpServerFeatures.SyncResourceSpecification(
-        resource, (exchange, request) -> invoke(instance, method, resource));
+        definition.resource(),
+        (exchange, request) -> invoke(definition.instance(), method, definition.resource()));
   }
 
   /**
@@ -103,30 +84,11 @@ public class McpServerResource
   public McpServerFeatures.AsyncResourceSpecification fromAsync(
       Method method, McpApplicationContext context) {
     log.info("Creating async resource specification for method: {}", method.toGenericString());
-
-    McpResource mcpResource = method.getAnnotation(McpResource.class);
-    final String name = StringHelper.defaultIfBlank(mcpResource.name(), method.getName());
-    final String title = context.getLocalizedString(mcpResource.title(), name);
-    final String description = context.getLocalizedString(mcpResource.description(), name);
-
-    McpSchema.Resource resource =
-        McpSchema.Resource.builder()
-            .uri(mcpResource.uri())
-            .name(name)
-            .title(title)
-            .description(description)
-            .mimeType(mcpResource.mimeType())
-            .annotations(
-                new McpSchema.Annotations(List.of(mcpResource.roles()), mcpResource.priority()))
-            .build();
-
-    log.info("Async resource specification created: {}", JacksonHelper.toJsonString(resource));
-
-    Object instance = context.getComponentInstance(method.getDeclaringClass());
-
+    ResourceDefinition definition = createResourceDefinition(method, context, "Async");
     return new McpServerFeatures.AsyncResourceSpecification(
-        resource,
-        (exchange, request) -> Mono.fromCallable(() -> invoke(instance, method, resource)));
+        definition.resource(),
+        (exchange, request) ->
+            Mono.fromCallable(() -> invoke(definition.instance(), method, definition.resource())));
   }
 
   @Override
@@ -203,4 +165,36 @@ public class McpServerResource
 
     return readResourceResult;
   }
+
+  /**
+   * Creates the shared resource definition used by sync and async specifications.
+   *
+   * @param method annotated resource method
+   * @param context application context
+   * @param mode log label (Sync/Async)
+   * @return resource definition containing metadata and target instance
+   */
+  private ResourceDefinition createResourceDefinition(
+      Method method, McpApplicationContext context, String mode) {
+    McpResource mcpResource = method.getAnnotation(McpResource.class);
+    final String name = StringHelper.defaultIfBlank(mcpResource.name(), method.getName());
+    final String title = context.getLocalizedString(mcpResource.title(), name);
+    final String description = context.getLocalizedString(mcpResource.description(), name);
+    McpSchema.Resource resource =
+        McpSchema.Resource.builder()
+            .uri(mcpResource.uri())
+            .name(name)
+            .title(title)
+            .description(description)
+            .mimeType(mcpResource.mimeType())
+            .annotations(
+                new McpSchema.Annotations(List.of(mcpResource.roles()), mcpResource.priority()))
+            .build();
+    log.info("{} resource specification created: {}", mode, JacksonHelper.toJsonString(resource));
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
+    return new ResourceDefinition(resource, instance);
+  }
+
+  /** Resource definition containing metadata and target instance. */
+  private record ResourceDefinition(McpSchema.Resource resource, Object instance) {}
 }

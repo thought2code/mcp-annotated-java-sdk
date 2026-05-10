@@ -78,21 +78,11 @@ public class McpServerPrompt
   public McpServerFeatures.SyncPromptSpecification from(
       Method method, McpApplicationContext context) {
     log.info("Creating sync prompt specification for method: {}", method.toGenericString());
-
-    McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
-    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
-    final String title = context.getLocalizedString(mcpPrompt.title(), name);
-    final String description = context.getLocalizedString(mcpPrompt.description(), name);
-
-    List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
-    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
-
-    log.info("Sync prompt specification created: {}", JacksonHelper.toJsonString(prompt));
-
-    Object instance = context.getComponentInstance(method.getDeclaringClass());
-
+    PromptDefinition definition = createPromptDefinition(method, context, "Sync");
     return new McpServerFeatures.SyncPromptSpecification(
-        prompt, (exchange, request) -> invoke(instance, method, description, request));
+        definition.prompt(),
+        (exchange, request) ->
+            invoke(definition.instance(), method, definition.description(), request));
   }
 
   /**
@@ -109,23 +99,12 @@ public class McpServerPrompt
   public McpServerFeatures.AsyncPromptSpecification fromAsync(
       Method method, McpApplicationContext context) {
     log.info("Creating async prompt specification for method: {}", method.toGenericString());
-
-    McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
-    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
-    final String title = context.getLocalizedString(mcpPrompt.title(), name);
-    final String description = context.getLocalizedString(mcpPrompt.description(), name);
-
-    List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
-    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
-
-    log.info("Async prompt specification created: {}", JacksonHelper.toJsonString(prompt));
-
-    Object instance = context.getComponentInstance(method.getDeclaringClass());
-
+    PromptDefinition definition = createPromptDefinition(method, context, "Async");
     return new McpServerFeatures.AsyncPromptSpecification(
-        prompt,
+        definition.prompt(),
         (exchange, request) ->
-            Mono.fromCallable(() -> invoke(instance, method, description, request)));
+            Mono.fromCallable(
+                () -> invoke(definition.instance(), method, definition.description(), request)));
   }
 
   @Override
@@ -234,4 +213,28 @@ public class McpServerPrompt
 
     return promptArguments;
   }
+
+  /**
+   * Creates the shared prompt definition used by sync and async specifications.
+   *
+   * @param method annotated prompt method
+   * @param context application context
+   * @param mode log label (Sync/Async)
+   * @return prompt definition containing metadata and target instance
+   */
+  private PromptDefinition createPromptDefinition(
+      Method method, McpApplicationContext context, String mode) {
+    McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
+    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
+    final String title = context.getLocalizedString(mcpPrompt.title(), name);
+    final String description = context.getLocalizedString(mcpPrompt.description(), name);
+    List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
+    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
+    log.info("{} prompt specification created: {}", mode, JacksonHelper.toJsonString(prompt));
+    Object instance = context.getComponentInstance(method.getDeclaringClass());
+    return new PromptDefinition(prompt, instance, description);
+  }
+
+  /** Prompt definition containing metadata and target instance. */
+  private record PromptDefinition(McpSchema.Prompt prompt, Object instance, String description) {}
 }
