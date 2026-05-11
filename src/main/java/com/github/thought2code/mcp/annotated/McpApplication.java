@@ -5,7 +5,7 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguratio
 import com.github.thought2code.mcp.annotated.configuration.McpServerDefaults;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
-import com.github.thought2code.mcp.annotated.server.McpServer;
+import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
@@ -93,7 +93,7 @@ public final class McpApplication {
    * @see McpApplicationContext
    * @see McpConfigurationLoader
    * @see McpServerConfiguration
-   * @see McpServer
+   * @see AnnotatedMcpServer
    * @see McpSyncServer
    */
   private static void startMcpServer(String configFileName, McpApplicationContext context) {
@@ -106,7 +106,7 @@ public final class McpApplication {
       return;
     }
 
-    McpServer mcpServer = null;
+    AnnotatedMcpServer mcpServer = null;
     switch (configuration.mode()) {
       case STDIO -> mcpServer = new McpStdioServer(configuration, context);
       case SSE -> mcpServer = new McpSseServer(configuration, context);

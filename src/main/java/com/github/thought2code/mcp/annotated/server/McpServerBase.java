@@ -42,13 +42,13 @@ import org.slf4j.LoggerFactory;
  * #createSyncSpecification()} and {@link #createAsyncSpecification()} methods.
  *
  * @author codeboyzhou
- * @see McpServer
+ * @see AnnotatedMcpServer
  * @see McpStdioServer
  * @see McpSseServer
  * @see McpStreamableServer
  * @see McpServerConfiguration
  */
-public abstract class McpServerBase implements McpServer {
+public abstract class McpServerBase implements AnnotatedMcpServer {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerBase.class);
 

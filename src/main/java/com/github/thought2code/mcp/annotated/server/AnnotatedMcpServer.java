@@ -1,20 +1,19 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.McpApplication;
+import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.server.McpAsyncServer;
+import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
 
 /**
- * Interface representing a Model Context Protocol (MCP) server that provides the core functionality
- * for MCP server implementations.
+ * SDK-level contract for an MCP server runtime (transport + lifecycle), distinct from {@link
+ * McpServer} which builds sync/async specifications from the MCP Java SDK.
  *
- * <p>This interface defines the contract for MCP servers, including capability definition, server
- * specification creation, server instantiation, and component registration. Implementations of this
- * interface should provide the specific behavior for different server modes (STDIO, SSE,
- * STREAMABLE).
- *
- * <p>Typical usage involves implementing this interface for a specific server mode and providing
- * the necessary configuration and component registration logic.
+ * <p>Implementations cover server modes such as {@link ServerMode#STDIO}, {@link ServerMode#SSE},
+ * and {@link ServerMode#STREAMABLE}. Typical usage is through {@link McpServerBase} subclasses
+ * together with {@link McpApplication}.
  *
  * @author codeboyzhou
  * @see McpServerBase
@@ -22,7 +21,7 @@ import io.modelcontextprotocol.spec.McpSchema;
  * @see McpSseServer
  * @see McpStreamableServer
  */
-public interface McpServer {
+public interface AnnotatedMcpServer {
   /**
    * Defines and returns the server capabilities that this MCP server supports.
    *
@@ -41,9 +40,9 @@ public interface McpServer {
    * needed to create a synchronized MCP server instance.
    *
    * @return the synchronization specification for the server
-   * @see io.modelcontextprotocol.server.McpServer.SyncSpecification
+   * @see McpServer.SyncSpecification
    */
-  io.modelcontextprotocol.server.McpServer.SyncSpecification<?> createSyncSpecification();
+  McpServer.SyncSpecification<?> createSyncSpecification();
 
   /**
    * Creates and returns the asynchronous specification for this MCP server.
@@ -52,9 +51,9 @@ public interface McpServer {
    * needed to create an asynchronous MCP server instance.
    *
    * @return the asynchronous specification for the server
-   * @see io.modelcontextprotocol.server.McpServer.AsyncSpecification
+   * @see McpServer.AsyncSpecification
    */
-  io.modelcontextprotocol.server.McpServer.AsyncSpecification<?> createAsyncSpecification();
+  McpServer.AsyncSpecification<?> createAsyncSpecification();
 
   /**
    * Creates and returns a fully configured MCP synchronous server instance.

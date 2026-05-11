@@ -15,7 +15,7 @@ import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
-import com.github.thought2code.mcp.annotated.server.McpServer;
+import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
@@ -55,7 +55,7 @@ class McpApplicationTest {
     if (!configuration.enabled()) {
       return;
     }
-    McpServer mcpServer =
+    AnnotatedMcpServer mcpServer =
         switch (configuration.mode()) {
           case STDIO -> new McpStdioServer(configuration, context);
           case SSE -> new McpSseServer(configuration, context);
