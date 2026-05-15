@@ -19,14 +19,14 @@ This guide will help you build your first MCP server in 5 minutes.
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.13.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.14.0'
 ```
 
 ## 5-Minutes Tutorial
@@ -110,16 +110,17 @@ public class MyPrompts {
 ### Step 6: Run the Server
 
 ```bash
-# Compile and run
+# Compile your project
 ./mvnw clean package
-java -jar target/your-app.jar
 ```
+
+Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled classes and dependencies on the classpath. Use an executable JAR setup in your own project if you need `java -jar` with a single file.
 
 ## Server Modes
 
-This SDK supports three MCP server modes:
+This SDK supports three MCP server modes. If you omit `mode` in `mcp-server.yml`, the server defaults to **STREAMABLE** (see the configuration table below).
 
-### 1. STDIO Mode (Default)
+### 1. STDIO Mode
 
 Based on standard input/output communication, suitable for CLI tools and local development.
 
@@ -141,7 +142,8 @@ mode: SSE
 sse:
   port: 8080
   endpoint: /sse
-  messageEndpoint: /message
+  message-endpoint: /mcp/message
+  base-url: http://localhost:8080
 ```
 
 ### 3. STREAMABLE Mode
@@ -153,30 +155,38 @@ HTTP streaming for web applications, recommended for production.
 mode: STREAMABLE
 streamable:
   mcp-endpoint: /mcp/message
-  disallow-delete: true
-  keep-alive-interval: 30000
+  disallow-delete: false
+  keep-alive-interval: 20000
   port: 8080
 ```
 
 ## Configuration Properties
 
-| Property                          | Description                               | Default      |
-|-----------------------------------|-------------------------------------------|--------------|
-| `enabled`                         | Enable/disable MCP server                 | `true`       |
-| `mode`                            | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE` |
-| `name`                            | Server name                               | `mcp-server` |
-| `version`                         | Server version                            | `1.0.0`      |
-| `type`                            | Server type: `SYNC`, `ASYNC`              | `SYNC`       |
-| `instructions`                    | Instructions for the LLM client           | (empty)      |
-| `request-timeout`                 | Request timeout in milliseconds           | `20000`      |
-| `capabilities.resource`           | Enable resource support                   | `true`       |
-| `capabilities.subscribe-resource` | Enable resource subscription              | `true`       |
-| `capabilities.prompt`             | Enable prompt support                     | `true`       |
-| `capabilities.tool`               | Enable tool support                       | `true`       |
-| `capabilities.completion`         | Enable completion support                 | `true`       |
-| `change-notification.resource`    | Notify clients on resource change         | `true`       |
-| `change-notification.prompt`      | Notify clients on prompt change           | `true`       |
-| `change-notification.tool`        | Notify clients on tool change             | `true`       |
+| Property                          | Description                               | Default        |
+|-----------------------------------|-------------------------------------------|----------------|
+| `enabled`                         | Enable/disable MCP server                 | `true`         |
+| `mode`                            | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE`   |
+| `name`                            | Server name                               | `mcp-server`   |
+| `version`                         | Server version                            | `1.0.0`        |
+| `type`                            | Server type: `SYNC`, `ASYNC`              | `SYNC`         |
+| `instructions`                    | Instructions for the LLM client           | (empty)        |
+| `request-timeout`                 | Request timeout in milliseconds           | `20000`        |
+| `capabilities.resource`           | Enable resource support                   | `true`         |
+| `capabilities.subscribe-resource` | Enable resource subscription              | `true`         |
+| `capabilities.prompt`             | Enable prompt support                     | `true`         |
+| `capabilities.tool`               | Enable tool support                       | `true`         |
+| `capabilities.completion`         | Enable completion support                 | `true`         |
+| `change-notification.resource`    | Notify clients on resource change         | `true`         |
+| `change-notification.prompt`      | Notify clients on prompt change           | `true`         |
+| `change-notification.tool`        | Notify clients on tool change             | `true`         |
+| `sse.message-endpoint`            | SSE POST message path                     | `/mcp/message` |
+| `sse.endpoint`                    | SSE stream path                           | `/sse`         |
+| `sse.base-url`                    | Public base URL for the SSE server        | *(empty)*      |
+| `sse.port`                        | HTTP port for SSE mode                    | `8080`         |
+| `streamable.mcp-endpoint`         | Streamable HTTP MCP path                  | `/mcp/message` |
+| `streamable.disallow-delete`      | Reject HTTP DELETE on session             | `false`        |
+| `streamable.keep-alive-interval`  | Keep-alive interval (ms)                  | `20000`        |
+| `streamable.port`                 | HTTP port for STREAMABLE mode             | `8080`         |
 
 ## Profile-based Configuration
 
@@ -225,7 +235,7 @@ your-mcp-project/
 │               └── example/
 │                   └── McpServerTest.java       # Unit tests
 └── target/
-    └── your-app.jar                             # Executable JAR
+    └── *.jar                                    # Build output (name depends on your project)
 ```
 
 ## Next Steps
