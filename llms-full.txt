@@ -43,14 +43,14 @@ The Model Context Protocol (MCP) is a standardized protocol for building servers
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.13.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.14.0'
 ```
 
 ## Quick Start Tutorial
@@ -65,6 +65,7 @@ mode: STDIO
 name: my-first-mcp-server
 version: 1.0.0
 type: SYNC
+instructions: You are a helpful AI assistant
 request-timeout: 20000
 capabilities:
   resource: true
@@ -152,9 +153,11 @@ public class MyPrompts {
 ### Step 6: Run the Server
 
 ```bash
+# Compile your project
 ./mvnw clean package
-java -jar target/your-app.jar
 ```
+
+Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled classes and dependencies on the classpath. Use an executable JAR setup in your own project if you need `java -jar` with a single file.
 
 ## Core Components
 
@@ -167,9 +170,10 @@ Resource components are used to expose data to LLMs, similar to GET requests in 
 | Parameter | Description | Required |
 |-----------|-------------|----------|
 | `uri` | Unique identifier of the resource (URI format) | Yes |
-| `description` | Resource description for LLM understanding | Yes |
+| `description` | Resource description for LLM understanding | No (defaults to `name`, then method name) |
 | `name` | Resource name (defaults to method name) | No |
-| `mimeType` | MIME type of the resource content | No |
+| `title` | Resource title (defaults to `name`) | No |
+| `mimeType` | MIME type of the resource content | No (default `text/plain`) |
 
 ### Tools
 
@@ -179,7 +183,7 @@ Tool components are used to execute operations or calculations, similar to POST 
 
 | Parameter | Description | Required |
 |-----------|-------------|----------|
-| `description` | Tool description for LLM understanding | Yes |
+| `description` | Tool description for LLM understanding | No (defaults to tool `name`, then method name) |
 | `name` | Tool name (defaults to method name) | No |
 | `title` | Tool title for display purposes | No |
 
@@ -188,8 +192,8 @@ Tool components are used to execute operations or calculations, similar to POST 
 | Parameter | Description | Required |
 |-----------|-------------|----------|
 | `name` | Parameter name | Yes |
-| `description` | Parameter description | Yes |
-| `required` | Whether the parameter is required | No |
+| `description` | Parameter description | No (defaults to `name`) |
+| `required` | Whether the parameter is required | No (default `true`) |
 
 ### Prompts
 
@@ -199,7 +203,7 @@ Prompt components are used to define reusable prompt templates.
 
 | Parameter | Description | Required |
 |-----------|-------------|----------|
-| `description` | Prompt description for LLM understanding | Yes |
+| `description` | Prompt description for LLM understanding | No (defaults to prompt `name`, then method name) |
 | `name` | Prompt name (defaults to method name) | No |
 | `title` | Prompt title for display purposes | No |
 
@@ -208,34 +212,73 @@ Prompt components are used to define reusable prompt templates.
 | Parameter | Description | Required |
 |-----------|-------------|----------|
 | `name` | Parameter name | Yes |
-| `description` | Parameter description | Yes |
-| `required` | Whether the parameter is required | No |
+| `description` | Parameter description | No (defaults to `name`) |
+| `required` | Whether the parameter is required | No (default `true`) |
 
 ### Completions
 
 Completions provide auto-complete suggestions for resource URIs and prompt arguments.
 
+Handlers must **return** `McpCompleteCompletion` and take **exactly one** parameter of type `McpSchema.CompleteRequest.CompleteArgument` (`name()` and `value()` identify the argument being completed).
+
 #### Resource Completions
 
 ```java
+import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
+import com.github.thought2code.mcp.annotated.server.component.McpCompleteCompletion;
+import io.modelcontextprotocol.spec.McpSchema;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @McpResourceCompletion(uri = "file://")
-public List<String> completeFilePath(String uri, String cursorValue) {
-    return Files.list(Paths.get(cursorValue))
-        .map(Path::toString)
-        .collect(Collectors.toList());
+public McpCompleteCompletion completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
+  String prefix = argument.value() != null ? argument.value() : "";
+  try {
+    List<String> paths =
+        Files.list(Paths.get(prefix.isEmpty() ? "." : prefix))
+            .map(Path::toString)
+            .limit(50)
+            .collect(Collectors.toList());
+    return McpCompleteCompletion.builder()
+        .values(paths)
+        .total(paths.size())
+        .hasMore(false)
+        .build();
+  } catch (Exception e) {
+    return McpCompleteCompletion.empty();
+  }
 }
 ```
 
 #### Prompt Completions
 
+`@McpPromptCompletion.name` must match the **registered prompt name** (by default, the Java method name of the `@McpPrompt` method). Filter by `argument.name()` when one prompt has multiple parameters.
+
 ```java
-@McpPromptCompletion(promptName = "generateCode", argumentName = "language")
-public List<String> completeLanguage(String value) {
-    return Arrays.asList("Java", "Python", "JavaScript", "Go", "Rust");
+import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
+import com.github.thought2code.mcp.annotated.server.component.McpCompleteCompletion;
+import io.modelcontextprotocol.spec.McpSchema;
+import java.util.List;
+
+@McpPromptCompletion(name = "generateCode")
+public McpCompleteCompletion completeGenerateCode(McpSchema.CompleteRequest.CompleteArgument argument) {
+  if (!"language".equals(argument.name())) {
+    return McpCompleteCompletion.empty();
+  }
+  return McpCompleteCompletion.builder()
+      .values(List.of("Java", "Python", "JavaScript", "Go", "Rust"))
+      .total(5)
+      .hasMore(false)
+      .build();
 }
 ```
 
 ## Server Modes
+
+If `mode` is omitted in `mcp-server.yml`, the server defaults to **STREAMABLE**.
 
 | Mode | Description | Use Case |
 |------|-------------|----------|
@@ -256,7 +299,8 @@ mode: SSE
 sse:
   port: 8080
   endpoint: /sse
-  messageEndpoint: /message
+  message-endpoint: /mcp/message
+  base-url: http://localhost:8080
 ```
 
 ### STREAMABLE Mode
@@ -265,8 +309,8 @@ sse:
 mode: STREAMABLE
 streamable:
   mcp-endpoint: /mcp/message
-  disallow-delete: true
-  keep-alive-interval: 30000
+  disallow-delete: false
+  keep-alive-interval: 20000
   port: 8080
 ```
 
@@ -279,9 +323,24 @@ streamable:
 | `name` | Server name | `mcp-server` |
 | `version` | Server version | `1.0.0` |
 | `type` | Server type: `SYNC`, `ASYNC` | `SYNC` |
+| `instructions` | Instructions for the LLM client | (empty) |
 | `request-timeout` | Request timeout in milliseconds | `20000` |
-| `capabilities` | Enable resources, prompts, tools | all `true` |
-| `change-notification` | Enable change notifications | all `true` |
+| `capabilities.resource` | Enable resource support | `true` |
+| `capabilities.subscribe-resource` | Enable resource subscription | `true` |
+| `capabilities.prompt` | Enable prompt support | `true` |
+| `capabilities.tool` | Enable tool support | `true` |
+| `capabilities.completion` | Enable completion support | `true` |
+| `change-notification.resource` | Notify clients on resource change | `true` |
+| `change-notification.prompt` | Notify clients on prompt change | `true` |
+| `change-notification.tool` | Notify clients on tool change | `true` |
+| `sse.message-endpoint` | SSE POST message path | `/mcp/message` |
+| `sse.endpoint` | SSE stream path | `/sse` |
+| `sse.base-url` | Public base URL for the SSE server | *(empty)* |
+| `sse.port` | HTTP port for SSE mode | `8080` |
+| `streamable.mcp-endpoint` | Streamable HTTP MCP path | `/mcp/message` |
+| `streamable.disallow-delete` | Reject HTTP DELETE on session | `false` |
+| `streamable.keep-alive-interval` | Keep-alive interval (ms) | `20000` |
+| `streamable.port` | HTTP port for STREAMABLE mode | `8080` |
 
 ## Profile-based Configuration
 
@@ -344,32 +403,48 @@ public int add(
 
 ## Structured Content
 
-Tools can return structured content for rich responses:
+Tools can return structured content by returning a type that **implements** `McpStructuredContent` (often a `record` with `@McpJsonSchemaProperty` on fields). There is no `McpStructuredContent.of(...)` helper.
 
 ```java
+import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaDefinition;
+import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaProperty;
+import com.github.thought2code.mcp.annotated.annotation.McpTool;
+import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
+import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
+
+@McpJsonSchemaDefinition
+public record User(
+    @McpJsonSchemaProperty(description = "User id") String id,
+    @McpJsonSchemaProperty(description = "Display name") String name)
+    implements McpStructuredContent {
+
+  @Override
+  public String asTextContent() {
+    return "User " + id + ": " + name;
+  }
+}
+
 @McpTool(description = "Get user details")
-public McpStructuredContent<User> getUser(
-    @McpToolParam(name = "id", description = "User ID") String id
-) {
-    User user = userService.findById(id);
-    return McpStructuredContent.of(user);
+public User getUser(@McpToolParam(name = "id", description = "User ID") String id) {
+  return new User(id, "Ada");
 }
 ```
 
 ## Error Handling
 
-When a tool encounters an error, you can return an error result:
+If a tool method **throws any exception**, the server returns a `CallToolResult` with `isError` set to `true` and a generic method-invocation error message (the exception message is not forwarded to the client today).
+
+For expected failures such as validation, return a normal value (for example a `String`) so the tool call remains a successful result with `isError` false:
 
 ```java
 @McpTool(description = "Divide two numbers")
-public Number divide(
+public String divide(
     @McpToolParam(name = "a", description = "Dividend") double a,
-    @McpToolParam(name = "b", description = "Divisor") double b
-) {
-    if (b == 0) {
-        return McpStructuredContent.error("Division by zero is not allowed");
-    }
-    return a / b;
+    @McpToolParam(name = "b", description = "Divisor") double b) {
+  if (b == 0) {
+    return "Cannot divide by zero.";
+  }
+  return Double.toString(a / b);
 }
 ```
 
@@ -413,25 +488,29 @@ your-mcp-project/
 │               └── example/
 │                   └── McpServerTest.java       # Unit tests
 └── target/
-    └── your-app.jar                             # Executable JAR
+    └── *.jar                                    # Build output (name depends on your project)
 ```
 
 ## Custom JSON Schema
 
-For complex parameter types, you can define custom JSON schemas:
+For complex tool parameter or result types, annotate the type with `@McpJsonSchemaDefinition` and annotate fields (or record components) with `@McpJsonSchemaProperty` (JSON types are inferred from Java types).
 
 ```java
+import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaDefinition;
+import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaProperty;
+import com.github.thought2code.mcp.annotated.annotation.McpTool;
+import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
+
+@McpJsonSchemaDefinition
+public record CreateUserRequest(
+    @McpJsonSchemaProperty(description = "User name") String name,
+    @McpJsonSchemaProperty(description = "User age", required = false) int age,
+    @McpJsonSchemaProperty(description = "Email address") String email) {}
+
 @McpTool(description = "Create a user")
-@McpJsonSchemaDefinition(
-    properties = {
-        @McpJsonSchemaProperty(name = "name", type = "string", description = "User name"),
-        @McpJsonSchemaProperty(name = "age", type = "integer", description = "User age"),
-        @McpJsonSchemaProperty(name = "email", type = "string", description = "Email address")
-    },
-    required = {"name", "email"}
-)
-public User createUser(Map<String, Object> params) {
-    return new User((String) params.get("name"), (String) params.get("email"));
+public String createUser(
+    @McpToolParam(name = "user", description = "User payload") CreateUserRequest user) {
+  return "Created: " + user.name();
 }
 ```
 
