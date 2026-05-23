@@ -68,13 +68,13 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.15.0</version>
+    <version>0.16.0</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.15.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.16.0'
 ```
 
 #### Step 2: Create Configuration File

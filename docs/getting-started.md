@@ -19,14 +19,14 @@ This guide will help you build your first MCP server in 5 minutes.
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.15.0</version>
+    <version>0.16.0</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.15.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.16.0'
 ```
 
 ## 5-Minutes Tutorial
