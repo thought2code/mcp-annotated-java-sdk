@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class McpApplicationContextTest {
 
   @Test
-  void shouldKeepReflectionScopesIndependent() {
+  void from_shouldKeepReflectionScopesIndependent() {
     McpApplicationContext alphaContext = McpApplicationContext.from(AlphaMcpApplication.class);
     McpApplicationContext betaContext = McpApplicationContext.from(BetaMcpApplication.class);
 

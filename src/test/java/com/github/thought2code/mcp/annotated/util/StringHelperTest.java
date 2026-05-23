@@ -10,38 +10,33 @@ import org.junit.jupiter.api.Test;
 class StringHelperTest {
 
   @Test
-  void testConstructor_shouldThrowException() {
+  void constructor_shouldNotBeInstantiable() {
     assertThrows(UnsupportedOperationException.class, StringHelper::new);
   }
 
   @Test
-  void testIsBlank_shouldReturnTrueWhenStrIsBlank() {
+  void isBlank_shouldReturnTrueForNullEmptyAndWhitespace() {
+    assertTrue(StringHelper.isBlank(null));
     assertTrue(StringHelper.isBlank(StringHelper.EMPTY));
     assertTrue(StringHelper.isBlank(StringHelper.SPACE));
+    assertTrue(StringHelper.isBlank("   \t\n"));
   }
 
   @Test
-  void testIsBlank_shouldReturnFalseWhenStrIsNotBlank() {
+  void isBlank_shouldReturnFalseForNonBlankText() {
     assertFalse(StringHelper.isBlank("test"));
+    assertFalse(StringHelper.isBlank("  x  "));
   }
 
   @Test
-  void testDefaultIfBlank_shouldReturnDefaultValueWhenStrIsNull() {
+  void defaultIfBlank_shouldReturnDefaultWhenInputIsBlank() {
     assertEquals("default", StringHelper.defaultIfBlank(null, "default"));
-  }
-
-  @Test
-  void testDefaultIfBlank_shouldReturnDefaultValueWhenStrIsBlank() {
+    assertEquals("default", StringHelper.defaultIfBlank(StringHelper.EMPTY, "default"));
     assertEquals("default", StringHelper.defaultIfBlank(StringHelper.SPACE, "default"));
   }
 
   @Test
-  void testDefaultIfBlank_shouldReturnDefaultValueWhenStrIsEmpty() {
-    assertEquals("default", StringHelper.defaultIfBlank(StringHelper.EMPTY, "default"));
-  }
-
-  @Test
-  void testDefaultIfBlank_shouldReturnStrWhenStrIsNotBlank() {
+  void defaultIfBlank_shouldReturnInputWhenNotBlank() {
     assertEquals("test", StringHelper.defaultIfBlank("test", "default"));
   }
 }

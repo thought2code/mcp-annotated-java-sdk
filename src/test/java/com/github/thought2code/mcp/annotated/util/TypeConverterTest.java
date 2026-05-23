@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 class TypeConverterTest {
 
   @Test
-  void testConstructor_shouldThrowException() {
+  void constructor_shouldNotBeInstantiable() {
     assertThrows(UnsupportedOperationException.class, TypeConverter::new);
   }
 
   @Test
-  void testConvertTargetType_shouldReturnDefaultValueWhenValueIsNull() {
+  void convert_shouldReturnDefaultsWhenValueIsNull() {
     assertEquals(StringHelper.EMPTY, TypeConverter.convert(null, String.class));
     assertEquals(0, TypeConverter.convert(null, int.class));
     assertEquals(0, TypeConverter.convert(null, Integer.class));
@@ -31,49 +31,31 @@ class TypeConverterTest {
   }
 
   @Test
-  void testConvertTargetType_shouldReturnStrWhenTargetTypeIsStr() {
+  void convert_shouldParsePrimitiveWrappersFromString() {
     assertEquals("test", TypeConverter.convert("test", String.class));
-  }
-
-  @Test
-  void testConvertTargetType_shouldReturnIntWhenTargetTypeIsInt() {
     assertEquals(1, TypeConverter.convert("1", int.class));
     assertEquals(1, TypeConverter.convert("1", Integer.class));
-  }
-
-  @Test
-  void testConvertTargetType_shouldReturnLongWhenTargetTypeIsLong() {
     assertEquals(1L, TypeConverter.convert("1", long.class));
     assertEquals(1L, TypeConverter.convert("1", Long.class));
-  }
-
-  @Test
-  void testConvertTargetType_shouldReturnFloatWhenTargetTypeIsFloat() {
     assertEquals(1.0F, TypeConverter.convert("1", float.class));
     assertEquals(1.0F, TypeConverter.convert("1", Float.class));
-  }
-
-  @Test
-  void testConvertTargetType_shouldReturnDoubleWhenTargetTypeIsDouble() {
     assertEquals(1.0, TypeConverter.convert("1", double.class));
     assertEquals(1.0, TypeConverter.convert("1", Double.class));
-  }
-
-  @Test
-  void testConvertTargetType_shouldReturnNumberWhenTargetTypeIsNumber() {
-    assertEquals(2147483647, TypeConverter.convert(Integer.MAX_VALUE, Number.class));
-    assertEquals(9223372036854775807L, TypeConverter.convert(Long.MAX_VALUE, Number.class));
-    assertEquals(1.0, TypeConverter.convert("1.0", Number.class));
-  }
-
-  @Test
-  void testConvertTargetType_shouldReturnBooleanWhenTargetTypeIsBoolean() {
     assertEquals(true, TypeConverter.convert("true", boolean.class));
     assertEquals(true, TypeConverter.convert("true", Boolean.class));
   }
 
   @Test
-  void testConvertTargetType_shouldReturnValueAsStringWhenTargetTypeIsNotSupported() {
+  void convert_shouldParseNumberWithIntegerLongAndDoubleSemantics() {
+    assertEquals(2147483647, TypeConverter.convert(Integer.MAX_VALUE, Number.class));
+    assertEquals(9223372036854775807L, TypeConverter.convert(Long.MAX_VALUE, Number.class));
+    assertEquals(1.0, TypeConverter.convert("1.0", Number.class));
+    assertEquals(42, TypeConverter.convert("42", Number.class));
+  }
+
+  @Test
+  void convert_shouldPassThroughUnsupportedTypes() {
     assertEquals("test", TypeConverter.convert("test", Object.class));
+    assertEquals(123, TypeConverter.convert(123, Object.class));
   }
 }

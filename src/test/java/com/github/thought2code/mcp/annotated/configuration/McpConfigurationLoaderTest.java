@@ -15,10 +15,9 @@ import org.junit.jupiter.api.Test;
 class McpConfigurationLoaderTest {
 
   @Test
-  void testLoadConfig_withProfile() {
-    final String configFileName = "test-mcp-server-with-profile.yml";
-    McpConfigurationLoader loader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = loader.loadConfig();
+  void loadConfig_shouldMergeProfileOverrides() {
+    McpServerConfiguration configuration =
+        new McpConfigurationLoader("test-mcp-server-with-profile.yml").loadConfig();
     assertNotNull(configuration);
     assertEquals("dev", configuration.profile());
     assertTrue(configuration.enabled());
@@ -40,20 +39,31 @@ class McpConfigurationLoaderTest {
   }
 
   @Test
-  void testLoadConfig_withProfile_shouldFailValidationWhenMergedConfigIsInvalid() {
-    final String configFileName = "test-mcp-server-with-invalid-profile.yml";
-    McpConfigurationLoader loader = new McpConfigurationLoader(configFileName);
-    McpServerConfigurationException e =
-        assertThrows(McpServerConfigurationException.class, loader::loadConfig);
-    assertTrue(e.getMessage().contains("subscribe-resource"));
+  void loadConfig_shouldFailValidationWhenMergedProfileIsInvalid() {
+    McpServerConfigurationException exception =
+        assertThrows(
+            McpServerConfigurationException.class,
+            () ->
+                new McpConfigurationLoader("test-mcp-server-with-invalid-profile.yml")
+                    .loadConfig());
+    assertTrue(exception.getMessage().contains("subscribe-resource"));
   }
 
   @Test
-  void testLoadConfig_whenConfigFileMissing_shouldUseUnifiedErrorContract() {
-    McpConfigurationLoader loader = new McpConfigurationLoader("missing-config.yml");
-    McpServerConfigurationException e =
-        assertThrows(McpServerConfigurationException.class, loader::loadConfig);
-    assertTrue(e.getMessage().contains(McpServerError.CONFIG_FILE_NOT_FOUND.getCode()));
-    assertTrue(e.getMessage().contains("missing-config.yml"));
+  void loadConfig_shouldUseUnifiedErrorWhenConfigFileMissing() {
+    McpServerConfigurationException exception =
+        assertThrows(
+            McpServerConfigurationException.class,
+            () -> new McpConfigurationLoader("missing-config.yml").loadConfig());
+    assertTrue(exception.getMessage().contains(McpServerError.CONFIG_FILE_NOT_FOUND.getCode()));
+    assertTrue(exception.getMessage().contains("missing-config.yml"));
+  }
+
+  @Test
+  void loadConfig_shouldLoadDefaultClasspathConfigWithoutProfile() {
+    McpServerConfiguration configuration =
+        new McpConfigurationLoader("mcp-server.yml").loadConfig();
+    assertEquals(ServerMode.STREAMABLE, configuration.mode());
+    assertTrue(configuration.enabled());
   }
 }

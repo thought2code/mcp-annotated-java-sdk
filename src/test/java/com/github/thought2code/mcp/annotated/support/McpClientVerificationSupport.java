@@ -1,213 +1,45 @@
-package com.github.thought2code.mcp.annotated;
+package com.github.thought2code.mcp.annotated.support;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
-import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
 import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
-import com.github.thought2code.mcp.annotated.enums.ServerMode;
-import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
-import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
-import com.github.thought2code.mcp.annotated.server.McpSseServer;
-import com.github.thought2code.mcp.annotated.server.McpStdioServer;
-import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
-import com.github.thought2code.mcp.annotated.test.TestMcpStdioServer;
 import com.github.thought2code.mcp.annotated.test.TestMcpToolsStructuredContent;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
-import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
-import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
-import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
-import io.modelcontextprotocol.client.transport.ServerParameters;
-import io.modelcontextprotocol.client.transport.StdioClientTransport;
-import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.spec.McpSchema;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
-class McpApplicationTest {
+/** Shared MCP client assertions used by CRL integration tests. */
+public final class McpClientVerificationSupport {
 
-  static McpApplicationContext context;
+  private McpClientVerificationSupport() {}
 
-  Duration requestTimeout = Duration.ofSeconds(60);
-
-  @BeforeAll
-  static void setup() {
-    System.setProperty("mcp.server.testing", "true");
-    context = McpApplicationContext.from(McpApplicationTest.class);
-  }
-
-  private void startServer(McpServerConfiguration configuration) {
-    if (!configuration.enabled()) {
-      return;
-    }
-    AnnotatedMcpServer mcpServer =
-        switch (configuration.mode()) {
-          case STDIO -> new McpStdioServer(configuration, context);
-          case SSE -> new McpSseServer(configuration, context);
-          case STREAMABLE -> new McpStreamableServer(configuration, context);
-        };
-    var syncServer = mcpServer.createSyncServer();
-    mcpServer.registerComponents(syncServer);
-    mcpServer.start();
-  }
-
-  private void startServer(String configFileName) {
-    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
-    startServer(configLoader.loadConfig());
-  }
-
-  @Test
-  void startStdioServer_succeeds() {
-    TestMcpStdioServer.main(new String[] {}); // just for jacoco coverage report
-
-    String classpath = System.getProperty("java.class.path");
-
-    ServerParameters serverParameters =
-        ServerParameters.builder("java")
-            .args("-cp", classpath, TestMcpStdioServer.class.getName())
-            .build();
-
-    StdioClientTransport transport =
-        new StdioClientTransport(serverParameters, McpJsonDefaults.getMapper());
-
-    try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-      Executors.newSingleThreadExecutor().execute(() -> verify(client));
-    }
-  }
-
-  @Test
-  void startSseServer_succeeds() {
-    final int port = new Random().nextInt(8000, 9000);
-
-    McpServerConfiguration.Builder configuration =
-        McpServerConfiguration.builder()
-            .name("mcp-server")
-            .version("1.0.0")
-            .instructions("test")
-            .requestTimeout(requestTimeout.toMillis())
-            .sse(McpServerSSE.builder().baseUrl("http://localhost:" + port).port(port).build());
-
-    HttpClientSseClientTransport transport =
-        HttpClientSseClientTransport.builder("http://localhost:" + port)
-            .sseEndpoint("/sse")
-            .build();
-
-    startServer(configuration.mode(ServerMode.SSE).build());
-
-    try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-      verify(client);
-    }
-  }
-
-  @Test
-  void startStreamableServer_succeeds() {
-    final int port = new Random().nextInt(8000, 9000);
-
-    McpServerConfiguration.Builder configuration =
-        McpServerConfiguration.builder()
-            .name("mcp-server")
-            .version("1.0.0")
-            .instructions("test")
-            .requestTimeout(requestTimeout.toMillis())
-            .streamable(McpServerStreamable.builder().port(port).build());
-
-    HttpClientStreamableHttpTransport transport =
-        HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
-            .endpoint("/mcp/message")
-            .build();
-
-    startServer(configuration.mode(ServerMode.STREAMABLE).build());
-
-    try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-      verify(client);
-    }
-  }
-
-  @Test
-  void startServer_withDefaultConfig_succeeds() {
-    String configFileName = "mcp-server.yml";
-    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = configLoader.loadConfig();
-    assertEquals(ServerMode.STREAMABLE, configuration.mode());
-  }
-
-  @Test
-  void startServer_whenDisabled_succeeds() {
-    String configFileName = "test-mcp-server-disabled.yml";
-    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> startServer(configFileName));
-    assertFalse(configuration.enabled());
-  }
-
-  @Test
-  void startServer_withStdioMode_succeeds() {
-    String configFileName = "test-mcp-server-enable-stdio-mode.yml";
-    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> startServer(configFileName));
-    assertEquals(ServerMode.STDIO, configuration.mode());
-  }
-
-  @Test
-  void startServer_withSseMode_succeeds() {
-    String configFileName = "test-mcp-server-enable-http-sse-mode.yml";
-    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> startServer(configFileName));
-    assertEquals(ServerMode.SSE, configuration.mode());
-  }
-
-  @Test
-  void startServer_withStreamableMode_succeeds() {
-    String configFileName = "test-mcp-server-enable-streamable-http-mode.yml";
-    McpConfigurationLoader configLoader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = configLoader.loadConfig();
-    assertDoesNotThrow(() -> startServer(configFileName));
-    assertEquals(ServerMode.STREAMABLE, configuration.mode());
-  }
-
-  @Test
-  void startServer_withUnknownMode_throwsException() {
-    String configFileName = "test-mcp-server-enable-unknown-mode.yml";
-    assertThrows(McpServerConfigurationException.class, () -> startServer(configFileName));
-  }
-
-  private void verify(McpSyncClient client) {
+  public static void verifyAll(McpSyncClient client) {
     verifyServerInfo(client);
     verifyResourcesRegistered(client);
+    verifyResourcesCalled(client);
     verifyPromptsRegistered(client);
-    verifyToolsRegistered(client);
     verifyPromptsCalled(client);
+    verifyToolsRegistered(client);
     verifyToolsCalled(client);
   }
 
-  private void verifyServerInfo(McpSyncClient client) {
+  public static void verifyServerInfo(McpSyncClient client) {
     McpSchema.InitializeResult initialized = client.initialize();
     assertEquals("mcp-server", initialized.serverInfo().name());
     assertEquals("1.0.0", initialized.serverInfo().version());
     assertEquals("test", initialized.instructions());
   }
 
-  private void verifyResourcesRegistered(McpSyncClient client) {
+  public static void verifyResourcesRegistered(McpSyncClient client) {
     List<McpSchema.Resource> resources = client.listResources().resources();
     assertEquals(2, resources.size());
-
     verifyResourceRegistered(
         resources,
         "test://resource1",
@@ -222,13 +54,12 @@ class McpApplicationTest {
         "resource2_description");
   }
 
-  private void verifyResourceRegistered(
+  private static void verifyResourceRegistered(
       List<McpSchema.Resource> resources,
       String resourceUri,
       String resourceName,
       String resourceTitle,
       String resourceDescription) {
-
     McpSchema.Resource resource =
         resources.stream().filter(r -> r.uri().equals(resourceUri)).findAny().orElse(null);
     assertNotNull(resource);
@@ -238,14 +69,13 @@ class McpApplicationTest {
     assertEquals(resourceDescription, resource.description());
   }
 
-  private void verifyResourcesCalled(McpSyncClient client) {
+  public static void verifyResourcesCalled(McpSyncClient client) {
     verifyResourceCalled(client, "test://resource1", "text/plain", "resource1_content");
     verifyResourceCalled(client, "test://resource2", "text/plain", "resource2_content");
   }
 
-  private void verifyResourceCalled(
+  private static void verifyResourceCalled(
       McpSyncClient client, String resourceUri, String resourceMimeType, String resourceContent) {
-
     McpSchema.ReadResourceRequest request =
         McpSchema.ReadResourceRequest.builder(resourceUri).build();
     McpSchema.ReadResourceResult result = client.readResource(request);
@@ -257,10 +87,9 @@ class McpApplicationTest {
     assertEquals(resourceContent, content.text());
   }
 
-  private void verifyPromptsRegistered(McpSyncClient client) {
+  public static void verifyPromptsRegistered(McpSyncClient client) {
     List<McpSchema.Prompt> prompts = client.listPrompts().prompts();
     assertEquals(11, prompts.size());
-
     verifyPromptRegistered(prompts, "promptWithDefaultName", "title", "description", 0);
     verifyPromptRegistered(
         prompts, "promptWithDefaultTitle", "promptWithDefaultTitle", "description", 0);
@@ -292,13 +121,12 @@ class McpApplicationTest {
         prompts, "promptWithException", "promptWithException", "promptWithException", 0);
   }
 
-  private void verifyPromptRegistered(
+  private static void verifyPromptRegistered(
       List<McpSchema.Prompt> prompts,
       String promptName,
       String promptTitle,
       String promptDescription,
       int promptArgumentsSize) {
-
     McpSchema.Prompt prompt =
         prompts.stream().filter(p -> p.name().equals(promptName)).findAny().orElse(null);
     assertNotNull(prompt);
@@ -308,7 +136,7 @@ class McpApplicationTest {
     assertEquals(promptArgumentsSize, prompt.arguments().size());
   }
 
-  private void verifyPromptsCalled(McpSyncClient client) {
+  public static void verifyPromptsCalled(McpSyncClient client) {
     verifyPromptCalled(
         client, "promptWithDefaultName", Map.of(), "promptWithDefaultName is called");
     verifyPromptCalled(
@@ -350,9 +178,8 @@ class McpApplicationTest {
         client, "promptWithException", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
   }
 
-  private void verifyPromptCalled(
+  private static void verifyPromptCalled(
       McpSyncClient client, String promptName, Map<String, Object> params, String expectedResult) {
-
     McpSchema.GetPromptRequest request =
         McpSchema.GetPromptRequest.builder(promptName).arguments(params).build();
     McpSchema.GetPromptResult result = client.getPrompt(request);
@@ -360,10 +187,9 @@ class McpApplicationTest {
     assertEquals(expectedResult, content.text());
   }
 
-  private void verifyToolsRegistered(McpSyncClient client) {
+  public static void verifyToolsRegistered(McpSyncClient client) {
     List<McpSchema.Tool> tools = client.listTools().tools();
     assertEquals(23, tools.size());
-
     verifyToolRegistered(tools, "toolWithDefaultName", "title", "description", Map.of());
     verifyToolRegistered(
         tools, "toolWithDefaultTitle", "toolWithDefaultTitle", "description", Map.of());
@@ -476,13 +302,12 @@ class McpApplicationTest {
   }
 
   @SuppressWarnings("unchecked")
-  private void verifyToolRegistered(
+  private static void verifyToolRegistered(
       List<McpSchema.Tool> tools,
       String toolName,
       String toolTitle,
       String toolDescription,
       Map<String, Class<?>> inputSchemaPropertiesTypes) {
-
     McpSchema.Tool tool =
         tools.stream().filter(t -> t.name().equals(toolName)).findAny().orElse(null);
     assertNotNull(tool);
@@ -491,22 +316,18 @@ class McpApplicationTest {
     assertEquals(toolDescription, tool.description());
     Map<String, Object> inputSchema = tool.inputSchema();
     assertNotNull(inputSchema);
-    @SuppressWarnings("unchecked")
     Map<String, Object> properties = (Map<String, Object>) inputSchema.get("properties");
     assertNotNull(properties);
     assertEquals(inputSchemaPropertiesTypes.size(), properties.size());
-
-    // verify input schema properties types
     properties.forEach(
         (name, property) -> {
           Map<String, String> props = (Map<String, String>) property;
           Class<?> javaClass = inputSchemaPropertiesTypes.get(name);
-          final String jsonSchemaType = JavaTypeToJsonSchemaMapper.getJsonSchemaType(javaClass);
-          assertEquals(jsonSchemaType, props.get("type"));
+          assertEquals(JavaTypeToJsonSchemaMapper.getJsonSchemaType(javaClass), props.get("type"));
         });
   }
 
-  private void verifyToolsCalled(McpSyncClient client) {
+  public static void verifyToolsCalled(McpSyncClient client) {
     verifyToolCalled(client, "toolWithDefaultName", Map.of(), "toolWithDefaultName is called");
     verifyToolCalled(client, "toolWithDefaultTitle", Map.of(), "toolWithDefaultTitle is called");
     verifyToolCalled(
@@ -607,22 +428,20 @@ class McpApplicationTest {
         client, "toolWithException", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
   }
 
-  private void verifyToolCalled(
+  private static void verifyToolCalled(
       McpSyncClient client, String toolName, Map<String, Object> args, String expectedResult) {
-
     McpSchema.CallToolRequest request =
         McpSchema.CallToolRequest.builder(toolName).arguments(args).build();
     McpSchema.CallToolResult result = client.callTool(request);
     McpSchema.TextContent content = (McpSchema.TextContent) result.content().get(0);
     assertFalse(result.isError());
     assertEquals(expectedResult, content.text());
-
     if (result.structuredContent() instanceof McpStructuredContent structuredContent) {
       assertEquals(expectedResult, structuredContent.asTextContent());
     }
   }
 
-  private void verifyToolCalledError(
+  private static void verifyToolCalledError(
       McpSyncClient client, String toolName, Map<String, Object> args, String expectedResult) {
     McpSchema.CallToolRequest request =
         McpSchema.CallToolRequest.builder(toolName).arguments(args).build();
