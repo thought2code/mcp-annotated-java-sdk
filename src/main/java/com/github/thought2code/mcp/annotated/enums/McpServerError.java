@@ -4,6 +4,8 @@ public enum McpServerError {
   CONFIG_FILE_NOT_FOUND("MCP_CONFIG_FILE_NOT_FOUND", "Configuration file not found."),
   INVALID_CONFIG_FILE("MCP_INVALID_CONFIG_FILE", "Invalid configuration file."),
   YAML_READ_ERROR("MCP_YAML_READ_ERROR", "Error reading YAML configuration file."),
+  JSON_SERIALIZE_ERROR("MCP_JSON_SERIALIZE_ERROR", "Error serializing object to JSON."),
+  JSON_DESERIALIZE_ERROR("MCP_JSON_DESERIALIZE_ERROR", "Error deserializing JSON."),
   JETTY_SERVER_START_ERROR(
       "MCP_JETTY_SERVER_START_ERROR", "Failed to start Jetty-based MCP server."),
   COMPONENT_INSTANCE_CREATE_ERROR(

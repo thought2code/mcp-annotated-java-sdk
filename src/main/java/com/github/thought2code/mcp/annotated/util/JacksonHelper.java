@@ -2,6 +2,7 @@ package com.github.thought2code.mcp.annotated.util;
 
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
+import com.github.thought2code.mcp.annotated.exception.McpServerException;
 import java.io.File;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
@@ -43,7 +44,9 @@ public final class JacksonHelper {
    * Serialize an object to a JSON string.
    *
    * @param object the object to serialize
-   * @return the JSON string representation of the object
+   * @return the JSON string representation of the object, or {@code null} when {@code object} is
+   *     {@code null}
+   * @throws McpServerException if serialization fails
    */
   public static String toJsonString(Object object) {
     if (object == null) {
@@ -54,7 +57,7 @@ public final class JacksonHelper {
       return JSON.writeValueAsString(object);
     } catch (JacksonException e) {
       log.error("Error serializing object to JSON", e);
-      return null;
+      throw new McpServerException(McpServerError.JSON_SERIALIZE_ERROR.toString(), e);
     }
   }
 
@@ -64,7 +67,8 @@ public final class JacksonHelper {
    * @param json the JSON string to deserialize
    * @param valueType the class of the object to deserialize to
    * @param <T> the type of the object to deserialize to
-   * @return the deserialized object
+   * @return the deserialized object, or {@code null} when {@code json} is {@code null}
+   * @throws McpServerException if deserialization fails
    */
   public static <T> T fromJson(String json, Class<T> valueType) {
     if (json == null) {
@@ -75,7 +79,7 @@ public final class JacksonHelper {
       return JSON.readValue(json, valueType);
     } catch (JacksonException e) {
       log.error("Error deserializing JSON to object", e);
-      return null;
+      throw new McpServerException(McpServerError.JSON_DESERIALIZE_ERROR.toString(), e);
     }
   }
 

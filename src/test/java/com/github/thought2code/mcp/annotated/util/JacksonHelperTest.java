@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
+import com.github.thought2code.mcp.annotated.exception.McpServerException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,6 +16,12 @@ import org.junit.jupiter.api.Test;
 class JacksonHelperTest {
 
   record Person(String name, int age) {}
+
+  static class BrokenSerialization {
+    public String getValue() {
+      throw new IllegalStateException("serialization failed");
+    }
+  }
 
   @Test
   void testConstructor_shouldThrowException() {
@@ -50,6 +57,17 @@ class JacksonHelperTest {
     Person person = JacksonHelper.fromYaml(tempYaml, Person.class);
     assertEquals("test", person.name);
     assertEquals(25, person.age);
+  }
+
+  @Test
+  void testFromJson_shouldThrowException() {
+    assertThrows(McpServerException.class, () -> JacksonHelper.fromJson("{invalid", Person.class));
+  }
+
+  @Test
+  void testToJsonString_shouldThrowException() {
+    assertThrows(
+        McpServerException.class, () -> JacksonHelper.toJsonString(new BrokenSerialization()));
   }
 
   @Test
