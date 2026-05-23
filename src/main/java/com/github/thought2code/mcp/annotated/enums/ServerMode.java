@@ -12,7 +12,12 @@ public enum ServerMode {
   /** The MCP server runs in {@code STDIO} mode. */
   STDIO("Stdio"),
 
-  /** The MCP server runs in http {@code SSE} mode. */
+  /**
+   * The MCP server runs in HTTP {@code SSE} mode.
+   *
+   * @deprecated HTTP SSE mode is deprecated; use {@link #STREAMABLE} instead.
+   */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   SSE("HTTP SSE"),
 
   /** The MCP server runs in {@code STREAMABLE} http mode. */

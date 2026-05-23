@@ -3,15 +3,15 @@ package com.github.thought2code.mcp.annotated.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This record represents the Server-Sent Events (SSE) configuration for an MCP (Model Context
- * Protocol) server.
- *
- * <p>It contains properties such as the message endpoint, endpoint, base URL, and port.
+ * Server-Sent Events (SSE) configuration for an MCP server.
  *
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
+ * @deprecated HTTP SSE mode is deprecated; use {@link McpServerStreamable} with {@link
+ *     com.github.thought2code.mcp.annotated.enums.ServerMode#STREAMABLE} instead.
  */
+@Deprecated(since = "0.16.0", forRemoval = true)
 public record McpServerSSE(
     @JsonProperty("message-endpoint") String messageEndpoint,
     @JsonProperty("endpoint") String endpoint,
@@ -22,12 +22,15 @@ public record McpServerSSE(
    * Creates a new instance of {@code Builder} to build {@code McpServerSSE}.
    *
    * @return A new instance of {@code Builder}.
+   * @deprecated HTTP SSE mode is deprecated; use {@link McpServerStreamable} instead.
    */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   public static Builder builder() {
     return new Builder();
   }
 
   /** Builder class for {@code McpServerSSE}. */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   public static class Builder {
     /** The message endpoint. */
     private String messageEndpoint = McpServerDefaults.SSE_MESSAGE_ENDPOINT;
@@ -89,7 +92,9 @@ public record McpServerSSE(
      * Builds an instance of {@code McpServerSSE} with the configured values.
      *
      * @return A new instance of {@code McpServerSSE}.
+     * @deprecated HTTP SSE mode is deprecated; use {@link McpServerStreamable} instead.
      */
+    @Deprecated(since = "0.16.0", forRemoval = true)
     public McpServerSSE build() {
       return new McpServerSSE(messageEndpoint, endpoint, baseUrl, port);
     }

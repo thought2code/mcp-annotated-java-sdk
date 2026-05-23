@@ -20,9 +20,10 @@ import org.slf4j.LoggerFactory;
  * Main application class for the MCP (Model Context Protocol) annotated server.
  *
  * <p>This class provides the entry point for running MCP servers with annotation-based
- * configuration. It supports multiple server modes including STDIO, SSE (Server-Sent Events), and
- * STREAMABLE. The application automatically loads configuration, initializes reflection scanning,
- * and starts the appropriate server based on the configuration settings.
+ * configuration. It supports STDIO and STREAMABLE modes. {@link ServerMode#SSE} is deprecated but
+ * still supported for backward compatibility. The application automatically loads configuration,
+ * initializes reflection scanning, and starts the appropriate server based on the configuration
+ * settings.
  *
  * @author codeboyzhou
  */
@@ -78,7 +79,7 @@ public final class McpApplication {
    *   <li>Creates the appropriate server instance based on the configured mode:
    *       <ul>
    *         <li>{@link ServerMode#STDIO} - Standard input/output based server
-   *         <li>{@link ServerMode#SSE} - Server-Sent Events based HTTP server
+   *         <li>{@link ServerMode#SSE} - Deprecated HTTP Server-Sent Events based server
    *         <li>{@link ServerMode#STREAMABLE} - Streamable HTTP server
    *       </ul>
    *   <li>Initializes the synchronous MCP server and registers all annotated components
@@ -109,7 +110,7 @@ public final class McpApplication {
     AnnotatedMcpServer mcpServer = null;
     switch (configuration.mode()) {
       case STDIO -> mcpServer = new McpStdioServer(configuration, context);
-      case SSE -> mcpServer = new McpSseServer(configuration, context);
+      case SSE -> mcpServer = createSseServer(configuration, context);
       case STREAMABLE -> mcpServer = new McpStreamableServer(configuration, context);
     }
 
@@ -128,5 +129,20 @@ public final class McpApplication {
     }
 
     mcpServer.start();
+  }
+
+  /**
+   * Creates an HTTP SSE server instance.
+   *
+   * @param configuration the server configuration
+   * @param context the application context
+   * @return a deprecated SSE server instance
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
+   *     McpStreamableServer} instead.
+   */
+  @Deprecated(since = "0.16.0", forRemoval = true)
+  private static AnnotatedMcpServer createSseServer(
+      McpServerConfiguration configuration, McpApplicationContext context) {
+    return new McpSseServer(configuration, context);
   }
 }

@@ -49,17 +49,17 @@ This SDK is especially suitable for the following scenarios:
 
 ## Supported Server Modes
 
-| Mode           | Description                         | Use Case                                     |
-|----------------|-------------------------------------|----------------------------------------------|
-| **STDIO**      | Standard input/output communication | CLI tools, local development                 |
-| **SSE**        | Server-Sent Events (HTTP-based)     | Real-time web applications (deprecated)      |
-| **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production |
+| Mode           | Description                         | Use Case                                               |
+|----------------|-------------------------------------|--------------------------------------------------------|
+| **STDIO**      | Standard input/output communication | CLI tools, local development                           |
+| **SSE**        | Server-Sent Events (HTTP-based)     | Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE |
+| **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production           |
 
 ## Runtime notes
 
 - **ASYNC vs SYNC** — `type: ASYNC` selects the async MCP server API; your annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)`. See [Getting Started — Runtime model](./getting-started.md#runtime-model-and-stability).
 - **Singleton components** — one instance per component class, shared across concurrent requests; keep handlers stateless or thread-safe.
-- **MCP SDK 2.0.0-M3** — built on a pre-release milestone; pin versions and prefer **STREAMABLE** over deprecated **SSE**.
+- **MCP SDK 2.0.0-M3** — built on a pre-release milestone; pin versions and prefer **STREAMABLE** over **SSE** (deprecated with `forRemoval = true` since 0.16.0).
 
 ## 📖 Getting Started
 

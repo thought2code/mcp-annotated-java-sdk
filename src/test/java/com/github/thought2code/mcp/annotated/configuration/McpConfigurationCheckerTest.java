@@ -17,6 +17,7 @@ class McpConfigurationCheckerTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void check_shouldAcceptValidSseConfiguration() {
     assertDoesNotThrow(() -> McpConfigurationChecker.check(TestMcpConfigurations.sse(8081)));
   }
@@ -59,6 +60,7 @@ class McpConfigurationCheckerTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void check_shouldRejectMissingSseSettingsWhenModeIsSse() {
     McpServerConfiguration configuration =
         TestMcpConfigurations.baseBuilder().mode(ServerMode.SSE).sse(null).build();

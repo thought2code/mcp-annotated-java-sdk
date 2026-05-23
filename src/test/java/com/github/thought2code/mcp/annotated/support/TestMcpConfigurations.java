@@ -37,19 +37,6 @@ public final class TestMcpConfigurations {
     return baseBuilder().mode(ServerMode.STDIO).build();
   }
 
-  public static McpServerConfiguration sse(int port) {
-    return baseBuilder()
-        .mode(ServerMode.SSE)
-        .sse(
-            McpServerSSE.builder()
-                .messageEndpoint("/mcp/message")
-                .endpoint("/sse")
-                .baseUrl("http://localhost:" + port)
-                .port(port)
-                .build())
-        .build();
-  }
-
   public static McpServerConfiguration streamable(int port) {
     return baseBuilder()
         .mode(ServerMode.STREAMABLE)
@@ -58,6 +45,26 @@ public final class TestMcpConfigurations {
                 .mcpEndpoint("/mcp/message")
                 .disallowDelete(false)
                 .keepAliveInterval(20_000L)
+                .port(port)
+                .build())
+        .build();
+  }
+
+  /**
+   * Builds a deprecated HTTP SSE configuration for integration tests.
+   *
+   * @deprecated HTTP SSE mode is deprecated; use {@link #streamable(int)} instead.
+   */
+  @Deprecated(since = "0.16.0", forRemoval = true)
+  @SuppressWarnings("deprecation")
+  public static McpServerConfiguration sse(int port) {
+    return baseBuilder()
+        .mode(ServerMode.SSE)
+        .sse(
+            McpServerSSE.builder()
+                .messageEndpoint("/mcp/message")
+                .endpoint("/sse")
+                .baseUrl("http://localhost:" + port)
                 .port(port)
                 .build())
         .build();

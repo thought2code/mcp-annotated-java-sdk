@@ -45,6 +45,7 @@ class McpConfigurationMergerTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void merge_shouldReturnNullTransportSettingsForNonMatchingMode() {
     McpServerConfiguration base = TestMcpConfigurations.stdio();
     McpServerConfiguration profile =
@@ -57,6 +58,7 @@ class McpConfigurationMergerTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void merge_shouldMergeSseSettingsWhenModeIsSse() {
     McpServerConfiguration base = TestMcpConfigurations.sse(8080);
     McpServerConfiguration profile =

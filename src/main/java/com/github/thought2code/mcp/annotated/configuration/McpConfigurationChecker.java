@@ -61,11 +61,7 @@ public final class McpConfigurationChecker {
     checkNull("prompt", configuration.changeNotification().prompt());
     checkNull("tool", configuration.changeNotification().tool());
     if (configuration.mode() == ServerMode.SSE) {
-      checkNull("sse", configuration.sse());
-      checkBlank("message-endpoint", configuration.sse().messageEndpoint());
-      checkBlank("endpoint", configuration.sse().endpoint());
-      checkBlank("base-url", configuration.sse().baseUrl());
-      checkNull("port", configuration.sse().port());
+      checkSse(configuration);
     }
     if (configuration.mode() == ServerMode.STREAMABLE) {
       checkNull("streamable", configuration.streamable());
@@ -74,6 +70,21 @@ public final class McpConfigurationChecker {
       checkNull("keep-alive-interval", configuration.streamable().keepAliveInterval());
       checkNull("port", configuration.streamable().port());
     }
+  }
+
+  /**
+   * Validates SSE-specific configuration properties.
+   *
+   * @param configuration the MCP server configuration to validate
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} instead.
+   */
+  @Deprecated(since = "0.16.0", forRemoval = true)
+  private static void checkSse(McpServerConfiguration configuration) {
+    checkNull("sse", configuration.sse());
+    checkBlank("message-endpoint", configuration.sse().messageEndpoint());
+    checkBlank("endpoint", configuration.sse().endpoint());
+    checkBlank("base-url", configuration.sse().baseUrl());
+    checkNull("port", configuration.sse().port());
   }
 
   /**

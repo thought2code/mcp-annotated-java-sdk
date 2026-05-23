@@ -182,11 +182,11 @@ The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is a standar
 
 This SDK supports three MCP server modes:
 
-| Mode           | Description                         | Use Case                                     |
-|----------------|-------------------------------------|----------------------------------------------|
-| **STDIO**      | Standard input/output communication | CLI tools, local development                 |
-| **SSE**        | Server-Sent Events (HTTP-based)     | Real-time web applications (deprecated)      |
-| **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production |
+| Mode           | Description                         | Use Case                                               |
+|----------------|-------------------------------------|--------------------------------------------------------|
+| **STDIO**      | Standard input/output communication | CLI tools, local development                           |
+| **SSE**        | Server-Sent Events (HTTP-based)     | Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE |
+| **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production           |
 
 ## 🔧 Advanced Usage
 
@@ -221,31 +221,31 @@ streamable:
 
 ### Configuration Properties
 
-| Property                          | Description                               | Default        |
-|-----------------------------------|-------------------------------------------|----------------|
-| `enabled`                         | Enable/disable MCP server                 | `true`         |
-| `mode`                            | Server mode: `STDIO`, `SSE`, `STREAMABLE` | `STREAMABLE`   |
-| `name`                            | Server name                               | `mcp-server`   |
-| `version`                         | Server version                            | `1.0.0`        |
-| `type`                            | Server type: `SYNC`, `ASYNC`              | `SYNC`         |
-| `instructions`                    | Instructions for the LLM client           | (empty)        |
-| `request-timeout`                 | Request timeout in milliseconds           | `20000`        |
-| `capabilities.resource`           | Enable resource support                   | `true`         |
-| `capabilities.subscribe-resource` | Enable resource subscription              | `true`         |
-| `capabilities.prompt`             | Enable prompt support                     | `true`         |
-| `capabilities.tool`               | Enable tool support                       | `true`         |
-| `capabilities.completion`         | Enable completion support                 | `true`         |
-| `change-notification.resource`    | Notify clients on resource change         | `true`         |
-| `change-notification.prompt`      | Notify clients on prompt change           | `true`         |
-| `change-notification.tool`        | Notify clients on tool change             | `true`         |
-| `sse.message-endpoint`            | SSE POST message path                     | `/mcp/message` |
-| `sse.endpoint`                    | SSE stream path                           | `/sse`         |
-| `sse.base-url`                    | Public base URL for the SSE server        | *(empty)*      |
-| `sse.port`                        | HTTP port for SSE mode                    | `8080`         |
-| `streamable.mcp-endpoint`         | Streamable HTTP MCP path                  | `/mcp/message` |
-| `streamable.disallow-delete`      | Reject HTTP DELETE on session             | `false`        |
-| `streamable.keep-alive-interval`  | Keep-alive interval (ms)                  | `20000`        |
-| `streamable.port`                 | HTTP port for STREAMABLE mode             | `8080`         |
+| Property                          | Description                                                     | Default        |
+|-----------------------------------|-----------------------------------------------------------------|----------------|
+| `enabled`                         | Enable/disable MCP server                                       | `true`         |
+| `mode`                            | Server mode: `STDIO`, `SSE` (deprecated), `STREAMABLE`          | `STREAMABLE`   |
+| `name`                            | Server name                                                     | `mcp-server`   |
+| `version`                         | Server version                                                  | `1.0.0`        |
+| `type`                            | Server type: `SYNC`, `ASYNC`                                    | `SYNC`         |
+| `instructions`                    | Instructions for the LLM client                                 | (empty)        |
+| `request-timeout`                 | Request timeout in milliseconds                                 | `20000`        |
+| `capabilities.resource`           | Enable resource support                                         | `true`         |
+| `capabilities.subscribe-resource` | Enable resource subscription                                    | `true`         |
+| `capabilities.prompt`             | Enable prompt support                                           | `true`         |
+| `capabilities.tool`               | Enable tool support                                             | `true`         |
+| `capabilities.completion`         | Enable completion support                                       | `true`         |
+| `change-notification.resource`    | Notify clients on resource change                               | `true`         |
+| `change-notification.prompt`      | Notify clients on prompt change                                 | `true`         |
+| `change-notification.tool`        | Notify clients on tool change                                   | `true`         |
+| `sse.message-endpoint`            | SSE POST message path *(deprecated, for removal since 0.16.0)*  | `/mcp/message` |
+| `sse.endpoint`                    | SSE stream path *(deprecated, for removal since 0.16.0)*        | `/sse`         |
+| `sse.base-url`                    | Public base URL for the SSE server *(deprecated)*               | *(empty)*      |
+| `sse.port`                        | HTTP port for SSE mode *(deprecated, for removal since 0.16.0)* | `8080`         |
+| `streamable.mcp-endpoint`         | Streamable HTTP MCP path                                        | `/mcp/message` |
+| `streamable.disallow-delete`      | Reject HTTP DELETE on session                                   | `false`        |
+| `streamable.keep-alive-interval`  | Keep-alive interval (ms)                                        | `20000`        |
+| `streamable.port`                 | HTTP port for STREAMABLE mode                                   | `8080`         |
 
 ### Profile-based Configuration
 
@@ -294,7 +294,7 @@ The SDK creates **one instance per component class** (no-arg constructor) and re
 This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**, a **pre-release milestone**. APIs may change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
 
 - **STREAMABLE** is the recommended HTTP transport for new projects.
-- **SSE** is still supported for compatibility but is **deprecated** in MCP SDK 2.x; avoid new SSE deployments.
+- **SSE** (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
 
 ### Multilingual Support (i18n)
 
@@ -410,7 +410,7 @@ Run the test suite:
 **A:** 
 - **STDIO**: For CLI tools and local development
 - **STREAMABLE**: For web applications and production deployments (recommended)
-- **SSE**: Deprecated, use STREAMABLE instead
+- **SSE**: Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE and `streamable.*` instead of `sse.*`
 
 ## 🤝 Contributing
 

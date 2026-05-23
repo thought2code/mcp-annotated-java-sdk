@@ -103,7 +103,7 @@ If `mode` is omitted in `mcp-server.yml`, the server defaults to **STREAMABLE**.
 |------|-------------|----------|
 | STDIO | Standard input/output | CLI tools, local development |
 | STREAMABLE | HTTP streaming | Web applications, production (recommended) |
-| SSE | Server-Sent Events | Deprecated, use STREAMABLE instead |
+| SSE | Server-Sent Events | Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE |
 
 ## Configuration (mcp-server.yml)
 
@@ -128,7 +128,7 @@ change-notification:
 ## Important Notes
 
 - The `McpServers` class is deprecated, use `McpApplication.run()` instead
-- SSE mode is deprecated in MCP SDK 2.x; use STREAMABLE for new HTTP deployments
+- SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0; use STREAMABLE for new HTTP deployments
 - Built on MCP Java SDK **2.0.0-M3** (milestone) — pin versions and retest when upgrading
 - `type: ASYNC` uses the async MCP server API; annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)` — not Project Reactor
 - One instance per component class is created and shared across concurrent requests — keep components stateless or thread-safe

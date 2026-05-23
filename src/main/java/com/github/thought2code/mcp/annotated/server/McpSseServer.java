@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
  * Server-Sent Events for HTTP-based real-time communication. SSE mode allows the server to push
  * updates to clients over a single HTTP connection.
  *
- * <p>Note: This mode has been deprecated in favor of STREAMABLE mode. Consider using {@link
- * McpStreamableServer} for new implementations.
+ * <p>HTTP SSE mode is deprecated in favor of {@link ServerMode#STREAMABLE} and {@link
+ * McpStreamableServer}. Consider using {@link McpStreamableServer} for new implementations.
  *
  * <p>The server uses Jetty HTTP server for handling HTTP connections and provides SSE endpoints for
  * real-time communication with MCP clients.
@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
  * @see McpStdioServer
  * @see HttpServletSseServerTransportProvider
  * @see JettyHttpServer
+ * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
+ *     McpStreamableServer} instead.
  */
+@Deprecated(since = "0.16.0", forRemoval = true)
 public class McpSseServer extends McpServerBase {
 
   private static final Logger log = LoggerFactory.getLogger(McpSseServer.class);
@@ -46,7 +49,10 @@ public class McpSseServer extends McpServerBase {
    *
    * @param configuration the server configuration containing SSE settings
    * @param context the application-scoped runtime context
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
+   *     McpStreamableServer} instead.
    */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   public McpSseServer(McpServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
     McpServerSSE sse = configuration.sse();
@@ -73,7 +79,10 @@ public class McpSseServer extends McpServerBase {
    * @see HttpServletSseServerTransportProvider
    * @see McpServerSSE
    * @see McpJsonDefaults
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
+   *     McpStreamableServer} instead.
    */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   @Override
   public McpServer.SyncSpecification<?> createSyncSpecification() {
     return createSpecification(McpServer::sync);
@@ -87,7 +96,10 @@ public class McpSseServer extends McpServerBase {
    *
    * @return an asynchronous specification configured for SSE transport
    * @see HttpServletSseServerTransportProvider
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
+   *     McpStreamableServer} instead.
    */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   @Override
   public McpServer.AsyncSpecification<?> createAsyncSpecification() {
     return createSpecification(McpServer::async);
@@ -113,7 +125,10 @@ public class McpSseServer extends McpServerBase {
    *
    * @see JettyHttpServer
    * @see HttpServletSseServerTransportProvider
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
+   *     McpStreamableServer} instead.
    */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   @Override
   public void start() {
     final String endpointPath = configuration.sse().endpoint();

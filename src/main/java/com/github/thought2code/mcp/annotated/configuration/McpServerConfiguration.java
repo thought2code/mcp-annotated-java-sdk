@@ -27,7 +27,7 @@ public record McpServerConfiguration(
     @JsonProperty("request-timeout") Long requestTimeout,
     @JsonProperty("capabilities") McpServerCapabilities capabilities,
     @JsonProperty("change-notification") McpServerChangeNotification changeNotification,
-    @JsonProperty("sse") McpServerSSE sse,
+    @Deprecated(since = "0.16.0", forRemoval = true) @JsonProperty("sse") McpServerSSE sse,
     @JsonProperty("streamable") McpServerStreamable streamable) {
 
   /**
@@ -73,6 +73,7 @@ public record McpServerConfiguration(
         McpServerChangeNotification.builder().build();
 
     /** The SSE configuration. */
+    @Deprecated(since = "0.16.0", forRemoval = true)
     private McpServerSSE sse = McpServerSSE.builder().build();
 
     /** The streamable configuration. */
@@ -193,7 +194,10 @@ public record McpServerConfiguration(
      *
      * @param sse The SSE configuration.
      * @return This builder instance.
+     * @deprecated HTTP SSE mode is deprecated; use {@link #streamable(McpServerStreamable)}
+     *     instead.
      */
+    @Deprecated(since = "0.16.0", forRemoval = true)
     public Builder sse(McpServerSSE sse) {
       this.sse = sse;
       return this;

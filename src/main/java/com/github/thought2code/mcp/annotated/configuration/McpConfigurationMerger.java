@@ -234,7 +234,9 @@ public final class McpConfigurationMerger {
    * @param profile the profile SSE configuration
    * @return a new merged {@link McpServerSSE} instance, or null if mode is not SSE
    * @throws McpServerConfigurationException if required SSE settings are missing
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} instead.
    */
+  @Deprecated(since = "0.16.0", forRemoval = true)
   private static McpServerSSE mergeSSE(ServerMode mode, McpServerSSE base, McpServerSSE profile) {
     if (mode != ServerMode.SSE) {
       return null;
