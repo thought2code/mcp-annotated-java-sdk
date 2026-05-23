@@ -213,13 +213,13 @@ public class McpServerCompletion {
     if (prompt != null) {
       final String name = prompt.name();
       final String title = prompt.title();
-      return new McpSchema.PromptReference(McpSchema.PromptReference.TYPE, name, title);
+      return McpSchema.PromptReference.builder(name).title(title).build();
     }
 
     McpResourceCompletion resource = method.getAnnotation(McpResourceCompletion.class);
     if (resource != null) {
       final String uri = resource.uri();
-      return new McpSchema.ResourceReference(McpSchema.ResourceReference.TYPE, uri);
+      return new McpSchema.ResourceReference(uri);
     }
 
     // should never happen

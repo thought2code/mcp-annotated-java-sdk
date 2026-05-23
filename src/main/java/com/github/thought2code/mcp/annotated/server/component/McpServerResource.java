@@ -158,9 +158,10 @@ public class McpServerResource
     final String uri = resource.uri();
     final String mimeType = resource.mimeType();
     final String text = invocation.result().toString();
-    McpSchema.ResourceContents contents = new McpSchema.TextResourceContents(uri, mimeType, text);
+    McpSchema.ResourceContents contents =
+        McpSchema.TextResourceContents.builder(uri, text).mimeType(mimeType).build();
     McpSchema.ReadResourceResult readResourceResult =
-        new McpSchema.ReadResourceResult(List.of(contents));
+        McpSchema.ReadResourceResult.builder(List.of(contents)).build();
 
     log.debug("Returning ReadResourceResult: {}", JacksonHelper.toJsonString(readResourceResult));
 
@@ -182,14 +183,15 @@ public class McpServerResource
     final String title = context.getLocalizedString(mcpResource.title(), name);
     final String description = context.getLocalizedString(mcpResource.description(), name);
     McpSchema.Resource resource =
-        McpSchema.Resource.builder()
-            .uri(mcpResource.uri())
-            .name(name)
+        McpSchema.Resource.builder(mcpResource.uri(), name)
             .title(title)
             .description(description)
             .mimeType(mcpResource.mimeType())
             .annotations(
-                new McpSchema.Annotations(List.of(mcpResource.roles()), mcpResource.priority()))
+                McpSchema.Annotations.builder()
+                    .audience(List.of(mcpResource.roles()))
+                    .priority(mcpResource.priority())
+                    .build())
             .build();
     log.info(
         "{} resource specification created: {}",

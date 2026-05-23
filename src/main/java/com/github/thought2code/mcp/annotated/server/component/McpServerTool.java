@@ -197,7 +197,7 @@ public class McpServerTool
 
     McpSchema.CallToolResult callToolResult =
         McpSchema.CallToolResult.builder()
-            .content(List.of(new McpSchema.TextContent(textContent)))
+            .addTextContent(textContent)
             .structuredContent(structuredContent)
             .isError(invocation.isError())
             .build();
@@ -332,11 +332,9 @@ public class McpServerTool
     Map<String, Object> inputSchema = createJsonSchema(context, method.getParameters());
     Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
     McpSchema.Tool tool =
-        McpSchema.Tool.builder()
-            .name(name)
+        McpSchema.Tool.builder(name, inputSchema)
             .title(title)
             .description(description)
-            .inputSchema(inputSchema)
             .outputSchema(outputSchema)
             .build();
     log.info(

@@ -175,10 +175,12 @@ public class McpServerPrompt
     List<Object> params = parameterConverter.convertAll(parameters, arguments);
     Invocation invocation = MethodInvoker.invoke(instance, method, metadata, params);
 
-    McpSchema.Content content = new McpSchema.TextContent(invocation.result().toString());
-    McpSchema.PromptMessage message = new McpSchema.PromptMessage(McpSchema.Role.USER, content);
+    McpSchema.Content content =
+        McpSchema.TextContent.builder(invocation.result().toString()).build();
+    McpSchema.PromptMessage message =
+        McpSchema.PromptMessage.builder(McpSchema.Role.USER, content).build();
     McpSchema.GetPromptResult getPromptResult =
-        new McpSchema.GetPromptResult(description, List.of(message));
+        McpSchema.GetPromptResult.builder(List.of(message)).description(description).build();
 
     log.debug("Returning MCP GetPromptResult: {}", JacksonHelper.toJsonString(getPromptResult));
 
@@ -208,7 +210,13 @@ public class McpServerPrompt
         final String title = context.getLocalizedString(promptParam.title(), name);
         final String description = context.getLocalizedString(promptParam.description(), name);
         final boolean required = promptParam.required();
-        promptArguments.add(new McpSchema.PromptArgument(name, title, description, required));
+        McpSchema.PromptArgument argument =
+            McpSchema.PromptArgument.builder(name)
+                .title(title)
+                .description(description)
+                .required(required)
+                .build();
+        promptArguments.add(argument);
       }
     }
 
@@ -230,7 +238,12 @@ public class McpServerPrompt
     final String title = context.getLocalizedString(mcpPrompt.title(), name);
     final String description = context.getLocalizedString(mcpPrompt.description(), name);
     List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
-    McpSchema.Prompt prompt = new McpSchema.Prompt(name, title, description, args);
+    McpSchema.Prompt prompt =
+        McpSchema.Prompt.builder(name)
+            .title(title)
+            .description(description)
+            .arguments(args)
+            .build();
     log.info(
         "{} prompt specification created: {}",
         serverType.description(),

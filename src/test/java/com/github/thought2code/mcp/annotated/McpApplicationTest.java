@@ -246,7 +246,8 @@ class McpApplicationTest {
   private void verifyResourceCalled(
       McpSyncClient client, String resourceUri, String resourceMimeType, String resourceContent) {
 
-    McpSchema.ReadResourceRequest request = new McpSchema.ReadResourceRequest(resourceUri);
+    McpSchema.ReadResourceRequest request =
+        McpSchema.ReadResourceRequest.builder(resourceUri).build();
     McpSchema.ReadResourceResult result = client.readResource(request);
     McpSchema.TextResourceContents content =
         (McpSchema.TextResourceContents) result.contents().get(0);
@@ -352,7 +353,8 @@ class McpApplicationTest {
   private void verifyPromptCalled(
       McpSyncClient client, String promptName, Map<String, Object> params, String expectedResult) {
 
-    McpSchema.GetPromptRequest request = new McpSchema.GetPromptRequest(promptName, params);
+    McpSchema.GetPromptRequest request =
+        McpSchema.GetPromptRequest.builder(promptName).arguments(params).build();
     McpSchema.GetPromptResult result = client.getPrompt(request);
     McpSchema.TextContent content = (McpSchema.TextContent) result.messages().get(0).content();
     assertEquals(expectedResult, content.text());
@@ -608,7 +610,8 @@ class McpApplicationTest {
   private void verifyToolCalled(
       McpSyncClient client, String toolName, Map<String, Object> args, String expectedResult) {
 
-    McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(toolName, args);
+    McpSchema.CallToolRequest request =
+        McpSchema.CallToolRequest.builder(toolName).arguments(args).build();
     McpSchema.CallToolResult result = client.callTool(request);
     McpSchema.TextContent content = (McpSchema.TextContent) result.content().get(0);
     assertFalse(result.isError());
@@ -621,7 +624,8 @@ class McpApplicationTest {
 
   private void verifyToolCalledError(
       McpSyncClient client, String toolName, Map<String, Object> args, String expectedResult) {
-    McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(toolName, args);
+    McpSchema.CallToolRequest request =
+        McpSchema.CallToolRequest.builder(toolName).arguments(args).build();
     McpSchema.CallToolResult result = client.callTool(request);
     McpSchema.TextContent content = (McpSchema.TextContent) result.content().get(0);
     assertTrue(result.isError());
