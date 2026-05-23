@@ -143,9 +143,9 @@ public class McpServerTool
   }
 
   @Override
-  protected void addAsyncSpecification(
+  protected Mono<Void> addAsyncSpecification(
       McpAsyncServer server, McpServerFeatures.AsyncToolSpecification specification) {
-    server.addTool(specification).subscribe();
+    return server.addTool(specification);
   }
 
   @Override

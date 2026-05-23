@@ -115,9 +115,9 @@ public class McpServerResource
   }
 
   @Override
-  protected void addAsyncSpecification(
+  protected Mono<Void> addAsyncSpecification(
       McpAsyncServer server, McpServerFeatures.AsyncResourceSpecification specification) {
-    server.addResource(specification).subscribe();
+    return server.addResource(specification);
   }
 
   @Override

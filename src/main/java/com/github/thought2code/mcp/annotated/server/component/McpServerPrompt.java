@@ -130,9 +130,9 @@ public class McpServerPrompt
   }
 
   @Override
-  protected void addAsyncSpecification(
+  protected Mono<Void> addAsyncSpecification(
       McpAsyncServer server, McpServerFeatures.AsyncPromptSpecification specification) {
-    server.addPrompt(specification).subscribe();
+    return server.addPrompt(specification);
   }
 
   @Override
