@@ -487,18 +487,21 @@ class McpApplicationTest {
     assertEquals(toolName, tool.name());
     assertEquals(toolTitle, tool.title());
     assertEquals(toolDescription, tool.description());
-    assertEquals(inputSchemaPropertiesTypes.size(), tool.inputSchema().properties().size());
+    Map<String, Object> inputSchema = tool.inputSchema();
+    assertNotNull(inputSchema);
+    @SuppressWarnings("unchecked")
+    Map<String, Object> properties = (Map<String, Object>) inputSchema.get("properties");
+    assertNotNull(properties);
+    assertEquals(inputSchemaPropertiesTypes.size(), properties.size());
 
     // verify input schema properties types
-    tool.inputSchema()
-        .properties()
-        .forEach(
-            (name, property) -> {
-              Map<String, String> props = (Map<String, String>) property;
-              Class<?> javaClass = inputSchemaPropertiesTypes.get(name);
-              final String jsonSchemaType = JavaTypeToJsonSchemaMapper.getJsonSchemaType(javaClass);
-              assertEquals(jsonSchemaType, props.get("type"));
-            });
+    properties.forEach(
+        (name, property) -> {
+          Map<String, String> props = (Map<String, String>) property;
+          Class<?> javaClass = inputSchemaPropertiesTypes.get(name);
+          final String jsonSchemaType = JavaTypeToJsonSchemaMapper.getJsonSchemaType(javaClass);
+          assertEquals(jsonSchemaType, props.get("type"));
+        });
   }
 
   private void verifyToolsCalled(McpSyncClient client) {

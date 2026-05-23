@@ -55,7 +55,6 @@ import reactor.core.publisher.Mono;
  * @see McpJsonSchemaDefinition
  * @see McpJsonSchemaProperty
  * @see McpSchema.Tool
- * @see McpSchema.JsonSchema
  * @see McpStructuredContent
  */
 public class McpServerTool
@@ -86,7 +85,6 @@ public class McpServerTool
    * @return a synchronous tool specification for the MCP server
    * @see McpTool
    * @see McpSchema.Tool
-   * @see McpSchema.JsonSchema
    */
   @Override
   public McpServerFeatures.SyncToolSpecification from(
@@ -224,7 +222,7 @@ public class McpServerTool
    * @see McpJsonSchemaProperty
    * @see JavaTypeToJsonSchemaMapper
    */
-  private McpSchema.JsonSchema createJsonSchema(
+  private Map<String, Object> createJsonSchema(
       McpApplicationContext context, Parameter[] methodParams) {
     Map<String, Object> properties = new LinkedHashMap<>();
     Map<String, Object> definitions = new LinkedHashMap<>();
@@ -255,14 +253,14 @@ public class McpServerTool
       }
     }
 
-    final boolean hasAdditionalProperties = false;
-    return new McpSchema.JsonSchema(
-        JavaTypeToJsonSchemaMapper.OBJECT.getJsonSchemaType(),
-        properties,
-        required,
-        hasAdditionalProperties,
-        definitions,
-        definitions);
+    Map<String, Object> schema = new LinkedHashMap<>();
+    schema.put("type", JavaTypeToJsonSchemaMapper.OBJECT.getJsonSchemaType());
+    schema.put("properties", properties);
+    schema.put("required", required);
+    schema.put("additionalProperties", false);
+    schema.put("definitions", definitions);
+
+    return schema;
   }
 
   /**
@@ -331,7 +329,7 @@ public class McpServerTool
     final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
     final String title = context.getLocalizedString(mcpTool.title(), name);
     final String description = context.getLocalizedString(mcpTool.description(), name);
-    McpSchema.JsonSchema inputSchema = createJsonSchema(context, method.getParameters());
+    Map<String, Object> inputSchema = createJsonSchema(context, method.getParameters());
     Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
     McpSchema.Tool tool =
         McpSchema.Tool.builder()
