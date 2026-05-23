@@ -6,7 +6,7 @@
 
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.14.0</version>
+    <version>0.15.0-SNAPSHOT</version>
 
     <name>MCP Annotated Java SDK</name>
     <description>Annotation-driven MCP (Model Context Protocol) Development with Java</description>
