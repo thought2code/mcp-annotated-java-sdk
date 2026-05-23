@@ -107,7 +107,7 @@ public class McpServerPrompt
   }
 
   @Override
-  protected Class<McpPrompt> annotationType() {
+  protected Class<McpPrompt> componentType() {
     return McpPrompt.class;
   }
 

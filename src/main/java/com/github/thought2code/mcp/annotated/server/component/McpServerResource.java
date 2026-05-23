@@ -92,7 +92,7 @@ public class McpServerResource
   }
 
   @Override
-  protected Class<McpResource> annotationType() {
+  protected Class<McpResource> componentType() {
     return McpResource.class;
   }
 

@@ -6,6 +6,8 @@ import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +29,9 @@ public abstract class AbstractDualModeComponentRegistrar<S, A> implements McpCom
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   /**
-   * @return annotation type used to discover component methods
+   * @return component annotation type used to discover component methods
    */
-  protected abstract Class<? extends Annotation> annotationType();
+  protected abstract Class<? extends Annotation> componentType();
 
   /**
    * Creates a synchronous specification from an annotated method.
@@ -80,28 +82,64 @@ public abstract class AbstractDualModeComponentRegistrar<S, A> implements McpCom
 
   @Override
   public final void register(McpSyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(annotationType());
+    Set<Method> methods = context.getMethodsAnnotatedWith(componentType());
+    Map<String, Method> registeredNames = new HashMap<>();
     for (Method method : methods) {
-      final String annotationTypeName = annotationType().getSimpleName();
-      log.debug("Registering {} method: {}", annotationTypeName, method.toGenericString());
+      final String componentTypeName = componentType().getSimpleName();
+      log.debug("Registering {} method: {}", componentTypeName, method.toGenericString());
       S specification = createSyncSpecification(method, context);
-      addSyncSpecification(server, specification);
       final String specificationName = syncSpecificationName(specification);
-      log.debug("Sync {} {} registered successfully", annotationTypeName, specificationName);
+      rejectDuplicateName(registeredNames, componentTypeName, specificationName, method);
+      addSyncSpecification(server, specification);
+      log.debug("Sync {} {} registered successfully", componentTypeName, specificationName);
     }
   }
 
   @Override
   public final void register(McpAsyncServer server, McpApplicationContext context) {
-    Set<Method> methods = context.getMethodsAnnotatedWith(annotationType());
+    Set<Method> methods = context.getMethodsAnnotatedWith(componentType());
+    Map<String, Method> registeredNames = new HashMap<>();
     for (Method method : methods) {
-      final String annotationTypeName = annotationType().getSimpleName();
-      log.debug("Registering async {} method: {}", annotationTypeName, method.toGenericString());
+      final String componentTypeName = componentType().getSimpleName();
+      log.debug("Registering async {} method: {}", componentTypeName, method.toGenericString());
       A specification = createAsyncSpecification(method, context);
       final String specificationName = asyncSpecificationName(specification);
+      rejectDuplicateName(registeredNames, componentTypeName, specificationName, method);
       Mono<Void> registration = addAsyncSpecification(server, specification);
-      awaitAsyncRegistration(registration, annotationTypeName, specificationName);
-      log.debug("Async {} {} registered successfully", annotationTypeName, specificationName);
+      awaitAsyncRegistration(registration, componentTypeName, specificationName);
+      log.debug("Async {} {} registered successfully", componentTypeName, specificationName);
+    }
+  }
+
+  /**
+   * Rejects a component when its registered name was already claimed by another method.
+   *
+   * <p>Component names must be unique within each annotation type (for example, two
+   * {@code @McpTool} methods cannot share the same name). This method records the first method seen
+   * for a name and fails fast before the duplicate is added to the MCP server.
+   *
+   * @param registeredNames names already seen in the current registration pass
+   * @param componentTypeName component type name used in error messages (for example, {@code
+   *     McpTool})
+   * @param specificationName resolved component name to register
+   * @param method method currently being registered
+   * @throws McpServerComponentRegistrationException if {@code specificationName} was already
+   *     registered by another method
+   */
+  private void rejectDuplicateName(
+      Map<String, Method> registeredNames,
+      String componentTypeName,
+      String specificationName,
+      Method method) {
+    Method previous = registeredNames.putIfAbsent(specificationName, method);
+    if (previous != null) {
+      throw new McpServerComponentRegistrationException(
+          String.format(
+              "Duplicate %s name '%s' found for methods %s and %s",
+              componentTypeName,
+              specificationName,
+              previous.toGenericString(),
+              method.toGenericString()));
     }
   }
 

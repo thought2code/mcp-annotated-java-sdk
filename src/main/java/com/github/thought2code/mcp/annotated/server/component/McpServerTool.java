@@ -120,7 +120,7 @@ public class McpServerTool
   }
 
   @Override
-  protected Class<McpTool> annotationType() {
+  protected Class<McpTool> componentType() {
     return McpTool.class;
   }
 
