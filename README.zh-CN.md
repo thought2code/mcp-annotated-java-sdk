@@ -268,6 +268,36 @@ streamable:
   port: 8080
 ```
 
+### 运行时模型与稳定性
+
+#### SYNC 与 ASYNC（`type`）
+
+`type` 配置项决定框架使用哪一种 **MCP Java SDK 服务端 API**，**不会**把你的组件方法变成响应式代码。
+
+| `type`  | 行为                                                                                                            |
+|---------|---------------------------------------------------------------------------------------------------------------|
+| `SYNC`  | 在请求线程上直接调用 `@McpTool` / `@McpPrompt` / `@McpResource` 方法。                                                     |
+| `ASYNC` | 为兼容 MCP SDK 的异步 API，handler 返回 Reactor `Mono`。SDK 用 `Mono.fromCallable(...)` 包装调用 — 方法体仍是普通的 **阻塞式** Java 调用。 |
+
+**ASYNC 不是非阻塞或 Project Reactor 编程模型。** 注解方法中无需也不应返回 `Mono`/`Flux`。耗时或 CPU 密集的逻辑仍会占用 Reactor 工作线程。除非部署环境明确要求 async MCP 服务端 API，否则优先使用 **SYNC**。高并发场景请保持 handler 简短，并合理设置 `request-timeout`。
+
+#### 组件实例与并发
+
+SDK 为每个组件类创建 **唯一实例**（无参构造），该类上所有 MCP 请求共享该对象。
+
+- 组件类应 **无状态**，或仅持有 **线程安全** 的可变状态。
+- 不要在实例字段中存放未同步的 per-request 数据。
+- 需要共享可变状态时，请委托给线程安全的服务层。
+
+当前 `McpApplicationContext.from(...)` 使用默认的单例-per-class 工厂；公开 API 尚未内置 Spring/CDI 集成。
+
+#### MCP Java SDK 2.x（里程碑版本）
+
+本项目基于官方 [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**，属于 **预发布里程碑**。2.0 正式版发布前 API 可能变更 — 请锁定依赖版本，升级后重新跑集成测试。
+
+- 新项目 HTTP 传输推荐 **STREAMABLE**。
+- **SSE** 仍可兼容使用，但在 MCP SDK 2.x 中已 **弃用**，不建议新部署采用。
+
 ### 多语言支持（i18n）
 
 为 MCP 组件启用国际化：
@@ -355,7 +385,15 @@ Windows 下可使用 `mvnw.cmd clean test`。
 
 ### 问：可以用于生产环境吗？
 
-**答：** 项目仍在积极开发中。用于开发与测试已较稳定，生产使用前建议充分验证。
+**答：** 注解层用于开发与测试已较稳定，但依赖官方 MCP Java SDK **2.0.0-M3**（里程碑版本）。生产使用前请锁定依赖版本、跑完自己的集成测试，并关注 2.0 正式版发布前可能的 SDK API 变更。
+
+### 问：`type: ASYNC` 是什么意思？
+
+**答：** 表示使用底层 SDK 的 async MCP 服务端 API。你的 `@McpTool` / `@McpPrompt` / `@McpResource` 方法仍是普通阻塞 Java 代码，框架会用 `Mono.fromCallable(...)` 包装。无特殊需求时请优先使用 SYNC。
+
+### 问：组件类是单例吗？
+
+**答：** 是。SDK 为每个组件类创建一个实例并在所有请求间复用。请保持组件无状态或线程安全，不要在实例字段中存放未同步的 per-request 可变状态。
 
 ### 问：需要什么 Java 版本？
 

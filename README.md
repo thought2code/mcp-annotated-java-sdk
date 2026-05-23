@@ -266,6 +266,36 @@ streamable:
   port: 8080
 ```
 
+### Runtime model and stability
+
+#### SYNC vs ASYNC (`type`)
+
+The `type` setting selects which **MCP Java SDK server API** the framework uses. It does **not** turn your component methods into reactive code.
+
+| `type`  | What happens                                                                                                                                                                            |
+|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `SYNC`  | Handlers invoke your `@McpTool` / `@McpPrompt` / `@McpResource` methods on the request thread.                                                                                          |
+| `ASYNC` | Handlers return Reactor `Mono` values for MCP SDK compatibility. The SDK wraps each call in `Mono.fromCallable(...)` — your method body is still a normal **blocking** Java invocation. |
+
+**ASYNC is not a non-blocking or Project Reactor programming model.** You do not implement `Mono`/`Flux` in annotated methods. Long-running or CPU-heavy work still occupies a Reactor worker thread. Use **SYNC** unless your deployment specifically requires the async MCP server API. For high concurrency, keep handlers short and tune `request-timeout`.
+
+#### Component instances and concurrency
+
+The SDK creates **one instance per component class** (no-arg constructor) and reuses it for every MCP request to methods on that class. Concurrent calls share the same object.
+
+- Prefer **stateless** component classes, or **thread-safe** mutable state only.
+- Do not store per-request data in instance fields without proper synchronization.
+- Delegate shared mutable state to thread-safe services when needed.
+
+`McpApplicationContext.from(...)` currently uses this default singleton-per-class factory. There is no built-in Spring/CDI wiring in the public API today.
+
+#### MCP Java SDK 2.x (milestone)
+
+This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**, a **pre-release milestone**. APIs may change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
+
+- **STREAMABLE** is the recommended HTTP transport for new projects.
+- **SSE** is still supported for compatibility but is **deprecated** in MCP SDK 2.x; avoid new SSE deployments.
+
 ### Multilingual Support (i18n)
 
 Enable i18n for your MCP components:
@@ -353,7 +383,15 @@ Run the test suite:
 
 ### Q: Can I use this in production?
 
-**A:** This project is currently in active development. While it's stable for development and testing, we recommend thorough testing before production use.
+**A:** The annotated layer is stable for development and testing, but it depends on the official MCP Java SDK **2.0.0-M3** (a milestone release). Pin versions, run your own integration tests, and expect possible SDK API changes before 2.0 GA before relying on it in production.
+
+### Q: What does `type: ASYNC` mean?
+
+**A:** It selects the async MCP server API from the underlying SDK. Your `@McpTool` / `@McpPrompt` / `@McpResource` methods remain ordinary blocking Java code; the framework wraps them in `Mono.fromCallable(...)`. Use SYNC unless you specifically need the async server API.
+
+### Q: Are component classes singletons?
+
+**A:** Yes. The SDK creates one instance per component class and reuses it for all requests. Keep components stateless or thread-safe; do not keep per-request mutable state on the instance without synchronization.
 
 ### Q: What Java version is required?
 

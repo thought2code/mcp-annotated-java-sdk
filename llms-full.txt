@@ -517,8 +517,11 @@ public String createUser(
 ## Important Notes
 
 1. **Deprecated API**: The `McpServers` class is deprecated. Use `McpApplication.run()` instead.
-2. **Deprecated Mode**: SSE mode is deprecated. Use STREAMABLE mode for new projects.
-3. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
+2. **Deprecated Mode**: SSE mode is deprecated in MCP SDK 2.x. Use STREAMABLE mode for new HTTP projects.
+3. **MCP SDK milestone**: This project depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
+4. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
+5. **Singleton components**: One instance per component class is shared across concurrent requests. Keep components stateless or thread-safe.
+6. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
 
 ## Links
 

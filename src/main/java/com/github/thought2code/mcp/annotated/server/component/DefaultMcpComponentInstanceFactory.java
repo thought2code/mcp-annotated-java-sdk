@@ -9,8 +9,7 @@ import java.util.concurrent.ConcurrentMap;
  * Default component instance factory used by the SDK.
  *
  * <p>The factory creates component instances lazily through their no-argument constructor and
- * caches one instance per component class. Callers may also register prebuilt instances to preserve
- * application state or bridge into another object lifecycle.
+ * caches one instance per component class for the lifetime of the application context.
  *
  * @author codeboyzhou
  */

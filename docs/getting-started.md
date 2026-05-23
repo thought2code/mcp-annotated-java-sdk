@@ -188,6 +188,25 @@ streamable:
 | `streamable.keep-alive-interval`  | Keep-alive interval (ms)                  | `20000`        |
 | `streamable.port`                 | HTTP port for STREAMABLE mode             | `8080`         |
 
+## Runtime model and stability
+
+### SYNC vs ASYNC (`type`)
+
+The `type` property selects the MCP Java SDK server API (`SYNC` or `ASYNC`). It does **not** make your annotated methods reactive.
+
+- **SYNC** — methods run on the request thread.
+- **ASYNC** — the SDK exposes async handlers that wrap your method in `Mono.fromCallable(...)`. Your code is still **blocking** Java; you do not return `Mono` from `@McpTool` / `@McpPrompt` / `@McpResource` methods.
+
+Use **SYNC** by default. Choose **ASYNC** only when your deployment requires the async MCP server API. Long work still blocks a Reactor worker thread under ASYNC.
+
+### Component instances and concurrency
+
+The SDK creates **one instance per component class** and reuses it for all requests. Concurrent MCP calls share that object. Keep components **stateless** or **thread-safe**; avoid unsynchronized per-request instance fields.
+
+### MCP Java SDK 2.x (milestone)
+
+This SDK depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading. Prefer **STREAMABLE** over deprecated **SSE** for new HTTP deployments.
+
 ## Profile-based Configuration
 
 You can use profiles for different environments:

@@ -267,6 +267,18 @@ public int add(
 
 After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are in the package scanning path of the server application.
 
+### One instance per component class
+
+The SDK creates a single object per component class (via its no-arg constructor) and invokes all annotated methods on that class through the same instance. **Concurrent requests share one object**, so:
+
+- Keep component classes stateless when possible.
+- Any mutable instance fields must be thread-safe, or you must synchronize access.
+- Do not treat instance fields as per-request storage.
+
+### SYNC vs ASYNC server type
+
+Setting `type: ASYNC` in `mcp-server.yml` uses the async MCP server API from the underlying SDK. Handlers are implemented with `Mono.fromCallable(...)` around your blocking method — **ASYNC mode is not Project Reactor**. Your `@McpTool`, `@McpPrompt`, and `@McpResource` methods remain ordinary synchronous Java code.
+
 ### Specify Package Path
 
 If you need to specify a specific package path, you can use the following methods:
