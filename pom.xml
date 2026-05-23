@@ -196,7 +196,7 @@
                             <message>Java 17 or higher is required to build this project</message>
                         </requireJavaVersion>
                         <requireMavenVersion>
-                            <version>3.9.13</version>
+                            <version>3.9.16</version>
                             <message>Please use ./mvnw (Maven Wrapper) to build this project</message>
                         </requireMavenVersion>
                     </rules>
