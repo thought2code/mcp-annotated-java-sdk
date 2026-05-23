@@ -1,4 +1,14 @@
-# Annotation-driven MCP Java SDK
+<div align="center">
+
+English · [简体中文](README.zh-CN.md)
+
+# [MCP Annotated Java SDK](https://github.com/thought2code/mcp-annotated-java-sdk)
+
+*Annotation-driven MCP dev — No Spring, Zero Boilerplate, Pure Java.*
+
+**Build MCP servers in Java with annotations instead of boilerplate.**
+
+[Quick Start](#-quick-start) · [Why This SDK](#-why-this-sdk) · [Documentation](#-documentation) · [License](#-license)
 
 ![Java](https://img.shields.io/badge/Java-17+-blue)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.thought2code/mcp-annotated-java-sdk?color=blue)](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk)
@@ -6,11 +16,19 @@
 [![Coverage](https://img.shields.io/codecov/c/github/thought2code/mcp-annotated-java-sdk?logo=codecov&color=brightgreen)](https://app.codecov.io/github/thought2code/mcp-annotated-java-sdk)
 [![GitHub Action](https://github.com/thought2code/mcp-annotated-java-sdk/actions/workflows/maven-build.yml/badge.svg)](https://github.com/thought2code/mcp-annotated-java-sdk/actions/workflows/maven-build.yml)
 
-> Annotation-driven MCP dev 🚀 No Spring, Zero Boilerplate, Pure Java.
+</div>
 
-This SDK is a lightweight, annotation-based framework that simplifies MCP server development in Java. Define, develop and integrate your MCP Resources / Prompts / Tools with minimal code - No Spring Framework Required.
+---
 
-[📖 Documentation](https://thought2code.github.io/mcp-annotated-java-sdk-docs) | [💡 Examples](https://github.com/thought2code/mcp-java-sdk-examples/tree/main/mcp-server-filesystem/mcp-server-filesystem-annotated-sdk-implementation) | [🐛 Report Issues](https://github.com/thought2code/mcp-annotated-java-sdk/issues)
+## Overview
+
+This SDK is a lightweight, annotation-based framework that simplifies MCP server development in Java. Define, develop, and integrate your MCP Resources / Prompts / Tools with minimal code — **no Spring Framework required**.
+
+> **Workflow:** Add dependency → Configure `mcp-server.yml` → Annotate Resources / Tools / Prompts → Run with `McpApplication`
+
+[📖 Documentation](https://thought2code.github.io/mcp-annotated-java-sdk-docs) · [💡 Examples](https://github.com/thought2code/mcp-java-sdk-examples/tree/main/mcp-server-filesystem/mcp-server-filesystem-annotated-sdk-implementation) · [🐛 Report Issues](https://github.com/thought2code/mcp-annotated-java-sdk/issues)
+
+---
 
 ## ✨ Why This SDK?
 
