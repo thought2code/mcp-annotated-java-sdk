@@ -26,7 +26,6 @@ import io.modelcontextprotocol.client.transport.StdioClientTransport;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import java.time.Duration;
 import java.util.Random;
-import java.util.concurrent.Executors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -59,14 +58,8 @@ class McpApplicationIntegrationTest {
     mcpServer.start();
   }
 
-  private void startServer(String configFileName) {
-    startServer(new McpConfigurationLoader(configFileName).loadConfig());
-  }
-
   @Test
   void stdioTransport_shouldServeAllFixtureComponents() {
-    TestMcpStdioServer.main(new String[] {});
-
     String classpath = System.getProperty("java.class.path");
     ServerParameters serverParameters =
         ServerParameters.builder("java")
@@ -76,8 +69,7 @@ class McpApplicationIntegrationTest {
         new StdioClientTransport(serverParameters, McpJsonDefaults.getMapper());
 
     try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-      Executors.newSingleThreadExecutor()
-          .execute(() -> McpClientVerificationSupport.verifyAll(client));
+      McpClientVerificationSupport.verifyAll(client);
     }
   }
 
@@ -126,11 +118,14 @@ class McpApplicationIntegrationTest {
     assertFalse(configuration.enabled());
   }
 
+  /**
+   * STDIO mode binds to System.in/out, starting it in-process would block or break subprocess
+   * tests.
+   */
   @Test
-  void stdioModeConfig_shouldLoadAndStartWithoutError() {
+  void stdioModeConfig_shouldLoadWithoutStartingInProcessServer() {
     McpServerConfiguration configuration =
         new McpConfigurationLoader("test-mcp-server-enable-stdio-mode.yml").loadConfig();
-    assertDoesNotThrow(() -> startServer(configuration));
     assertEquals(ServerMode.STDIO, configuration.mode());
   }
 
@@ -154,6 +149,9 @@ class McpApplicationIntegrationTest {
   void unknownModeConfig_shouldFailDuringLoad() {
     assertThrows(
         McpServerConfigurationException.class,
-        () -> startServer("test-mcp-server-enable-unknown-mode.yml"));
+        () ->
+            startServer(
+                new McpConfigurationLoader("test-mcp-server-enable-unknown-mode.yml")
+                    .loadConfig()));
   }
 }

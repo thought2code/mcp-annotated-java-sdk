@@ -3,7 +3,7 @@ mode: STDIO
 name: mcp-server
 version: 1.0.0
 type: SYNC
-instructions: You are a helpful AI assistant
+instructions: test
 request-timeout: 60000
 capabilities:
   resource: true

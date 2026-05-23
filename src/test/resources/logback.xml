@@ -12,8 +12,15 @@
     </appender>
 
     <logger name="org.eclipse.jetty" level="WARN"/>
+    <logger name="io.modelcontextprotocol" level="WARN"/>
 
-    <root level="DEBUG">
+    <!-- Expected failure paths in unit/integration tests intentionally emit ERROR logs. -->
+    <logger name="com.github.thought2code.mcp.annotated.util.JacksonHelper" level="OFF"/>
+    <logger name="com.github.thought2code.mcp.annotated.reflect.MethodInvoker" level="OFF"/>
+    <logger name="com.github.thought2code.mcp.annotated.reflect.ComponentInvocationSupport" level="OFF"/>
+    <logger name="com.github.thought2code.mcp.annotated.server.JettyHttpServer" level="OFF"/>
+
+    <root level="WARN">
         <appender-ref ref="CONSOLE"/>
     </root>
 
