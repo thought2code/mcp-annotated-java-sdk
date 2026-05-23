@@ -7,9 +7,8 @@ import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
 import com.github.thought2code.mcp.annotated.enums.JavaTypeToJsonSchemaMapper;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
+import com.github.thought2code.mcp.annotated.reflect.ComponentInvocationSupport;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.server.converter.McpToolParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -180,17 +179,15 @@ public class McpServerTool
 
     log.debug("Handling MCP CallToolRequest: {}", JacksonHelper.toJsonString(request));
 
-    MethodMetadata metadata = MethodMetadata.of(method);
-    Parameter[] parameters = metadata.getParameters();
-    Map<String, Object> arguments = request.arguments();
-    List<Object> params = parameterConverter.convertAll(parameters, arguments);
-    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, params);
+    Invocation invocation =
+        ComponentInvocationSupport.invokeWithParameters(
+            instance, method, parameterConverter, request.arguments());
 
     Object result = invocation.result();
-    String textContent = result.toString();
+    String textContent = invocation.asText();
     Object structuredContent = Map.of();
 
-    if (result instanceof McpStructuredContent mcpStructuredContent) {
+    if (!invocation.isError() && result instanceof McpStructuredContent mcpStructuredContent) {
       textContent = mcpStructuredContent.asTextContent();
       structuredContent = mcpStructuredContent;
     }

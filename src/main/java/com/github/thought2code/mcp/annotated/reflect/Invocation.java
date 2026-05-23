@@ -17,6 +17,11 @@ public record Invocation(@NotNull Object result, boolean isError) {
     return new Builder();
   }
 
+  /** Returns the invocation result as text. */
+  public String asText() {
+    return result.toString();
+  }
+
   /**
    * This class implements the builder pattern for creating a new instance of {@code
    * InvocationResult}.

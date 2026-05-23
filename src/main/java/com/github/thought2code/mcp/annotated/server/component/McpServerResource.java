@@ -3,9 +3,8 @@ package com.github.thought2code.mcp.annotated.server.component;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
+import com.github.thought2code.mcp.annotated.reflect.ComponentInvocationSupport;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -153,11 +152,10 @@ public class McpServerResource
 
     log.debug("Handling ReadResourceResult request: {}", JacksonHelper.toJsonString(resource));
 
-    MethodMetadata metadata = MethodMetadata.of(method);
-    Invocation invocation = MethodInvoker.invoke(instance, method, metadata);
+    Invocation invocation = ComponentInvocationSupport.invoke(instance, method);
     final String uri = resource.uri();
     final String mimeType = resource.mimeType();
-    final String text = invocation.result().toString();
+    final String text = invocation.asText();
     McpSchema.ResourceContents contents =
         McpSchema.TextResourceContents.builder(uri, text).mimeType(mimeType).build();
     McpSchema.ReadResourceResult readResourceResult =

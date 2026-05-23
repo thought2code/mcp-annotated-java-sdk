@@ -4,9 +4,8 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpPrompt;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
+import com.github.thought2code.mcp.annotated.reflect.ComponentInvocationSupport;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import com.github.thought2code.mcp.annotated.server.converter.McpPromptParameterConverter;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
@@ -18,7 +17,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -169,14 +167,11 @@ public class McpServerPrompt
 
     log.debug("Handling MCP GetPromptRequest: {}", JacksonHelper.toJsonString(request));
 
-    MethodMetadata metadata = MethodMetadata.of(method);
-    Parameter[] parameters = metadata.getParameters();
-    Map<String, Object> arguments = request.arguments();
-    List<Object> params = parameterConverter.convertAll(parameters, arguments);
-    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, params);
+    Invocation invocation =
+        ComponentInvocationSupport.invokeWithParameters(
+            instance, method, parameterConverter, request.arguments());
 
-    McpSchema.Content content =
-        McpSchema.TextContent.builder(invocation.result().toString()).build();
+    McpSchema.Content content = McpSchema.TextContent.builder(invocation.asText()).build();
     McpSchema.PromptMessage message =
         McpSchema.PromptMessage.builder(McpSchema.Role.USER, content).build();
     McpSchema.GetPromptResult getPromptResult =

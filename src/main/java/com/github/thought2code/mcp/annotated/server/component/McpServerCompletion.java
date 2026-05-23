@@ -4,9 +4,8 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
+import com.github.thought2code.mcp.annotated.reflect.ComponentInvocationSupport;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.reflect.MethodInvoker;
-import com.github.thought2code.mcp.annotated.reflect.MethodMetadata;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.lang.reflect.Method;
@@ -180,10 +179,9 @@ public class McpServerCompletion {
   private static McpSchema.CompleteResult invoke(
       Object instance, Method method, McpSchema.CompleteRequest request) {
 
-    MethodMetadata metadata = MethodMetadata.of(method);
-    McpSchema.CompleteRequest.CompleteArgument argument = request.argument();
-    Invocation invocation = MethodInvoker.invoke(instance, method, metadata, argument);
-    McpCompleteCompletion completion = (McpCompleteCompletion) invocation.result();
+    Invocation invocation = ComponentInvocationSupport.invoke(instance, method, request.argument());
+    McpCompleteCompletion completion =
+        ComponentInvocationSupport.requireResult(invocation, McpCompleteCompletion.class);
     return new McpSchema.CompleteResult(
         new McpSchema.CompleteResult.CompleteCompletion(
             completion.values(), completion.total(), completion.hasMore()));
