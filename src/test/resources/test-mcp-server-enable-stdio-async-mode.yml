@@ -1,0 +1,17 @@
+enabled: true
+mode: STDIO
+name: mcp-server
+version: 1.0.0
+type: ASYNC
+instructions: test
+request-timeout: 60000
+capabilities:
+  resource: true
+  subscribe-resource: true
+  prompt: true
+  tool: true
+  completion: true
+change-notification:
+  resource: true
+  prompt: true
+  tool: true
