@@ -56,7 +56,7 @@ class McpConfigurationCheckerTest {
         assertThrows(
             McpServerConfigurationException.class,
             () -> McpConfigurationChecker.check(configuration));
-    assertTrue(exception.getMessage().contains("subscribe-resource"));
+    assertTrue(exception.getMessage().contains("capabilities.subscribe-resource"));
   }
 
   @Test
@@ -72,20 +72,13 @@ class McpConfigurationCheckerTest {
   }
 
   @Test
-  void checkNull_shouldRejectWhenBothValuesAreNull() {
+  void check_shouldRejectMissingStreamableSettingsWhenModeIsStreamable() {
+    McpServerConfiguration configuration =
+        TestMcpConfigurations.baseBuilder().mode(ServerMode.STREAMABLE).streamable(null).build();
     McpServerConfigurationException exception =
         assertThrows(
             McpServerConfigurationException.class,
-            () -> McpConfigurationChecker.checkNull("mode", null, null));
-    assertTrue(exception.getMessage().contains("mode"));
-  }
-
-  @Test
-  void checkBlank_shouldRejectWhenBothValuesAreBlank() {
-    McpServerConfigurationException exception =
-        assertThrows(
-            McpServerConfigurationException.class,
-            () -> McpConfigurationChecker.checkBlank("name", "  ", null));
-    assertTrue(exception.getMessage().contains("name"));
+            () -> McpConfigurationChecker.check(configuration));
+    assertTrue(exception.getMessage().contains("streamable"));
   }
 }
