@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.configuration;
 
+import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
@@ -25,10 +26,11 @@ public record McpServerConfiguration(
     @JsonProperty("type") ServerType type,
     @JsonProperty("instructions") String instructions,
     @JsonProperty("request-timeout") Long requestTimeout,
-    @JsonProperty("capabilities") McpServerCapabilities capabilities,
-    @JsonProperty("change-notification") McpServerChangeNotification changeNotification,
-    @Deprecated(since = "0.16.0", forRemoval = true) @JsonProperty("sse") McpServerSSE sse,
-    @JsonProperty("streamable") McpServerStreamable streamable) {
+    @JsonMerge @JsonProperty("capabilities") McpServerCapabilities capabilities,
+    @JsonMerge @JsonProperty("change-notification") McpServerChangeNotification changeNotification,
+    @Deprecated(since = "0.16.0", forRemoval = true) @JsonMerge @JsonProperty("sse")
+        McpServerSSE sse,
+    @JsonMerge @JsonProperty("streamable") McpServerStreamable streamable) {
 
   /**
    * Creates a new instance of {@code Builder} to build {@code McpServerConfiguration}.

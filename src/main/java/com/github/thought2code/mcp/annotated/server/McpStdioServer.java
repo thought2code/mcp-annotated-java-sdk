@@ -5,6 +5,7 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguratio
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 
 /**
@@ -32,8 +33,11 @@ import java.util.function.Function;
  * @see StdioServerTransportProvider
  */
 public class McpStdioServer extends McpServerBase {
-  /** The STDIO transport provider shared by sync and async specifications. */
-  private final StdioServerTransportProvider transportProvider;
+  /** STDIO transport whose session factory is activated in {@link #start()}. */
+  private final DeferredActivationServerTransportProvider transportProvider;
+
+  /** Keeps the main thread alive until {@link #stop()} is invoked. */
+  private final CountDownLatch running = new CountDownLatch(1);
 
   /**
    * Constructs a new {@link McpStdioServer} with the specified configuration and application
@@ -44,7 +48,9 @@ public class McpStdioServer extends McpServerBase {
    */
   public McpStdioServer(McpServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
-    this.transportProvider = new StdioServerTransportProvider(McpJsonDefaults.getMapper());
+    this.transportProvider =
+        new DeferredActivationServerTransportProvider(
+            new StdioServerTransportProvider(McpJsonDefaults.getMapper()));
   }
 
   /**
@@ -84,7 +90,39 @@ public class McpStdioServer extends McpServerBase {
    * @return created specification
    * @param <T> specification type
    */
-  private <T> T createSpecification(Function<StdioServerTransportProvider, T> factory) {
+  private <T> T createSpecification(
+      Function<DeferredActivationServerTransportProvider, T> factory) {
     return factory.apply(transportProvider);
+  }
+
+  /**
+   * Activates the STDIO transport after MCP components have been registered.
+   *
+   * @see DeferredActivationServerTransportProvider#activate()
+   */
+  @Override
+  public void start() {
+    transportProvider.activate();
+  }
+
+  /**
+   * Blocks until {@link #stop()} is called.
+   *
+   * <p>STDIO servers must keep the main thread alive so the subprocess or CLI entrypoint does not
+   * exit before the transport finishes handling requests.
+   */
+  @Override
+  public void awaitShutdown() {
+    try {
+      running.await();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  @Override
+  public void stop() {
+    running.countDown();
+    transportProvider.closeGracefully().block();
   }
 }

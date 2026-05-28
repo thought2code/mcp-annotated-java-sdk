@@ -1,0 +1,23 @@
+profile: dev
+enabled: true
+mode: SSE
+name: mcp-server
+version: 1.0.0
+type: SYNC
+instructions: test
+request-timeout: 60000
+capabilities:
+  resource: true
+  subscribe-resource: true
+  prompt: true
+  tool: true
+  completion: true
+change-notification:
+  resource: true
+  prompt: true
+  tool: true
+sse:
+  message-endpoint: /mcp/message
+  endpoint: /sse
+  base-url: http://localhost:8080
+  port: 8080

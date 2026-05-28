@@ -2,10 +2,13 @@ package com.github.thought2code.mcp.annotated;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.thought2code.mcp.annotated.integration.IntegrationMcpApplication;
+import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
+import com.github.thought2code.mcp.annotated.support.TestMcpServerLifecycle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,9 +19,11 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 @Execution(ExecutionMode.SAME_THREAD)
 class McpApplicationTest {
 
+  private McpApplicationContext context;
+
   @BeforeEach
-  void enableTestingMode() {
-    System.setProperty("mcp.server.testing", "true");
+  void initContext() {
+    context = McpApplicationContext.from(IntegrationMcpApplication.class);
   }
 
   @Test
@@ -49,48 +54,51 @@ class McpApplicationTest {
 
   @Test
   void run_shouldStartStdioSyncServer() {
-    assertDoesNotThrow(
-        () ->
-            McpApplication.run(
-                IntegrationMcpApplication.class,
-                new String[] {"test"},
-                "test-mcp-server-enable-stdio-mode.yml"));
+    AnnotatedMcpServer server =
+        assertDoesNotThrow(
+            () -> TestMcpServerLifecycle.start(context, "test-mcp-server-enable-stdio-mode.yml"));
+    assertNotNull(server);
+    server.stop();
   }
 
   @Test
   void run_shouldStartStdioAsyncServer() {
-    assertDoesNotThrow(
-        () ->
-            McpApplication.run(
-                IntegrationMcpApplication.class,
-                new String[] {"test"},
-                "test-mcp-server-enable-stdio-async-mode.yml"));
+    AnnotatedMcpServer server =
+        assertDoesNotThrow(
+            () ->
+                TestMcpServerLifecycle.start(
+                    context, "test-mcp-server-enable-stdio-async-mode.yml"));
+    assertNotNull(server);
+    server.stop();
   }
 
   @Test
   void run_shouldStartStreamableServer() {
-    assertDoesNotThrow(
-        () ->
-            McpApplication.run(
-                IntegrationMcpApplication.class,
-                new String[] {"test"},
-                "test-mcp-server-enable-streamable-http-mode.yml"));
+    AnnotatedMcpServer server =
+        assertDoesNotThrow(
+            () ->
+                TestMcpServerLifecycle.start(
+                    context, "test-mcp-server-enable-streamable-http-mode.yml"));
+    assertNotNull(server);
+    server.stop();
   }
 
   @Test
   @SuppressWarnings("deprecation")
   void run_shouldStartSseServer() {
-    assertDoesNotThrow(
-        () ->
-            McpApplication.run(
-                IntegrationMcpApplication.class,
-                new String[] {"test"},
-                "test-mcp-server-enable-http-sse-mode.yml"));
+    AnnotatedMcpServer server =
+        assertDoesNotThrow(
+            () ->
+                TestMcpServerLifecycle.start(context, "test-mcp-server-enable-http-sse-mode.yml"));
+    assertNotNull(server);
+    server.stop();
   }
 
   @Test
   void runWithDefaultConfigFile_shouldStartServerFromClasspathConfig() {
-    assertDoesNotThrow(
-        () -> McpApplication.run(IntegrationMcpApplication.class, new String[] {"test"}));
+    AnnotatedMcpServer server =
+        assertDoesNotThrow(() -> TestMcpServerLifecycle.start(context, "mcp-server.yml"));
+    assertNotNull(server);
+    server.stop();
   }
 }

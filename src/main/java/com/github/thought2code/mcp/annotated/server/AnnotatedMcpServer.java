@@ -112,4 +112,20 @@ public interface AnnotatedMcpServer {
    * method to start their transport layer. The default implementation does nothing.
    */
   default void start() {}
+
+  /**
+   * Stops the MCP server and releases transport resources.
+   *
+   * <p>For HTTP-based server modes (SSE, STREAMABLE), this method stops the underlying Jetty
+   * server. For STDIO mode, this method is a no-op.
+   */
+  default void stop() {}
+
+  /**
+   * Blocks until the server shuts down.
+   *
+   * <p>HTTP-based implementations delegate to the underlying Jetty server. STDIO mode uses the
+   * default no-op because the process lifecycle is managed by the MCP transport.
+   */
+  default void awaitShutdown() {}
 }

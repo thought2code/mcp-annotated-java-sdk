@@ -1,16 +1,21 @@
 package com.github.thought2code.mcp.annotated.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -80,5 +85,30 @@ class JacksonHelperTest {
             McpServerConfigurationException.class,
             () -> JacksonHelper.fromYaml(missing, Map.class));
     assertTrue(exception.getMessage().contains(McpServerError.YAML_READ_ERROR.getCode()));
+  }
+
+  @Test
+  void mergeYaml_shouldMergeNestedProfileOverridesIntoBaseConfiguration() throws Exception {
+    File baseFile = classpathResource("test-mcp-server-with-profile.yml");
+    File profileFile = classpathResource("test-mcp-server-with-profile-dev.yml");
+
+    McpServerConfiguration configuration =
+        JacksonHelper.fromYaml(baseFile, McpServerConfiguration.class);
+    configuration =
+        JacksonHelper.mergeYaml(configuration, profileFile, McpServerConfiguration.class);
+
+    assertEquals("mcp-server-dev", configuration.name());
+    assertFalse(configuration.capabilities().resource());
+    assertTrue(configuration.capabilities().prompt());
+    assertEquals("/mcp/message/dev", configuration.streamable().mcpEndpoint());
+    assertEquals(9004, configuration.streamable().port());
+  }
+
+  private static File classpathResource(String fileName) throws URISyntaxException {
+    URL resource = JacksonHelperTest.class.getClassLoader().getResource(fileName);
+    if (resource == null) {
+      throw new IllegalArgumentException("Missing classpath resource: " + fileName);
+    }
+    return Paths.get(resource.toURI()).toFile();
   }
 }

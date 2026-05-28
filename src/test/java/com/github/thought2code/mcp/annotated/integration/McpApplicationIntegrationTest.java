@@ -3,6 +3,7 @@ package com.github.thought2code.mcp.annotated.integration;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
@@ -11,11 +12,9 @@ import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguratio
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
-import com.github.thought2code.mcp.annotated.server.McpSseServer;
-import com.github.thought2code.mcp.annotated.server.McpStdioServer;
-import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import com.github.thought2code.mcp.annotated.support.McpClientVerificationSupport;
 import com.github.thought2code.mcp.annotated.support.TestMcpConfigurations;
+import com.github.thought2code.mcp.annotated.support.TestMcpServerLifecycle;
 import com.github.thought2code.mcp.annotated.test.TestMcpStdioServer;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
@@ -29,8 +28,11 @@ import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Tag("integration")
+@Execution(ExecutionMode.SAME_THREAD)
 @SuppressWarnings("deprecation")
 class McpApplicationIntegrationTest {
 
@@ -40,23 +42,7 @@ class McpApplicationIntegrationTest {
 
   @BeforeAll
   static void setup() {
-    System.setProperty("mcp.server.testing", "true");
     context = McpApplicationContext.from(IntegrationMcpApplication.class);
-  }
-
-  private void startServer(McpServerConfiguration configuration) {
-    if (!configuration.enabled()) {
-      return;
-    }
-    AnnotatedMcpServer mcpServer =
-        switch (configuration.mode()) {
-          case STDIO -> new McpStdioServer(configuration, context);
-          case SSE -> new McpSseServer(configuration, context);
-          case STREAMABLE -> new McpStreamableServer(configuration, context);
-        };
-    var syncServer = mcpServer.createSyncServer();
-    mcpServer.registerComponents(syncServer);
-    mcpServer.start();
   }
 
   @Test
@@ -77,30 +63,40 @@ class McpApplicationIntegrationTest {
   @Test
   void sseTransport_shouldServeAllFixtureComponents() {
     int port = new Random().nextInt(8000, 9000);
-    startServer(TestMcpConfigurations.sse(port));
+    AnnotatedMcpServer server =
+        TestMcpServerLifecycle.start(context, TestMcpConfigurations.sse(port));
+    try {
+      HttpClientSseClientTransport transport =
+          HttpClientSseClientTransport.builder("http://localhost:" + port)
+              .sseEndpoint("/sse")
+              .build();
 
-    HttpClientSseClientTransport transport =
-        HttpClientSseClientTransport.builder("http://localhost:" + port)
-            .sseEndpoint("/sse")
-            .build();
-
-    try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-      McpClientVerificationSupport.verifyAll(client);
+      try (McpSyncClient client =
+          McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
+        McpClientVerificationSupport.verifyAll(client);
+      }
+    } finally {
+      server.stop();
     }
   }
 
   @Test
   void streamableTransport_shouldServeAllFixtureComponents() {
     int port = new Random().nextInt(8000, 9000);
-    startServer(TestMcpConfigurations.streamable(port));
+    AnnotatedMcpServer server =
+        TestMcpServerLifecycle.start(context, TestMcpConfigurations.streamable(port));
+    try {
+      HttpClientStreamableHttpTransport transport =
+          HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+              .endpoint("/mcp/message")
+              .build();
 
-    HttpClientStreamableHttpTransport transport =
-        HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
-            .endpoint("/mcp/message")
-            .build();
-
-    try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-      McpClientVerificationSupport.verifyAll(client);
+      try (McpSyncClient client =
+          McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
+        McpClientVerificationSupport.verifyAll(client);
+      }
+    } finally {
+      server.stop();
     }
   }
 
@@ -115,7 +111,9 @@ class McpApplicationIntegrationTest {
   void disabledConfiguration_shouldNotStartServer() {
     McpServerConfiguration configuration =
         new McpConfigurationLoader("test-mcp-server-disabled.yml").loadConfig();
-    assertDoesNotThrow(() -> startServer(configuration));
+    AnnotatedMcpServer server =
+        assertDoesNotThrow(() -> TestMcpServerLifecycle.start(context, configuration));
+    assertNull(server);
     assertFalse(configuration.enabled());
   }
 
@@ -131,18 +129,16 @@ class McpApplicationIntegrationTest {
   }
 
   @Test
-  void sseModeConfig_shouldLoadAndStartWithoutError() {
+  void sseModeConfig_shouldLoadWithoutStartingInProcessServer() {
     McpServerConfiguration configuration =
         new McpConfigurationLoader("test-mcp-server-enable-http-sse-mode.yml").loadConfig();
-    assertDoesNotThrow(() -> startServer(configuration));
     assertEquals(ServerMode.SSE, configuration.mode());
   }
 
   @Test
-  void streamableModeConfig_shouldLoadAndStartWithoutError() {
+  void streamableModeConfig_shouldLoadWithoutStartingInProcessServer() {
     McpServerConfiguration configuration =
         new McpConfigurationLoader("test-mcp-server-enable-streamable-http-mode.yml").loadConfig();
-    assertDoesNotThrow(() -> startServer(configuration));
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
   }
 
@@ -151,7 +147,8 @@ class McpApplicationIntegrationTest {
     assertThrows(
         McpServerConfigurationException.class,
         () ->
-            startServer(
+            TestMcpServerLifecycle.start(
+                context,
                 new McpConfigurationLoader("test-mcp-server-enable-unknown-mode.yml")
                     .loadConfig()));
   }

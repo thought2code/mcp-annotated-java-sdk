@@ -76,19 +76,30 @@ public class JettyHttpServer {
       initServer();
       server.start();
       log.info("Jetty-based MCP server started successfully");
-
-      final boolean isTesting = Boolean.parseBoolean(System.getProperty("mcp.server.testing"));
-      if (isTesting) {
-        log.debug("Testing Jetty-based MCP server, not awaiting for server to stop");
-        return;
-      }
-
-      await(server);
     } catch (Exception e) {
       log.error("Error starting Jetty-based MCP server", e);
       stop();
       throw new IllegalStateException(
           McpServerError.JETTY_SERVER_START_ERROR.withDetail("port=" + port), e);
+    }
+  }
+
+  /**
+   * Blocks until the Jetty server stops.
+   *
+   * <p>Callers that need a long-running process (for example {@link
+   * com.github.thought2code.mcp.annotated.McpApplication}) invoke this after {@link #start()}.
+   * Tests typically call only {@link #start()} and {@link #stop()}.
+   */
+  public void awaitShutdown() {
+    if (server == null) {
+      return;
+    }
+    try {
+      server.join();
+    } catch (InterruptedException e) {
+      log.error("Error joining Jetty-based MCP server", e);
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -109,20 +120,6 @@ public class JettyHttpServer {
     handler.setContextPath(DEFAULT_CONTEXT_PATH);
     handler.addServlet(new ServletHolder(mcpTransportProvider), DEFAULT_SERVLET_PATH);
     server.setHandler(handler);
-  }
-
-  /**
-   * Await for Jetty HTTP server to stop.
-   *
-   * @param server the Jetty HTTP server instance
-   */
-  private void await(Server server) {
-    try {
-      server.join();
-    } catch (InterruptedException e) {
-      log.error("Error joining Jetty-based MCP server", e);
-      Thread.currentThread().interrupt();
-    }
   }
 
   /** Stop Jetty HTTP server. */

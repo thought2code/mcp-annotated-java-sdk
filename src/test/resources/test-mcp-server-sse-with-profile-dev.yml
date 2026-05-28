@@ -1,0 +1,3 @@
+sse:
+  port: 8081
+  base-url: http://localhost:8081

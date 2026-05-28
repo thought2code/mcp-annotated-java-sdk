@@ -129,6 +129,7 @@ public final class McpApplication {
     }
 
     mcpServer.start();
+    mcpServer.awaitShutdown();
   }
 
   /**

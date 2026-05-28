@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,26 +36,24 @@ public record McpConfigurationLoader(String configFileName) {
    * @throws McpServerConfigurationException if the configuration file cannot be loaded
    */
   public McpServerConfiguration loadConfig() {
-    Path configFilePath = getConfigFilePath(configFileName);
-    File file = configFilePath.toFile();
-    McpServerConfiguration baseConfig = JacksonHelper.fromYaml(file, McpServerConfiguration.class);
+    File file = getConfigFilePath(configFileName).toFile();
+    McpServerConfiguration configuration =
+        JacksonHelper.fromYaml(file, McpServerConfiguration.class);
     log.info("Configuration loaded successfully from file: {}", configFileName);
 
-    final String profile = baseConfig.profile();
+    final String profile = configuration.profile();
     if (StringHelper.isBlank(profile)) {
       log.info("No profile specified in configuration file: {}", configFileName);
-      McpConfigurationChecker.check(baseConfig);
-      return baseConfig;
+    } else {
+      final String profileConfigFileName = configFileName.replace(".yml", "-" + profile + ".yml");
+      File profileConfigFile = getConfigFilePath(profileConfigFileName).toFile();
+      configuration =
+          JacksonHelper.mergeYaml(configuration, profileConfigFile, McpServerConfiguration.class);
+      log.info("Profile configuration merged successfully from file: {}", profileConfigFileName);
     }
 
-    final String profileConfigFileName = configFileName.replace(".yml", "-" + profile + ".yml");
-    Path profileConfigFilePath = getConfigFilePath(profileConfigFileName);
-    File profileConfigFile = profileConfigFilePath.toFile();
-    McpServerConfiguration profileConfig =
-        JacksonHelper.fromYaml(profileConfigFile, McpServerConfiguration.class);
-    log.info("Profile configuration loaded successfully from file: {}", profileConfigFileName);
-
-    McpServerConfiguration mergedConfig = McpConfigurationMerger.merge(baseConfig, profileConfig);
+    McpServerConfiguration mergedConfig =
+        McpConfigurationSupport.finalizeMerged(Objects.requireNonNull(configuration), profile);
     McpConfigurationChecker.check(mergedConfig);
     return mergedConfig;
   }

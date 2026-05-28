@@ -58,6 +58,9 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
   /** Application-scoped runtime context used for discovery and localization. */
   protected final McpApplicationContext context;
 
+  /** Underlying Jetty server for HTTP-based modes; {@code null} for STDIO. */
+  private JettyHttpServer httpServer;
+
   /**
    * Constructs a new {@link McpServerBase} with the specified configuration and application
    * context.
@@ -257,6 +260,24 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
         InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
         port,
         endpointPath);
-    new JettyHttpServer().withTransportProvider(transportProvider).bind(port).start();
+    httpServer = new JettyHttpServer().withTransportProvider(transportProvider).bind(port);
+    httpServer.start();
+  }
+
+  /** Stops the underlying Jetty HTTP server when this MCP server uses an HTTP transport. */
+  @Override
+  public void stop() {
+    if (httpServer != null) {
+      httpServer.stop();
+      httpServer = null;
+    }
+  }
+
+  /** Blocks until the underlying Jetty HTTP server stops. */
+  @Override
+  public void awaitShutdown() {
+    if (httpServer != null) {
+      httpServer.awaitShutdown();
+    }
   }
 }

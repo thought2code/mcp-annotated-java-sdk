@@ -37,7 +37,6 @@ class JettyHttpServerTest {
 
   @Test
   void start_whenAlreadyRunning_shouldNotThrowOnSecondStart() {
-    System.setProperty("mcp.server.testing", "true");
     int port = new java.util.Random().nextInt(8000, 9000);
     JettyHttpServer server = new JettyHttpServer().withTransportProvider(new HttpServlet() {});
     assertDoesNotThrow(
