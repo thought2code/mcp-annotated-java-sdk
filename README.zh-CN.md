@@ -93,8 +93,10 @@ instructions: You are a helpful AI assistant
 request-timeout: 20000
 capabilities:
   resource: true
+  subscribe-resource: true
   prompt: true
   tool: true
+  completion: true
 change-notification:
   resource: true
   prompt: true
@@ -223,33 +225,35 @@ streamable:
 
 ### 配置项说明
 
-| 配置项                               | 说明                                    | 默认值            |
-|-----------------------------------|---------------------------------------|----------------|
-| `enabled`                         | 是否启用 MCP 服务端                          | `true`         |
-| `mode`                            | 服务端模式：`STDIO`、`SSE`（已弃用）、`STREAMABLE` | `STREAMABLE`   |
-| `name`                            | 服务端名称                                 | `mcp-server`   |
-| `version`                         | 服务端版本                                 | `1.0.0`        |
-| `type`                            | 服务端类型：`SYNC`、`ASYNC`                  | `SYNC`         |
-| `instructions`                    | 给 LLM 客户端的说明                          | （空）            |
-| `request-timeout`                 | 请求超时（毫秒）                              | `20000`        |
-| `capabilities.resource`           | 启用资源能力                                | `true`         |
-| `capabilities.subscribe-resource` | 启用资源订阅                                | `true`         |
-| `capabilities.prompt`             | 启用提示词能力                               | `true`         |
-| `capabilities.tool`               | 启用工具能力                                | `true`         |
-| `capabilities.completion`         | 启用补全能力                                | `true`         |
-| `change-notification.resource`    | 资源变更时通知客户端                            | `true`         |
-| `change-notification.prompt`      | 提示词变更时通知客户端                           | `true`         |
-| `change-notification.tool`        | 工具变更时通知客户端                            | `true`         |
-| `sse.message-endpoint`            | SSE POST 消息路径 *(自 0.16.0 起已弃用，计划移除)*  | `/mcp/message` |
-| `sse.endpoint`                    | SSE 流路径 *(自 0.16.0 起已弃用，计划移除)*        | `/sse`         |
-| `sse.base-url`                    | SSE 服务对外 base URL *(已弃用)*             | （空）            |
-| `sse.port`                        | SSE 模式 HTTP 端口 *(自 0.16.0 起已弃用，计划移除)* | `8080`         |
-| `streamable.mcp-endpoint`         | Streamable HTTP MCP 路径                | `/mcp/message` |
-| `streamable.disallow-delete`      | 是否拒绝会话 HTTP DELETE                    | `false`        |
-| `streamable.keep-alive-interval`  | 保活间隔（毫秒）                              | `20000`        |
-| `streamable.port`                 | STREAMABLE 模式 HTTP 端口                 | `8080`         |
+| 配置项                               | 说明                                    | 默认值             |
+|-----------------------------------|---------------------------------------|-----------------|
+| `enabled`                         | 是否启用 MCP 服务端                          | `true`          |
+| `mode`                            | 服务端模式：`STDIO`、`SSE`（已弃用）、`STREAMABLE` | `STREAMABLE`    |
+| `name`                            | 服务端名称                                 | `mcp-server`    |
+| `version`                         | 服务端版本                                 | `1.0.0`         |
+| `type`                            | 服务端类型：`SYNC`、`ASYNC`                  | `SYNC`          |
+| `instructions`                    | 给 LLM 客户端的说明                          | 必填（YAML 中不可为空）  |
+| `request-timeout`                 | 请求超时（毫秒）                              | `20000`         |
+| `capabilities.resource`           | 启用资源能力                                | `true`          |
+| `capabilities.subscribe-resource` | 启用资源订阅                                | `true`          |
+| `capabilities.prompt`             | 启用提示词能力                               | `true`          |
+| `capabilities.tool`               | 启用工具能力                                | `true`          |
+| `capabilities.completion`         | 启用补全能力                                | `true`          |
+| `change-notification.resource`    | 资源变更时通知客户端                            | `true`          |
+| `change-notification.prompt`      | 提示词变更时通知客户端                           | `true`          |
+| `change-notification.tool`        | 工具变更时通知客户端                            | `true`          |
+| `sse.message-endpoint`            | SSE POST 消息路径 *(自 0.16.0 起已弃用，计划移除)*  | `/mcp/message`  |
+| `sse.endpoint`                    | SSE 流路径 *(自 0.16.0 起已弃用，计划移除)*        | `/sse`          |
+| `sse.base-url`                    | SSE 服务对外 base URL *(已弃用)*             | `mode: SSE` 时必填 |
+| `sse.port`                        | SSE 模式 HTTP 端口 *(自 0.16.0 起已弃用，计划移除)* | `8080`          |
+| `streamable.mcp-endpoint`         | Streamable HTTP MCP 路径                | `/mcp/message`  |
+| `streamable.disallow-delete`      | 是否拒绝会话 HTTP DELETE                    | `false`         |
+| `streamable.keep-alive-interval`  | 保活间隔（毫秒）                              | `20000`         |
+| `streamable.port`                 | STREAMABLE 模式 HTTP 端口                 | `8080`          |
 
 ### 基于 Profile 的配置
+
+在基础配置中设置 `profile` 后，会从 classpath 加载 `mcp-server-{profile}.yml`，并通过 Jackson deep merge 与基础配置合并；`capabilities`、`streamable` 等嵌套对象按字段递归覆盖。`profile` 名称始终取自基础配置文件。合并完成后，会清除与当前 `mode` 不匹配的传输配置（例如 `mode: STDIO` 时会移除 `streamable`）。
 
 可通过 Profile 区分不同环境：
 

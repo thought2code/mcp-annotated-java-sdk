@@ -59,6 +59,7 @@ This SDK is especially suitable for the following scenarios:
 
 - **ASYNC vs SYNC** — `type: ASYNC` selects the async MCP server API; your annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)`. See [Getting Started — Runtime model](./getting-started.md#runtime-model-and-stability).
 - **Singleton components** — one instance per component class, shared across concurrent requests; keep handlers stateless or thread-safe.
+- **Required YAML** — `instructions` must be non-blank; when `mode` is `STREAMABLE` or `SSE`, the matching transport section must be present and complete.
 - **MCP SDK 2.0.0-M3** — built on a pre-release milestone; pin versions and prefer **STREAMABLE** over **SSE** (deprecated with `forRemoval = true` since 0.16.0).
 
 ## 📖 Getting Started

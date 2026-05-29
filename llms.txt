@@ -94,6 +94,8 @@ public String generateCode(
 | `@McpResourceCompletion` | Marks a method as a resource URI completion handler |
 | `@McpPromptCompletion` | Marks a method as a prompt-argument completion handler |
 | `@McpI18nEnabled` | Enables internationalization support |
+| `@McpJsonSchemaDefinition` | Marks a type as a custom JSON Schema definition |
+| `@McpJsonSchemaProperty` | Describes a field in a JSON Schema definition |
 
 ## Server Modes
 
@@ -117,8 +119,10 @@ instructions: You are a helpful AI assistant
 request-timeout: 20000
 capabilities:
   resource: true
+  subscribe-resource: true
   prompt: true
   tool: true
+  completion: true
 change-notification:
   resource: true
   prompt: true
@@ -127,7 +131,8 @@ change-notification:
 
 ## Important Notes
 
-- The `McpServers` class is deprecated, use `McpApplication.run()` instead
+- Use `McpApplication.run()` as the server entry point; components are discovered through `@McpServerApplication` package scanning
+- `instructions` must be a non-blank string in `mcp-server.yml` (validated at startup)
 - SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0; use STREAMABLE for new HTTP deployments
 - Built on MCP Java SDK **2.0.0-M3** (milestone) — pin versions and retest when upgrading
 - `type: ASYNC` uses the async MCP server API; annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)` — not Project Reactor

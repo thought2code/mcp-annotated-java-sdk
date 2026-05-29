@@ -289,7 +289,7 @@ If you need to specify a specific package path, you can use the following method
 @McpServerApplication(basePackage = "com.example.mcp.components")
 ```
 
-If no package path is specified, the package containing the main method will be scanned.
+If no package path is specified, the package of the class passed to `McpApplication.run()` will be scanned.
 
 ## Structured Content
 
