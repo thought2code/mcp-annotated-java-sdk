@@ -29,6 +29,11 @@ public enum ServerMode {
     this.description = description;
   }
 
+  /**
+   * Returns a short human-readable label for this server mode.
+   *
+   * @return the mode description used in logs and diagnostics
+   */
   public String description() {
     return description;
   }

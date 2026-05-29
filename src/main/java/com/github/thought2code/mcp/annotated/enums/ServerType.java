@@ -21,6 +21,11 @@ public enum ServerType {
     this.description = description;
   }
 
+  /**
+   * Returns a short human-readable label for this server type.
+   *
+   * @return the type description used in logs and diagnostics
+   */
   public String description() {
     return description;
   }

@@ -17,7 +17,11 @@ public record Invocation(@NotNull Object result, boolean isError) {
     return new Builder();
   }
 
-  /** Returns the invocation result as text. */
+  /**
+   * Returns the invocation result as text.
+   *
+   * @return the string representation of the invocation result
+   */
   public String asText() {
     return result.toString();
   }

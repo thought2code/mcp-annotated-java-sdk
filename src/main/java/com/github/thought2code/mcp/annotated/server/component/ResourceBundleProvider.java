@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ResourceBundleProvider {
 
+  /** Logger for resource bundle loading diagnostics. */
   public static final Logger log = LoggerFactory.getLogger(ResourceBundleProvider.class);
 
   /** Immutable map of localized values resolved from a resource bundle. */
@@ -31,6 +32,8 @@ public final class ResourceBundleProvider {
   /**
    * Loads i18n values from the main class configuration.
    *
+   * @param mainClass application entry class inspected for {@link McpI18nEnabled}
+   * @return a provider with localized values, or an empty provider when i18n is disabled
    * @throws IllegalArgumentException if {@code resourceBundleBaseName} is blank
    * @throws MissingResourceException if the configured bundle cannot be found
    */
@@ -52,7 +55,13 @@ public final class ResourceBundleProvider {
     return new ResourceBundleProvider(resourceBundle);
   }
 
-  /** Returns localized text by key, or falls back to the provided default. */
+  /**
+   * Returns localized text by key, or falls back to the provided default.
+   *
+   * @param i18nKey localization key to resolve
+   * @param defaultValue value used when the key is missing or blank
+   * @return localized text, or the default when no translation exists
+   */
   public String getString(String i18nKey, String defaultValue) {
     if (localizedValues.containsKey(i18nKey)) {
       return localizedValues.get(i18nKey);
