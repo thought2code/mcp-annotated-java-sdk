@@ -207,62 +207,6 @@ public class MyPromptCompletions {
 }
 ```
 
-## Multilingual Support
-
-This SDK has built-in multilingual support, which can be enabled through the `@McpI18nEnabled` annotation.
-
-### Enable i18n
-
-```java
-@McpServerApplication
-@McpI18nEnabled(resourceBundleBaseName = "messages")
-public class I18nMcpServer {
-    public static void main(String[] args) {
-        McpApplication.run(I18nMcpServer.class, args);
-    }
-}
-```
-
-### Create Resource Bundles
-
-Create `messages.properties` file:
-
-```properties
-# messages.properties
-tool.add.description=Calculate the sum of two numbers
-tool.add.param.a.description=First number
-tool.add.param.b.description=Second number
-resource.system.info.description=System information
-prompt.generate.code.description=Generate code for a given task
-prompt.generate.code.param.language.description=Programming language
-prompt.generate.code.param.task.description=Task description
-```
-
-Create `messages_zh_CN.properties` file:
-
-```properties
-# messages_zh_CN.properties
-tool.add.description=计算两个数字的和
-tool.add.param.a.description=第一个数字
-tool.add.param.b.description=第二个数字
-resource.system.info.description=系统信息
-prompt.generate.code.description=根据任务描述生成代码
-prompt.generate.code.param.language.description=编程语言
-prompt.generate.code.param.task.description=任务描述
-```
-
-### Use i18n in Components
-
-```java
-@McpTool(description = "tool.add.description")
-public int add(
-    @McpToolParam(name = "a", description = "tool.add.param.a.description") int a,
-    @McpToolParam(name = "b", description = "tool.add.param.b.description") int b
-) {
-    return a + b;
-}
-```
-
 ## Automatic Registration
 
 After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are in the package scanning path of the server application.

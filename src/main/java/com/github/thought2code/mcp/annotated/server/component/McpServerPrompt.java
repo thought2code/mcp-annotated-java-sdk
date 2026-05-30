@@ -34,7 +34,6 @@ import reactor.core.publisher.Mono;
  *   <li>Creation of prompt specifications from annotated methods
  *   <li>Registration of all prompt components with the server
  *   <li>Invocation of prompt methods with proper argument conversion
- *   <li>Localization of prompt attributes using resource bundles
  * </ul>
  *
  * @author codeboyzhou
@@ -202,8 +201,8 @@ public class McpServerPrompt
       if (param.isAnnotationPresent(McpPromptParam.class)) {
         McpPromptParam promptParam = param.getAnnotation(McpPromptParam.class);
         final String name = promptParam.name();
-        final String title = context.getLocalizedString(promptParam.title(), name);
-        final String description = context.getLocalizedString(promptParam.description(), name);
+        final String title = StringHelper.defaultIfBlank(promptParam.title(), name);
+        final String description = StringHelper.defaultIfBlank(promptParam.description(), name);
         final boolean required = promptParam.required();
         McpSchema.PromptArgument argument =
             McpSchema.PromptArgument.builder(name)
@@ -230,8 +229,8 @@ public class McpServerPrompt
       Method method, McpApplicationContext context, ServerType serverType) {
     McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
     final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
-    final String title = context.getLocalizedString(mcpPrompt.title(), name);
-    final String description = context.getLocalizedString(mcpPrompt.description(), name);
+    final String title = StringHelper.defaultIfBlank(mcpPrompt.title(), name);
+    final String description = StringHelper.defaultIfBlank(mcpPrompt.description(), name);
     List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());
     McpSchema.Prompt prompt =
         McpSchema.Prompt.builder(name)

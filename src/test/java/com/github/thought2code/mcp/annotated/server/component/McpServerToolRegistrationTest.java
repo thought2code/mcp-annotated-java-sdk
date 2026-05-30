@@ -32,8 +32,6 @@ class McpServerToolRegistrationTest {
     when(context.getMethodsAnnotatedWith(McpTool.class)).thenReturn(Set.of(methodA, methodB));
     when(context.getComponentInstance(DuplicateToolComponents.class))
         .thenReturn(new DuplicateToolComponents());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
 
     McpSyncServer server = mock(McpSyncServer.class);
     McpServerTool registrar = new McpServerTool();
@@ -55,8 +53,6 @@ class McpServerToolRegistrationTest {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getMethodsAnnotatedWith(McpTool.class)).thenReturn(Set.of(method));
     when(context.getComponentInstance(TestMcpTools.class)).thenReturn(new TestMcpTools());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
     when(context.getFieldsAnnotatedWith(any())).thenReturn(Set.of());
 
     McpAsyncServer server = mock(McpAsyncServer.class);
@@ -78,8 +74,6 @@ class McpServerToolRegistrationTest {
     when(context.getMethodsAnnotatedWith(McpTool.class)).thenReturn(Set.of(methodA, methodB));
     when(context.getComponentInstance(DuplicateToolComponents.class))
         .thenReturn(new DuplicateToolComponents());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
     when(context.getFieldsAnnotatedWith(any())).thenReturn(Set.of());
 
     McpAsyncServer server = mock(McpAsyncServer.class);
@@ -104,8 +98,6 @@ class McpServerToolRegistrationTest {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getMethodsAnnotatedWith(McpTool.class)).thenReturn(Set.of(method));
     when(context.getComponentInstance(TestMcpTools.class)).thenReturn(new TestMcpTools());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
     when(context.getFieldsAnnotatedWith(any())).thenReturn(Set.of());
 
     McpAsyncServer server = mock(McpAsyncServer.class);

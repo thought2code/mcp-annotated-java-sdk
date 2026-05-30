@@ -11,7 +11,6 @@ A lightweight, annotation-based Java framework that simplifies MCP (Model Contex
 - Zero Boilerplate - No need to write low-level MCP SDK code
 - No JSON Schema - Forget about complex JSON definitions
 - Type-Safe - Leverage Java's type system for compile-time safety
-- Multilingual Support - Built-in i18n for MCP components
 
 ## Requirements
 
@@ -93,7 +92,6 @@ public String generateCode(
 | `@McpPromptParam` | Marks a parameter as a prompt parameter |
 | `@McpResourceCompletion` | Marks a method as a resource URI completion handler |
 | `@McpPromptCompletion` | Marks a method as a prompt-argument completion handler |
-| `@McpI18nEnabled` | Enables internationalization support |
 | `@McpJsonSchemaDefinition` | Marks a type as a custom JSON Schema definition |
 | `@McpJsonSchemaProperty` | Describes a field in a JSON Schema definition |
 

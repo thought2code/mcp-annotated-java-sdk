@@ -24,7 +24,6 @@ MCP helps you build agents and complex workflows on top of LLMs. However, the of
 - **👏 No JSON Schema** - No need to care about complex JSON definitions
 - **🎯 Focus on Logic** - Concentrate on core business logic
 - **🔌 Spring AI Compatible** - Configuration files compatible with Spring AI Framework
-- **🌍 Multilingual Support** - Built-in internationalization support for MCP components
 - **📦 Type-Safe** - Leverage Java's type system for compile-time safety checks
 
 ## Comparison with Official MCP Java SDK
@@ -35,7 +34,6 @@ MCP helps you build agents and complex workflows on top of LLMs. However, the of
 | JSON Schema          | Hand-coded JSON  | No need to care |
 | Type Safety          | Limited          | Full support    |
 | Learning Curve       | Steep            | Gentle          |
-| Multilingual Support | Unsupported      | Supported       |
 
 ## Use Cases
 

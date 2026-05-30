@@ -18,7 +18,6 @@ The Model Context Protocol (MCP) is a standardized protocol for building servers
 - **No JSON Schema** - Forget about complex and lengthy JSON definitions
 - **Focus on Logic** - Concentrate on your core business logic
 - **Spring AI Compatible** - Configuration file compatible with Spring AI Framework
-- **Multilingual Support** - Built-in i18n support for MCP components
 - **Type-Safe** - Leverage Java's type system for compile-time safety
 
 ## Comparison with Official MCP Java SDK
@@ -29,7 +28,6 @@ The Model Context Protocol (MCP) is a standardized protocol for building servers
 | JSON Schema | Hand-coded JSON | No need to care |
 | Type Safety | Limited | Full |
 | Learning Curve | Steep | Gentle |
-| Multilingual | Unsupported | Supported |
 
 ## Requirements
 
@@ -365,48 +363,6 @@ streamable:
   port: 8080
 ```
 
-## Multilingual Support (i18n)
-
-### Enable i18n
-
-```java
-@McpServerApplication
-@McpI18nEnabled(resourceBundleBaseName = "messages")
-public class I18nMcpServer {
-    public static void main(String[] args) {
-        McpApplication.run(I18nMcpServer.class, args);
-    }
-}
-```
-
-### Create Resource Bundles
-
-```properties
-# messages.properties
-tool.add.description=Calculate the sum of two numbers
-tool.add.param.a.description=First number
-tool.add.param.b.description=Second number
-```
-
-```properties
-# messages_zh_CN.properties
-tool.add.description=计算两个数字的和
-tool.add.param.a.description=第一个数字
-tool.add.param.b.description=第二个数字
-```
-
-### Use i18n in Components
-
-```java
-@McpTool(description = "tool.add.description")
-public int add(
-    @McpToolParam(name = "a", description = "tool.add.param.a.description") int a,
-    @McpToolParam(name = "b", description = "tool.add.param.b.description") int b
-) {
-    return a + b;
-}
-```
-
 ## Structured Content
 
 Tools can return structured content by returning a type that **implements** `McpStructuredContent` (often a `record` with `@McpJsonSchemaProperty` on fields). There is no `McpStructuredContent.of(...)` helper.
@@ -486,8 +442,7 @@ your-mcp-project/
 │   │   │           └── service/
 │   │   │               └── BusinessLogic.java   # Business logic
 │   │   └── resources/
-│   │       ├── mcp-server.yml                   # MCP configuration
-│   │       └── messages.properties              # Internationalization messages
+│   │       └── mcp-server.yml                   # MCP configuration
 │   └── test/
 │       └── java/
 │           └── com/

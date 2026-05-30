@@ -39,8 +39,8 @@ public final class McpApplication {
   /**
    * Runs the MCP application with the specified main class and command-line arguments.
    *
-   * <p>This method initializes the reflection provider, loads the resource bundle, and starts the
-   * MCP server based on the configuration settings.
+   * <p>This method initializes the reflection provider and starts the MCP server based on the
+   * configuration settings.
    *
    * @param mainClass the main class of the application, used as the base for reflection scanning
    * @param args the command-line arguments passed to the application
@@ -58,8 +58,8 @@ public final class McpApplication {
    * Runs the MCP application with the specified main class and command-line arguments using the
    * default configuration file.
    *
-   * <p>This method initializes the reflection provider, loads the resource bundle, and starts the
-   * MCP server based on the configuration settings.
+   * <p>This method initializes the reflection provider and starts the MCP server based on the
+   * configuration settings.
    *
    * @param mainClass the main class of the application, used as the base for reflection scanning
    * @param args the command-line arguments passed to the application

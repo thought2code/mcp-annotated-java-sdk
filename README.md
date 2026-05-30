@@ -40,7 +40,6 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 - 👏 **No JSON Schema** - Forget about complex and lengthy JSON definitions
 - 🎯 **Focus on Logic** - Concentrate on your core business logic
 - 🔌 **Spring AI Compatible** - Configuration file compatible with Spring AI Framework
-- 🌍 **Multilingual Support** - Built-in i18n support for MCP components
 - 📦 **Type-Safe** - Leverage Java's type system for compile-time safety
 
 ### Comparison with [Official MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk)
@@ -51,7 +50,6 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 | JSON Schema    | Hand-coded JSON  | No need to care |
 | Type Safety    | Limited          | Full            |
 | Learning Curve | Steep            | Gentle          |
-| Multilingual   | Unsupported      | Supported       |
 
 ## 🎯 Quick Start
 
@@ -300,48 +298,6 @@ This project builds on the official [MCP Java SDK](https://github.com/modelconte
 - **STREAMABLE** is the recommended HTTP transport for new projects.
 - **SSE** (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
 
-### Multilingual Support (i18n)
-
-Enable i18n for your MCP components:
-
-```java
-@McpServerApplication
-@McpI18nEnabled(resourceBundleBaseName = "messages")
-public class I18nMcpServer {
-    public static void main(String[] args) {
-        McpApplication.run(I18nMcpServer.class, args);
-    }
-}
-```
-
-Create resource bundles:
-
-```properties
-# messages.properties
-tool.calculate.description=Calculate the sum of two numbers
-tool.calculate.param.a.description=First number
-tool.calculate.param.b.description=Second number
-```
-
-```properties
-# messages_zh_CN.properties
-tool.calculate.description=计算两个数字的和
-tool.calculate.param.a.description=第一个数字
-tool.calculate.param.b.description=第二个数字
-```
-
-Use i18n keys in your MCP components:
-
-```java
-@McpTool(description = "tool.calculate.description")
-public int add(
-    @McpToolParam(name = "a", description = "tool.calculate.param.a.description") int a,
-    @McpToolParam(name = "b", description = "tool.calculate.param.b.description") int b
-) {
-    return a + b;
-}
-```
-
 ## 🏗️ Project Structure
 
 A typical project structure:
@@ -362,8 +318,7 @@ your-mcp-project/
 │   │   │           └── service/
 │   │   │               └── BusinessLogic.java   # Your business logic
 │   │   └── resources/
-│   │       ├── mcp-server.yml                   # MCP configuration
-│   │       └── messages.properties              # i18n messages
+│   │       └── mcp-server.yml                   # MCP configuration
 │   └── test/
 │       └── java/
 │           └── com/

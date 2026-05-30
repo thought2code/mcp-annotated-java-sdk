@@ -40,7 +40,6 @@
 - 👏 **无需手写 JSON Schema** — 告别复杂冗长的 JSON 定义
 - 🎯 **专注业务逻辑** — 把精力放在核心功能上
 - 🔌 **兼容 Spring AI 配置** — 配置文件格式与 Spring AI 框架兼容
-- 🌍 **多语言支持** — MCP 组件内置 i18n 能力
 - 📦 **类型安全** — 充分利用 Java 类型系统在编译期保障正确性
 
 ### 与[官方 MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk)对比
@@ -51,7 +50,6 @@
 | JSON Schema | 手写 JSON   | 无需关心    |
 | 类型安全   | 有限         | 完整        |
 | 学习曲线   | 较陡         | 平缓        |
-| 多语言     | 不支持       | 支持        |
 
 ## 🎯 快速开始
 
@@ -302,48 +300,6 @@ SDK 为每个组件类创建 **唯一实例**（无参构造），该类上所�
 - 新项目 HTTP 传输推荐 **STREAMABLE**。
 - **SSE**（`ServerMode.SSE`、`McpSseServer`、`McpServerSSE`、YAML 中的 `sse.*`）自 **0.16.0** 起已标记为 **`@Deprecated(forRemoval = true)`**，将在后续版本中移除。现有部署仍可兼容使用；请迁移至 **STREAMABLE**（`McpStreamableServer`、`streamable.*`）。
 
-### 多语言支持（i18n）
-
-为 MCP 组件启用国际化：
-
-```java
-@McpServerApplication
-@McpI18nEnabled(resourceBundleBaseName = "messages")
-public class I18nMcpServer {
-    public static void main(String[] args) {
-        McpApplication.run(I18nMcpServer.class, args);
-    }
-}
-```
-
-创建资源文件：
-
-```properties
-# messages.properties
-tool.calculate.description=Calculate the sum of two numbers
-tool.calculate.param.a.description=First number
-tool.calculate.param.b.description=Second number
-```
-
-```properties
-# messages_zh_CN.properties
-tool.calculate.description=计算两个数字的和
-tool.calculate.param.a.description=第一个数字
-tool.calculate.param.b.description=第二个数字
-```
-
-在 MCP 组件中使用 i18n 键：
-
-```java
-@McpTool(description = "tool.calculate.description")
-public int add(
-    @McpToolParam(name = "a", description = "tool.calculate.param.a.description") int a,
-    @McpToolParam(name = "b", description = "tool.calculate.param.b.description") int b
-) {
-    return a + b;
-}
-```
-
 ## 🏗️ 推荐项目结构
 
 ```
@@ -362,8 +318,7 @@ your-mcp-project/
 │   │   │           └── service/
 │   │   │               └── BusinessLogic.java   # 业务逻辑
 │   │   └── resources/
-│   │       ├── mcp-server.yml                   # MCP 配置
-│   │       └── messages.properties              # i18n 文案
+│   │       └── mcp-server.yml                   # MCP 配置
 │   └── test/
 │       └── java/
 │           └── com/

@@ -30,7 +30,6 @@ import reactor.core.publisher.Mono;
  *   <li>Creation of resource specifications from annotated methods
  *   <li>Registration of all resource components with the server
  *   <li>Invocation of resource methods to retrieve data
- *   <li>Localization of resource attributes using resource bundles
  * </ul>
  *
  * @author codeboyzhou
@@ -178,8 +177,8 @@ public class McpServerResource
       Method method, McpApplicationContext context, ServerType serverType) {
     McpResource mcpResource = method.getAnnotation(McpResource.class);
     final String name = StringHelper.defaultIfBlank(mcpResource.name(), method.getName());
-    final String title = context.getLocalizedString(mcpResource.title(), name);
-    final String description = context.getLocalizedString(mcpResource.description(), name);
+    final String title = StringHelper.defaultIfBlank(mcpResource.title(), name);
+    final String description = StringHelper.defaultIfBlank(mcpResource.description(), name);
     McpSchema.Resource resource =
         McpSchema.Resource.builder(mcpResource.uri(), name)
             .title(title)

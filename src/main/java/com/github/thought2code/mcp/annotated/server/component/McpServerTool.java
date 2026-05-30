@@ -45,7 +45,6 @@ import reactor.core.publisher.Mono;
  *   <li>Invocation of tool methods with proper argument conversion
  *   <li>JSON schema generation for input parameters and output types
  *   <li>Support for both text and structured content responses
- *   <li>Localization of tool attributes using resource bundles
  * </ul>
  *
  * @author codeboyzhou
@@ -80,7 +79,7 @@ public class McpServerTool
    * input parameters and output types, and creates a tool specification with appropriate metadata.
    *
    * @param method the method annotated with {@link McpTool} to create a specification from
-   * @param context the application context for component discovery and localization
+   * @param context the application context for component discovery
    * @return a synchronous tool specification for the MCP server
    * @see McpTool
    * @see McpSchema.Tool
@@ -104,7 +103,7 @@ public class McpServerTool
    * handler wraps the synchronous invocation result in a {@link Mono}.
    *
    * @param method the method annotated with {@link McpTool} to create a specification from
-   * @param context the application context for component discovery and localization
+   * @param context the application context for component discovery
    * @return an asynchronous tool specification for the MCP server
    */
   public McpServerFeatures.AsyncToolSpecification fromAsync(
@@ -211,7 +210,7 @@ public class McpServerTool
    * input parameters for a tool. It handles both primitive types and complex types annotated with
    * {@link McpJsonSchemaDefinition}.
    *
-   * @param context the application context for localization
+   * @param context the application context for schema field scanning
    * @param methodParams the array of method parameters to create a schema for
    * @return a JSON schema describing the tool's input parameters
    * @see McpToolParam
@@ -240,7 +239,7 @@ public class McpServerTool
         } else {
           property.put("type", JavaTypeToJsonSchemaMapper.getJsonSchemaType(definitionClass));
           property.put(
-              "description", context.getLocalizedString(toolParam.description(), parameterName));
+              "description", StringHelper.defaultIfBlank(toolParam.description(), parameterName));
         }
         properties.put(parameterName, property);
 
@@ -268,7 +267,7 @@ public class McpServerTool
    * annotated with {@link McpJsonSchemaProperty} and includes them in the schema with appropriate
    * types and descriptions.
    *
-   * @param context the application context for localization
+   * @param context the application context for schema field scanning
    * @param definitionClass the class to create a JSON schema definition for
    * @return a JSON schema definition describing the class structure
    * @see McpJsonSchemaDefinition
@@ -297,7 +296,7 @@ public class McpServerTool
       final String fieldName = StringHelper.defaultIfBlank(property.name(), field.getName());
       fieldProperties.put("type", JavaTypeToJsonSchemaMapper.getJsonSchemaType(field.getType()));
       fieldProperties.put(
-          "description", context.getLocalizedString(property.description(), fieldName));
+          "description", StringHelper.defaultIfBlank(property.description(), fieldName));
 
       properties.put(fieldName, fieldProperties);
 
@@ -324,8 +323,8 @@ public class McpServerTool
       Method method, McpApplicationContext context, ServerType serverType) {
     McpTool mcpTool = method.getAnnotation(McpTool.class);
     final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
-    final String title = context.getLocalizedString(mcpTool.title(), name);
-    final String description = context.getLocalizedString(mcpTool.description(), name);
+    final String title = StringHelper.defaultIfBlank(mcpTool.title(), name);
+    final String description = StringHelper.defaultIfBlank(mcpTool.description(), name);
     Map<String, Object> inputSchema = createJsonSchema(context, method.getParameters());
     Map<String, Object> outputSchema = createJsonSchemaDefinition(context, method.getReturnType());
     McpSchema.Tool tool =

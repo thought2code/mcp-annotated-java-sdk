@@ -253,8 +253,7 @@ your-mcp-project/
 │   │   │           └── service/
 │   │   │               └── BusinessLogic.java   # Business logic
 │   │   └── resources/
-│   │       ├── mcp-server.yml                   # MCP configuration
-│   │       └── messages.properties              # Internationalization messages
+│   │       └── mcp-server.yml                   # MCP configuration
 │   └── test/
 │       └── java/
 │           └── com/
@@ -267,4 +266,3 @@ your-mcp-project/
 ## Next Steps
 
 - Want to learn more about MCP components? Check [Core Components](./components.md)
-- Need multilingual support? See [i18n Support](./components.md#multilingual-support) section

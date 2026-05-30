@@ -27,8 +27,6 @@ class McpServerResourceRegistrationTest {
 
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getComponentInstance(TestMcpResources.class)).thenReturn(new TestMcpResources());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
 
     McpServerResource registrar = new McpServerResource();
     McpServerFeatures.AsyncResourceSpecification specification =
@@ -36,8 +34,8 @@ class McpServerResourceRegistrationTest {
 
     assertEquals("test://resource1", specification.resource().uri());
     assertEquals("resource1_name", specification.resource().name());
-    assertEquals("resource1_name", specification.resource().title());
-    assertEquals("resource1_name", specification.resource().description());
+    assertEquals("resource1_title", specification.resource().title());
+    assertEquals("resource1_description", specification.resource().description());
     assertEquals("text/plain", specification.resource().mimeType());
 
     McpSchema.ReadResourceRequest request =
@@ -59,8 +57,6 @@ class McpServerResourceRegistrationTest {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getMethodsAnnotatedWith(McpResource.class)).thenReturn(Set.of(method));
     when(context.getComponentInstance(TestMcpResources.class)).thenReturn(new TestMcpResources());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
 
     McpAsyncServer server = mock(McpAsyncServer.class);
     when(server.addResource(any())).thenReturn(Mono.empty());

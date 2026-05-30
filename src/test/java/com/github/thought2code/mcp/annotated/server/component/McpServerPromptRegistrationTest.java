@@ -29,22 +29,20 @@ class McpServerPromptRegistrationTest {
 
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getComponentInstance(TestMcpPrompts.class)).thenReturn(new TestMcpPrompts());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
 
     McpServerPrompt registrar = new McpServerPrompt();
     McpServerFeatures.AsyncPromptSpecification specification = registrar.fromAsync(method, context);
 
     assertEquals("promptWithDefaultName", specification.prompt().name());
-    assertEquals("promptWithDefaultName", specification.prompt().title());
-    assertEquals("promptWithDefaultName", specification.prompt().description());
+    assertEquals("title", specification.prompt().title());
+    assertEquals("description", specification.prompt().description());
     assertTrue(specification.prompt().arguments().isEmpty());
 
     McpSchema.GetPromptRequest request =
         McpSchema.GetPromptRequest.builder("promptWithDefaultName").build();
     McpSchema.GetPromptResult result = specification.promptHandler().apply(null, request).block();
 
-    assertEquals("promptWithDefaultName", result.description());
+    assertEquals("description", result.description());
     assertEquals(1, result.messages().size());
     assertEquals(McpSchema.Role.USER, result.messages().get(0).role());
     assertEquals(
@@ -58,8 +56,6 @@ class McpServerPromptRegistrationTest {
 
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getComponentInstance(TestMcpPrompts.class)).thenReturn(new TestMcpPrompts());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
 
     McpServerPrompt registrar = new McpServerPrompt();
     McpServerFeatures.AsyncPromptSpecification specification = registrar.fromAsync(method, context);
@@ -84,8 +80,6 @@ class McpServerPromptRegistrationTest {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.getMethodsAnnotatedWith(McpPrompt.class)).thenReturn(Set.of(method));
     when(context.getComponentInstance(TestMcpPrompts.class)).thenReturn(new TestMcpPrompts());
-    when(context.getLocalizedString(any(), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1));
 
     McpAsyncServer server = mock(McpAsyncServer.class);
     when(server.addPrompt(any())).thenReturn(Mono.empty());
