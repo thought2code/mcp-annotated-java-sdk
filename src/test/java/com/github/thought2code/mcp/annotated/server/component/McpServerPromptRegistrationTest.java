@@ -33,13 +33,13 @@ class McpServerPromptRegistrationTest {
     McpServerPrompt registrar = new McpServerPrompt();
     McpServerFeatures.AsyncPromptSpecification specification = registrar.fromAsync(method, context);
 
-    assertEquals("promptWithDefaultName", specification.prompt().name());
+    assertEquals("prompt_with_default_name", specification.prompt().name());
     assertEquals("title", specification.prompt().title());
     assertEquals("description", specification.prompt().description());
     assertTrue(specification.prompt().arguments().isEmpty());
 
     McpSchema.GetPromptRequest request =
-        McpSchema.GetPromptRequest.builder("promptWithDefaultName").build();
+        McpSchema.GetPromptRequest.builder("prompt_with_default_name").build();
     McpSchema.GetPromptResult result = specification.promptHandler().apply(null, request).block();
 
     assertEquals("description", result.description());
@@ -63,7 +63,7 @@ class McpServerPromptRegistrationTest {
     assertEquals(1, specification.prompt().arguments().size());
 
     McpSchema.GetPromptRequest request =
-        McpSchema.GetPromptRequest.builder("promptWithOptionalParam")
+        McpSchema.GetPromptRequest.builder("prompt_with_optional_param")
             .arguments(Map.of("param", "hello"))
             .build();
     McpSchema.GetPromptResult result = specification.promptHandler().apply(null, request).block();

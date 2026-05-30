@@ -90,35 +90,55 @@ public final class McpClientVerificationSupport {
   public static void verifyPromptsRegistered(McpSyncClient client) {
     List<McpSchema.Prompt> prompts = client.listPrompts().prompts();
     assertEquals(11, prompts.size());
-    verifyPromptRegistered(prompts, "promptWithDefaultName", "title", "description", 0);
+    verifyPromptRegistered(prompts, "prompt_with_default_name", "title", "description", 0);
     verifyPromptRegistered(
         prompts, "promptWithDefaultTitle", "promptWithDefaultTitle", "description", 0);
     verifyPromptRegistered(
         prompts, "promptWithDefaultDescription", "title", "promptWithDefaultDescription", 0);
     verifyPromptRegistered(
-        prompts, "promptWithAllDefault", "promptWithAllDefault", "promptWithAllDefault", 0);
+        prompts,
+        "prompt_with_all_default",
+        "prompt_with_all_default",
+        "prompt_with_all_default",
+        0);
     verifyPromptRegistered(
         prompts,
-        "promptWithOptionalParam",
-        "promptWithOptionalParam",
-        "promptWithOptionalParam",
+        "prompt_with_optional_param",
+        "prompt_with_optional_param",
+        "prompt_with_optional_param",
         1);
     verifyPromptRegistered(
         prompts,
-        "promptWithRequiredParam",
-        "promptWithRequiredParam",
-        "promptWithRequiredParam",
+        "prompt_with_required_param",
+        "prompt_with_required_param",
+        "prompt_with_required_param",
         1);
     verifyPromptRegistered(
-        prompts, "promptWithMultiParams", "promptWithMultiParams", "promptWithMultiParams", 2);
+        prompts,
+        "prompt_with_multi_params",
+        "prompt_with_multi_params",
+        "prompt_with_multi_params",
+        2);
     verifyPromptRegistered(
-        prompts, "promptWithMixedParams", "promptWithMixedParams", "promptWithMixedParams", 1);
+        prompts,
+        "prompt_with_mixed_params",
+        "prompt_with_mixed_params",
+        "prompt_with_mixed_params",
+        1);
     verifyPromptRegistered(
-        prompts, "promptWithVoidReturn", "promptWithVoidReturn", "promptWithVoidReturn", 0);
+        prompts,
+        "prompt_with_void_return",
+        "prompt_with_void_return",
+        "prompt_with_void_return",
+        0);
     verifyPromptRegistered(
-        prompts, "promptWithReturnNull", "promptWithReturnNull", "promptWithReturnNull", 0);
+        prompts,
+        "prompt_with_return_null",
+        "prompt_with_return_null",
+        "prompt_with_return_null",
+        0);
     verifyPromptRegistered(
-        prompts, "promptWithException", "promptWithException", "promptWithException", 0);
+        prompts, "prompt_with_exception", "prompt_with_exception", "prompt_with_exception", 0);
   }
 
   private static void verifyPromptRegistered(
@@ -138,44 +158,48 @@ public final class McpClientVerificationSupport {
 
   public static void verifyPromptsCalled(McpSyncClient client) {
     verifyPromptCalled(
-        client, "promptWithDefaultName", Map.of(), "promptWithDefaultName is called");
+        client, "prompt_with_default_name", Map.of(), "promptWithDefaultName is called");
     verifyPromptCalled(
         client, "promptWithDefaultTitle", Map.of(), "promptWithDefaultTitle is called");
     verifyPromptCalled(
         client, "promptWithDefaultDescription", Map.of(), "promptWithDefaultDescription is called");
-    verifyPromptCalled(client, "promptWithAllDefault", Map.of(), "promptWithAllDefault is called");
+    verifyPromptCalled(
+        client, "prompt_with_all_default", Map.of(), "promptWithAllDefault is called");
     verifyPromptCalled(
         client,
-        "promptWithOptionalParam",
+        "prompt_with_optional_param",
         Map.of("param", "value"),
         "promptWithOptionalParam is called with param: value");
     verifyPromptCalled(
         client,
-        "promptWithRequiredParam",
+        "prompt_with_required_param",
         Map.of("param", "value"),
         "promptWithRequiredParam is called with param: value");
     verifyPromptCalled(
         client,
-        "promptWithMultiParams",
+        "prompt_with_multi_params",
         Map.of("param1", "value1", "param2", "value2"),
         "promptWithMultiParams is called with params: value1, value2");
     verifyPromptCalled(
         client,
-        "promptWithMixedParams",
+        "prompt_with_mixed_params",
         Map.of("mcpParam", "value"),
         "promptWithMixedParams is called with params: value, " + StringHelper.EMPTY);
     verifyPromptCalled(
         client,
-        "promptWithVoidReturn",
+        "prompt_with_void_return",
         Map.of(),
         "The method call succeeded but has a void return type");
     verifyPromptCalled(
         client,
-        "promptWithReturnNull",
+        "prompt_with_return_null",
         Map.of(),
         "The method call succeeded but the return value is null");
     verifyPromptCalled(
-        client, "promptWithException", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
+        client,
+        "prompt_with_exception",
+        Map.of(),
+        McpServerError.METHOD_INVOCATION_ERROR.toString());
   }
 
   private static void verifyPromptCalled(
@@ -190,115 +214,115 @@ public final class McpClientVerificationSupport {
   public static void verifyToolsRegistered(McpSyncClient client) {
     List<McpSchema.Tool> tools = client.listTools().tools();
     assertEquals(23, tools.size());
-    verifyToolRegistered(tools, "toolWithDefaultName", "title", "description", Map.of());
+    verifyToolRegistered(tools, "tool_with_default_name", "title", "description", Map.of());
     verifyToolRegistered(
         tools, "toolWithDefaultTitle", "toolWithDefaultTitle", "description", Map.of());
     verifyToolRegistered(
         tools, "toolWithDefaultDescription", "title", "toolWithDefaultDescription", Map.of());
     verifyToolRegistered(
-        tools, "toolWithAllDefault", "toolWithAllDefault", "toolWithAllDefault", Map.of());
+        tools, "tool_with_all_default", "tool_with_all_default", "tool_with_all_default", Map.of());
     verifyToolRegistered(
         tools,
-        "toolWithOptionalParam",
-        "toolWithOptionalParam",
-        "toolWithOptionalParam",
+        "tool_with_optional_param",
+        "tool_with_optional_param",
+        "tool_with_optional_param",
         Map.of("param", String.class));
     verifyToolRegistered(
         tools,
-        "toolWithRequiredParam",
-        "toolWithRequiredParam",
-        "toolWithRequiredParam",
+        "tool_with_required_param",
+        "tool_with_required_param",
+        "tool_with_required_param",
         Map.of("param", String.class));
     verifyToolRegistered(
         tools,
-        "toolWithMultiParams",
-        "toolWithMultiParams",
-        "toolWithMultiParams",
+        "tool_with_multi_params",
+        "tool_with_multi_params",
+        "tool_with_multi_params",
         Map.of("param1", String.class, "param2", String.class));
     verifyToolRegistered(
         tools,
-        "toolWithMixedParams",
-        "toolWithMixedParams",
-        "toolWithMixedParams",
+        "tool_with_mixed_params",
+        "tool_with_mixed_params",
+        "tool_with_mixed_params",
         Map.of("mcpParam", String.class));
     verifyToolRegistered(
-        tools, "toolWithVoidReturn", "toolWithVoidReturn", "toolWithVoidReturn", Map.of());
+        tools, "tool_with_void_return", "tool_with_void_return", "tool_with_void_return", Map.of());
     verifyToolRegistered(
-        tools, "toolWithReturnNull", "toolWithReturnNull", "toolWithReturnNull", Map.of());
+        tools, "tool_with_return_null", "tool_with_return_null", "tool_with_return_null", Map.of());
     verifyToolRegistered(
         tools,
-        "toolWithIntParam",
-        "toolWithIntParam",
-        "toolWithIntParam",
+        "tool_with_int_param",
+        "tool_with_int_param",
+        "tool_with_int_param",
         Map.of("param", int.class));
     verifyToolRegistered(
         tools,
-        "toolWithIntegerParam",
-        "toolWithIntegerParam",
-        "toolWithIntegerParam",
+        "tool_with_integer_param",
+        "tool_with_integer_param",
+        "tool_with_integer_param",
         Map.of("param", Integer.class));
     verifyToolRegistered(
         tools,
-        "toolWithLongParam",
-        "toolWithLongParam",
-        "toolWithLongParam",
+        "tool_with_long_param",
+        "tool_with_long_param",
+        "tool_with_long_param",
         Map.of("param", long.class));
     verifyToolRegistered(
         tools,
-        "toolWithLongClassParam",
-        "toolWithLongClassParam",
-        "toolWithLongClassParam",
+        "tool_with_long_class_param",
+        "tool_with_long_class_param",
+        "tool_with_long_class_param",
         Map.of("param", Long.class));
     verifyToolRegistered(
         tools,
-        "toolWithFloatParam",
-        "toolWithFloatParam",
-        "toolWithFloatParam",
+        "tool_with_float_param",
+        "tool_with_float_param",
+        "tool_with_float_param",
         Map.of("param", float.class));
     verifyToolRegistered(
         tools,
-        "toolWithFloatClassParam",
-        "toolWithFloatClassParam",
-        "toolWithFloatClassParam",
+        "tool_with_float_class_param",
+        "tool_with_float_class_param",
+        "tool_with_float_class_param",
         Map.of("param", Float.class));
     verifyToolRegistered(
         tools,
-        "toolWithDoubleParam",
-        "toolWithDoubleParam",
-        "toolWithDoubleParam",
+        "tool_with_double_param",
+        "tool_with_double_param",
+        "tool_with_double_param",
         Map.of("param", double.class));
     verifyToolRegistered(
         tools,
-        "toolWithDoubleClassParam",
-        "toolWithDoubleClassParam",
-        "toolWithDoubleClassParam",
+        "tool_with_double_class_param",
+        "tool_with_double_class_param",
+        "tool_with_double_class_param",
         Map.of("param", Double.class));
     verifyToolRegistered(
         tools,
-        "toolWithNumberParam",
-        "toolWithNumberParam",
-        "toolWithNumberParam",
+        "tool_with_number_param",
+        "tool_with_number_param",
+        "tool_with_number_param",
         Map.of("param", Number.class));
     verifyToolRegistered(
         tools,
-        "toolWithBooleanParam",
-        "toolWithBooleanParam",
-        "toolWithBooleanParam",
+        "tool_with_boolean_param",
+        "tool_with_boolean_param",
+        "tool_with_boolean_param",
         Map.of("param", boolean.class));
     verifyToolRegistered(
         tools,
-        "toolWithBooleanClassParam",
-        "toolWithBooleanClassParam",
-        "toolWithBooleanClassParam",
+        "tool_with_boolean_class_param",
+        "tool_with_boolean_class_param",
+        "tool_with_boolean_class_param",
         Map.of("param", Boolean.class));
     verifyToolRegistered(
         tools,
-        "toolWithReturnStructuredContent",
-        "toolWithReturnStructuredContent",
-        "toolWithReturnStructuredContent",
+        "tool_with_return_structured_content",
+        "tool_with_return_structured_content",
+        "tool_with_return_structured_content",
         Map.of());
     verifyToolRegistered(
-        tools, "toolWithException", "toolWithException", "toolWithException", Map.of());
+        tools, "tool_with_exception", "tool_with_exception", "tool_with_exception", Map.of());
   }
 
   @SuppressWarnings("unchecked")
@@ -328,104 +352,104 @@ public final class McpClientVerificationSupport {
   }
 
   public static void verifyToolsCalled(McpSyncClient client) {
-    verifyToolCalled(client, "toolWithDefaultName", Map.of(), "toolWithDefaultName is called");
+    verifyToolCalled(client, "tool_with_default_name", Map.of(), "toolWithDefaultName is called");
     verifyToolCalled(client, "toolWithDefaultTitle", Map.of(), "toolWithDefaultTitle is called");
     verifyToolCalled(
         client, "toolWithDefaultDescription", Map.of(), "toolWithDefaultDescription is called");
-    verifyToolCalled(client, "toolWithAllDefault", Map.of(), "toolWithAllDefault is called");
+    verifyToolCalled(client, "tool_with_all_default", Map.of(), "toolWithAllDefault is called");
     verifyToolCalled(
         client,
-        "toolWithOptionalParam",
+        "tool_with_optional_param",
         Map.of("param", "value"),
         "toolWithOptionalParam is called with optional param: value");
     verifyToolCalled(
         client,
-        "toolWithRequiredParam",
+        "tool_with_required_param",
         Map.of("param", "value"),
         "toolWithRequiredParam is called with required param: value");
     verifyToolCalled(
         client,
-        "toolWithMultiParams",
+        "tool_with_multi_params",
         Map.of("param1", "value1", "param2", "value2"),
         "toolWithMultiParams is called with params: value1, value2");
     verifyToolCalled(
         client,
-        "toolWithMixedParams",
+        "tool_with_mixed_params",
         Map.of("mcpParam", "value"),
         "toolWithMixedParams is called with params: value, " + StringHelper.EMPTY);
     verifyToolCalled(
         client,
-        "toolWithVoidReturn",
+        "tool_with_void_return",
         Map.of(),
         "The method call succeeded but has a void return type");
     verifyToolCalled(
         client,
-        "toolWithReturnNull",
+        "tool_with_return_null",
         Map.of(),
         "The method call succeeded but the return value is null");
     verifyToolCalled(
         client,
-        "toolWithIntParam",
+        "tool_with_int_param",
         Map.of("param", 123),
         "toolWithIntParam is called with param: 123");
     verifyToolCalled(
         client,
-        "toolWithIntegerParam",
+        "tool_with_integer_param",
         Map.of("param", 123),
         "toolWithIntegerParam is called with param: 123");
     verifyToolCalled(
         client,
-        "toolWithLongParam",
+        "tool_with_long_param",
         Map.of("param", 123L),
         "toolWithLongParam is called with param: 123");
     verifyToolCalled(
         client,
-        "toolWithLongClassParam",
+        "tool_with_long_class_param",
         Map.of("param", 123L),
         "toolWithLongClassParam is called with param: 123");
     verifyToolCalled(
         client,
-        "toolWithFloatParam",
+        "tool_with_float_param",
         Map.of("param", 123.0F),
         "toolWithFloatParam is called with param: 123.0");
     verifyToolCalled(
         client,
-        "toolWithFloatClassParam",
+        "tool_with_float_class_param",
         Map.of("param", 123.0F),
         "toolWithFloatClassParam is called with param: 123.0");
     verifyToolCalled(
         client,
-        "toolWithDoubleParam",
+        "tool_with_double_param",
         Map.of("param", 123.0),
         "toolWithDoubleParam is called with param: 123.0");
     verifyToolCalled(
         client,
-        "toolWithDoubleClassParam",
+        "tool_with_double_class_param",
         Map.of("param", 123.0),
         "toolWithDoubleClassParam is called with param: 123.0");
     verifyToolCalled(
         client,
-        "toolWithNumberParam",
+        "tool_with_number_param",
         Map.of("param", 123),
         "toolWithNumberParam is called with param: 123");
     verifyToolCalled(
         client,
-        "toolWithBooleanParam",
+        "tool_with_boolean_param",
         Map.of("param", true),
         "toolWithBooleanParam is called with param: true");
     verifyToolCalled(
         client,
-        "toolWithBooleanClassParam",
+        "tool_with_boolean_class_param",
         Map.of("param", true),
         "toolWithBooleanClassParam is called with param: true");
     verifyToolCalled(
         client,
-        "toolWithReturnStructuredContent",
+        "tool_with_return_structured_content",
         Map.of(),
         new TestMcpToolsStructuredContent.TestStructuredContent(1, 2, 3L, 4L, 5.0F, 6.0F, 7.0, 8.0)
             .asTextContent());
     verifyToolCalledError(
-        client, "toolWithException", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
+        client, "tool_with_exception", Map.of(), McpServerError.METHOD_INVOCATION_ERROR.toString());
   }
 
   private static void verifyToolCalled(

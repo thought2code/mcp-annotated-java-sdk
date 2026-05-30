@@ -228,7 +228,8 @@ public class McpServerPrompt
   private PromptDefinition createPromptDefinition(
       Method method, McpApplicationContext context, ServerType serverType) {
     McpPrompt mcpPrompt = method.getAnnotation(McpPrompt.class);
-    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), method.getName());
+    final String defaultName = StringHelper.toSnakeCase(method.getName());
+    final String name = StringHelper.defaultIfBlank(mcpPrompt.name(), defaultName);
     final String title = StringHelper.defaultIfBlank(mcpPrompt.title(), name);
     final String description = StringHelper.defaultIfBlank(mcpPrompt.description(), name);
     List<McpSchema.PromptArgument> args = createPromptArguments(context, method.getParameters());

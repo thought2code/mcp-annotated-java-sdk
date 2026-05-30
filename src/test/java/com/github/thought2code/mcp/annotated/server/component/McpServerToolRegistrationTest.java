@@ -1,6 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -111,7 +112,7 @@ class McpServerToolRegistrationTest {
             () -> registrar.register(server, context));
 
     assertTrue(exception.getMessage().contains("Failed to register async McpTool"));
-    assertTrue(exception.getMessage().contains("toolWithDefaultName"));
-    assertTrue(exception.getCause() instanceof RuntimeException);
+    assertTrue(exception.getMessage().contains("tool_with_default_name"));
+    assertInstanceOf(RuntimeException.class, exception.getCause());
   }
 }

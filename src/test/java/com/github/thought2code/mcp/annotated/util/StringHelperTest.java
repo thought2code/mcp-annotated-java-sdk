@@ -2,6 +2,7 @@ package com.github.thought2code.mcp.annotated.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,5 +39,19 @@ class StringHelperTest {
   @Test
   void defaultIfBlank_shouldReturnInputWhenNotBlank() {
     assertEquals("test", StringHelper.defaultIfBlank("test", "default"));
+  }
+
+  @Test
+  void toSnakeCase_shouldConvertCamelCaseToSnakeCase() {
+    assertEquals("tool_with_default_name", StringHelper.toSnakeCase("toolWithDefaultName"));
+    assertEquals("get_user_by_id", StringHelper.toSnakeCase("getUserById"));
+    assertEquals("add", StringHelper.toSnakeCase("add"));
+  }
+
+  @Test
+  void toSnakeCase_shouldReturnBlankInputUnchanged() {
+    assertNull(StringHelper.toSnakeCase(null));
+    assertEquals(StringHelper.EMPTY, StringHelper.toSnakeCase(StringHelper.EMPTY));
+    assertEquals(StringHelper.SPACE, StringHelper.toSnakeCase(StringHelper.SPACE));
   }
 }

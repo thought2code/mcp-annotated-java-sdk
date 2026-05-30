@@ -176,7 +176,8 @@ public class McpServerResource
   private ResourceDefinition createResourceDefinition(
       Method method, McpApplicationContext context, ServerType serverType) {
     McpResource mcpResource = method.getAnnotation(McpResource.class);
-    final String name = StringHelper.defaultIfBlank(mcpResource.name(), method.getName());
+    final String defaultName = StringHelper.toSnakeCase(method.getName());
+    final String name = StringHelper.defaultIfBlank(mcpResource.name(), defaultName);
     final String title = StringHelper.defaultIfBlank(mcpResource.title(), name);
     final String description = StringHelper.defaultIfBlank(mcpResource.description(), name);
     McpSchema.Resource resource =

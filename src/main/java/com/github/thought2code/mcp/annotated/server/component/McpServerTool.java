@@ -322,7 +322,8 @@ public class McpServerTool
   private ToolDefinition createToolDefinition(
       Method method, McpApplicationContext context, ServerType serverType) {
     McpTool mcpTool = method.getAnnotation(McpTool.class);
-    final String name = StringHelper.defaultIfBlank(mcpTool.name(), method.getName());
+    final String defaultName = StringHelper.toSnakeCase(method.getName());
+    final String name = StringHelper.defaultIfBlank(mcpTool.name(), defaultName);
     final String title = StringHelper.defaultIfBlank(mcpTool.title(), name);
     final String description = StringHelper.defaultIfBlank(mcpTool.description(), name);
     Map<String, Object> inputSchema = createJsonSchema(context, method.getParameters());
