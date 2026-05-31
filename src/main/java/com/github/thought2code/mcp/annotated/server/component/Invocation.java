@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.reflect;
+package com.github.thought2code.mcp.annotated.server.component;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public record Invocation(@NotNull Object result, boolean isError) {
   /**
-   * Returns a new instance of {@code Builder} for creating a new {@code InvocationResult}.
+   * Returns a new instance of {@code Builder} for creating a new {@code Invocation}.
    *
    * @return a new instance of {@code Builder}
    */
@@ -27,8 +27,7 @@ public record Invocation(@NotNull Object result, boolean isError) {
   }
 
   /**
-   * This class implements the builder pattern for creating a new instance of {@code
-   * InvocationResult}.
+   * This class implements the builder pattern for creating a new instance of {@code Invocation}.
    *
    * @author codeboyzhou
    */
@@ -63,9 +62,9 @@ public record Invocation(@NotNull Object result, boolean isError) {
     }
 
     /**
-     * Builds a new instance of {@code InvocationResult} with the configured values.
+     * Builds a new instance of {@code Invocation} with the configured values.
      *
-     * @return a new instance of {@code InvocationResult}
+     * @return a new instance of {@code Invocation}
      */
     public Invocation build() {
       return new Invocation(result, isError);

@@ -1,7 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.reflect.Invocation;
+import com.github.thought2code.mcp.annotated.server.component.Invocation;
 
 /**
  * Strongly-typed invocation contract generated at build time for one {@code @McpResource} method.

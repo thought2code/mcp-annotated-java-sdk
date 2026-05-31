@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.server.component.spi;
+package com.github.thought2code.mcp.annotated.server.component;
 
 import com.github.thought2code.mcp.annotated.server.component.completion.CompletionDefinition;
 import com.github.thought2code.mcp.annotated.server.component.prompt.PromptDefinition;
@@ -9,9 +9,10 @@ import java.util.List;
 /**
  * Service-provider entry point for build-time generated MCP models.
  *
- * <p>The initial build-time pipeline generates {@code @McpTool} metadata and invocation bindings.
+ * <p>The build-time pipeline generates metadata and invocation bindings for tools, prompts,
+ * resources, and completions.
  */
-public interface ComponentModelProvider {
+public interface ComponentProvider {
   /**
    * Returns all component MCP tool definitions generated at build time.
    *

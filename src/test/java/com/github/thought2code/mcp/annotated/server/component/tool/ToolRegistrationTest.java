@@ -12,8 +12,8 @@ import static org.mockito.Mockito.when;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
-import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.Invocation;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -39,8 +39,8 @@ class ToolRegistrationTest {
   void registerSync_shouldRegisterTool() {
     McpSyncServer server = mock(McpSyncServer.class);
     McpApplicationContext context = mock(McpApplicationContext.class);
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<ToolDefinition> tools() {
             return List.of(
@@ -72,8 +72,8 @@ class ToolRegistrationTest {
             "test.Source#b()",
             McpSchema.Tool.builder("duplicate", Map.of()).build(),
             (ctx, args) -> Invocation.builder().result("b").build());
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<ToolDefinition> tools() {
             return List.of(a, b);
@@ -91,8 +91,8 @@ class ToolRegistrationTest {
     McpAsyncServer server = mock(McpAsyncServer.class);
     when(server.addTool(any())).thenReturn(Mono.empty());
     McpApplicationContext context = mock(McpApplicationContext.class);
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<ToolDefinition> tools() {
             return List.of(

@@ -2,7 +2,7 @@ package com.github.thought2code.mcp.annotated.server.component.completion;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
-import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.ArrayList;
@@ -17,11 +17,11 @@ public final class CompletionSupport {
 
   public static List<McpServerFeatures.SyncCompletionSpecification> allSync(
       McpApplicationContext context) {
-    return allSync(context, ServiceLoader.load(ComponentModelProvider.class));
+    return allSync(context, ServiceLoader.load(ComponentProvider.class));
   }
 
   static List<McpServerFeatures.SyncCompletionSpecification> allSync(
-      McpApplicationContext context, Iterable<ComponentModelProvider> providers) {
+      McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<CompletionDefinition> definitions = loadDefinitions(providers, context);
     List<McpServerFeatures.SyncCompletionSpecification> completions = new ArrayList<>();
     for (CompletionDefinition definition : definitions) {
@@ -34,11 +34,11 @@ public final class CompletionSupport {
 
   public static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
       McpApplicationContext context) {
-    return allAsync(context, ServiceLoader.load(ComponentModelProvider.class));
+    return allAsync(context, ServiceLoader.load(ComponentProvider.class));
   }
 
   static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
-      McpApplicationContext context, Iterable<ComponentModelProvider> providers) {
+      McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<CompletionDefinition> definitions = loadDefinitions(providers, context);
     List<McpServerFeatures.AsyncCompletionSpecification> completions = new ArrayList<>();
     for (CompletionDefinition definition : definitions) {
@@ -52,9 +52,9 @@ public final class CompletionSupport {
   }
 
   private static List<CompletionDefinition> loadDefinitions(
-      Iterable<ComponentModelProvider> providers, McpApplicationContext context) {
+      Iterable<ComponentProvider> providers, McpApplicationContext context) {
     List<CompletionDefinition> definitions = new ArrayList<>();
-    for (ComponentModelProvider provider : providers) {
+    for (ComponentProvider provider : providers) {
       for (CompletionDefinition definition : provider.completions()) {
         if (context.isInScope(definition.sourceMethod())) {
           definitions.add(definition);
@@ -74,9 +74,9 @@ public final class CompletionSupport {
           "Completion invocation failed for " + definition.sourceMethod());
     }
     Object raw = invocation.result();
-    if (!(raw instanceof McpCompleteCompletion completion)) {
+    if (!(raw instanceof CompletionResult completion)) {
       throw new McpServerComponentRegistrationException(
-          "Completion method must return McpCompleteCompletion: " + definition.sourceMethod());
+          "Completion method must return CompletionResult: " + definition.sourceMethod());
     }
     return new McpSchema.CompleteResult(
         new McpSchema.CompleteResult.CompleteCompletion(

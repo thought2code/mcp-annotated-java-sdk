@@ -15,7 +15,7 @@ import java.util.List;
  * @param hasMore true if more completions are available, false otherwise
  * @author codeboyzhou
  */
-public record McpCompleteCompletion(List<String> values, Integer total, boolean hasMore) {
+public record CompletionResult(List<String> values, Integer total, boolean hasMore) {
   /**
    * Compact constructor that creates a defensive copy of the values list.
    *
@@ -27,36 +27,36 @@ public record McpCompleteCompletion(List<String> values, Integer total, boolean 
    * @param total the total number of available completions, may be null
    * @param hasMore true if more completions are available, false otherwise
    */
-  public McpCompleteCompletion {
+  public CompletionResult {
     values = values == null ? null : List.copyOf(values);
   }
 
   /**
-   * Creates a new {@link Builder} instance for constructing {@link McpCompleteCompletion} objects.
+   * Creates a new {@link Builder} instance for constructing {@link CompletionResult} objects.
    *
    * <p>This factory method provides a convenient way to create a builder for step-by-step
    * construction of completion results using the builder pattern.
    *
    * @return a new {@link Builder} instance
    */
-  public static McpCompleteCompletion.Builder builder() {
-    return new McpCompleteCompletion.Builder();
+  public static CompletionResult.Builder builder() {
+    return new CompletionResult.Builder();
   }
 
   /**
-   * Creates an empty {@link McpCompleteCompletion} instance.
+   * Creates an empty {@link CompletionResult} instance.
    *
    * <p>This factory method returns a completion result with no values, zero total count, and no
    * more results available. Useful as a default or placeholder completion.
    *
-   * @return an empty {@link McpCompleteCompletion} instance
+   * @return an empty {@link CompletionResult} instance
    */
-  public static McpCompleteCompletion empty() {
+  public static CompletionResult empty() {
     return builder().values(List.of()).total(0).hasMore(false).build();
   }
 
   /**
-   * Builder class for constructing {@link McpCompleteCompletion} instances.
+   * Builder class for constructing {@link CompletionResult} instances.
    *
    * <p>This builder provides a fluent API for creating completion results with defensive copying to
    * protect against external modification of mutable inputs. The builder maintains the same
@@ -120,16 +120,16 @@ public record McpCompleteCompletion(List<String> values, Integer total, boolean 
     }
 
     /**
-     * Builds a new {@link McpCompleteCompletion} instance with the configured values.
+     * Builds a new {@link CompletionResult} instance with the configured values.
      *
      * <p>This method creates a new record instance using the current builder state. The record's
      * compact constructor will apply additional defensive copying to ensure the final object is
      * fully immutable.
      *
-     * @return a new {@link McpCompleteCompletion} instance with the configured values
+     * @return a new {@link CompletionResult} instance with the configured values
      */
-    public McpCompleteCompletion build() {
-      return new McpCompleteCompletion(values, total, hasMore);
+    public CompletionResult build() {
+      return new CompletionResult(values, total, hasMore);
     }
   }
 }

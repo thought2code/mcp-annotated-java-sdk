@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.compiler;
+package com.github.thought2code.mcp.annotated.server.component;
 
 import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaDefinition;
 import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaProperty;
@@ -9,7 +9,7 @@ import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
-import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.io.IOException;
 import java.io.Writer;
@@ -44,8 +44,11 @@ import javax.tools.Diagnostic;
 import javax.tools.StandardLocation;
 
 /**
- * Annotation processor that compiles {@code @McpTool} runtime reflection metadata into static model
- * classes.
+ * Annotation processor that compiles MCP component annotations into static model classes at build
+ * time.
+ *
+ * <p>Handles {@code @McpTool}, {@code @McpPrompt}, {@code @McpResource},
+ * {@code @McpPromptCompletion}, and {@code @McpResourceCompletion}.
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @SupportedAnnotationTypes({
@@ -55,11 +58,11 @@ import javax.tools.StandardLocation;
   "com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion",
   "com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion"
 })
-public final class McpToolModelProcessor extends AbstractProcessor {
+public final class ComponentProcessor extends AbstractProcessor {
 
   private static final String GENERATED_PACKAGE = "com.github.thought2code.mcp.annotated.generated";
   private static final String PROVIDER_INTERFACE =
-      "com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider";
+      "com.github.thought2code.mcp.annotated.server.component.ComponentProvider";
   private static final String PROVIDER_SERVICE_FILE = "META-INF/services/" + PROVIDER_INTERFACE;
 
   private final List<ExecutableElement> tools = new ArrayList<>();
@@ -104,7 +107,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       generated = true;
     } catch (IOException e) {
       messager.printMessage(
-          Diagnostic.Kind.ERROR, "Failed to generate MCP tool model: " + e.getMessage());
+          Diagnostic.Kind.ERROR, "Failed to generate MCP component model: " + e.getMessage());
     }
     return false;
   }
@@ -305,9 +308,9 @@ public final class McpToolModelProcessor extends AbstractProcessor {
 
   private boolean validateCompletionSignature(ExecutableElement method) {
     String returnType = erasedType(method.getReturnType());
-    if (!McpCompleteCompletion.class.getName().equals(returnType)) {
+    if (!CompletionResult.class.getName().equals(returnType)) {
       messager.printMessage(
-          Diagnostic.Kind.ERROR, "Completion method must return McpCompleteCompletion", method);
+          Diagnostic.Kind.ERROR, "Completion method must return CompletionResult", method);
       return false;
     }
     if (method.getParameters().size() != 1) {
@@ -339,7 +342,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     List<ExecutableElement> sortedCompletions =
         completions.stream().sorted(Comparator.comparing(this::sourceMethod)).toList();
     String className =
-        "GeneratedMcpModelProvider_"
+        "GeneratedComponentProvider_"
             + Integer.toHexString(
                 modelHash(sortedTools, sortedPrompts, sortedResources, sortedCompletions));
     String qualifiedName = GENERATED_PACKAGE + "." + className;
@@ -360,13 +363,13 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write(
           "import com.github.thought2code.mcp.annotated.server.component.resource.ResourceInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;\n");
       writer.write(
           "import com.github.thought2code.mcp.annotated.server.component.tool.ToolDefinition;\n");
       writer.write(
           "import com.github.thought2code.mcp.annotated.server.component.tool.ToolInvoker;\n");
       writer.write("import com.github.thought2code.mcp.annotated.enums.McpServerError;\n");
-      writer.write("import com.github.thought2code.mcp.annotated.reflect.Invocation;\n");
+      writer.write("import com.github.thought2code.mcp.annotated.server.component.Invocation;\n");
       writer.write("import com.github.thought2code.mcp.annotated.util.TypeConverter;\n");
       writer.write("import io.modelcontextprotocol.spec.McpSchema;\n");
       writer.write("import java.util.ArrayList;\n");
@@ -374,7 +377,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("import java.util.LinkedHashMap;\n");
       writer.write("import java.util.List;\n");
       writer.write("import java.util.Map;\n\n");
-      writer.write("public final class " + className + " implements ComponentModelProvider {\n\n");
+      writer.write("public final class " + className + " implements ComponentProvider {\n\n");
 
       writer.write("  @Override\n");
       writer.write("  public List<ToolDefinition> tools() {\n");

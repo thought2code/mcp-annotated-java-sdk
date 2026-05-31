@@ -9,8 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.Invocation;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.List;
@@ -30,8 +30,8 @@ class CompletionSupportTest {
   void allSync_shouldBuildCompletionSpecification() {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.isInScope(anyString())).thenReturn(true);
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<CompletionDefinition> completions() {
             return List.of(
@@ -40,7 +40,7 @@ class CompletionSupportTest {
                     McpSchema.PromptReference.builder("prompt_name").build(),
                     (ctx, argument) ->
                         Invocation.builder()
-                            .result(new McpCompleteCompletion(List.of("a", "b"), 2, false))
+                            .result(new CompletionResult(List.of("a", "b"), 2, false))
                             .build()));
           }
         };
@@ -62,8 +62,8 @@ class CompletionSupportTest {
   void allAsync_shouldBuildCompletionSpecification() {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.isInScope(anyString())).thenReturn(true);
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<CompletionDefinition> completions() {
             return List.of(
@@ -72,7 +72,7 @@ class CompletionSupportTest {
                     new McpSchema.ResourceReference("resource://test"),
                     (ctx, argument) ->
                         Invocation.builder()
-                            .result(new McpCompleteCompletion(List.of("one"), 1, false))
+                            .result(new CompletionResult(List.of("one"), 1, false))
                             .build()));
           }
         };

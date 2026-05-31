@@ -1,6 +1,6 @@
 package com.github.thought2code.mcp.annotated.annotation;
 
-import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * <p>Methods annotated with {@code @McpPromptCompletion} must:
  *
  * <ul>
- *   <li>Return {@link McpCompleteCompletion}
+ *   <li>Return {@link CompletionResult}
  *   <li>Accept exactly one parameter of type {@code McpSchema.CompleteRequest.CompleteArgument}
  *   <li>Be properly configured with a prompt name
  * </ul>

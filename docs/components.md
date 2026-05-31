@@ -146,14 +146,15 @@ public class MyPrompts {
 
 Completions provide auto-complete suggestions for resource URIs and prompt arguments.
 
-Handlers must **return** `McpCompleteCompletion` and take **exactly one** parameter of type `McpSchema.CompleteRequest.CompleteArgument` (the argument being completed has `name()` and `value()` from the MCP request).
+Handlers must **return** `CompletionResult` and take **exactly one** parameter of type `McpSchema.CompleteRequest.CompleteArgument` (the argument being completed has `name()` and `value()` from the MCP request).
 
 ### Resource Completions
 
 ```java
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
-import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
 import io.modelcontextprotocol.spec.McpSchema;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -161,24 +162,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MyCompletions {
-  @McpResourceCompletion(uri = "file://")
-  public McpCompleteCompletion completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
-    String prefix = argument.value() != null ? argument.value() : "";
-    try {
-      List<String> paths =
-          Files.list(Paths.get(prefix.isEmpty() ? "." : prefix))
-              .map(Path::toString)
-              .limit(50)
-              .collect(Collectors.toList());
-      return McpCompleteCompletion.builder()
-          .values(paths)
-          .total(paths.size())
-          .hasMore(false)
-          .build();
-    } catch (Exception e) {
-      return McpCompleteCompletion.empty();
+    @McpResourceCompletion(uri = "file://")
+    public CompletionResult completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
+        String prefix = argument.value() != null ? argument.value() : "";
+        try {
+            List<String> paths =
+                    Files.list(Paths.get(prefix.isEmpty() ? "." : prefix))
+                            .map(Path::toString)
+                            .limit(50)
+                            .collect(Collectors.toList());
+            return CompletionResult.builder()
+                    .values(paths)
+                    .total(paths.size())
+                    .hasMore(false)
+                    .build();
+        } catch (Exception e) {
+            return CompletionResult.empty();
+        }
     }
-  }
 }
 ```
 
@@ -188,22 +189,23 @@ public class MyCompletions {
 
 ```java
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
-import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
 import io.modelcontextprotocol.spec.McpSchema;
+
 import java.util.List;
 
 public class MyPromptCompletions {
-  @McpPromptCompletion(name = "generateCode")
-  public McpCompleteCompletion completeGenerateCode(McpSchema.CompleteRequest.CompleteArgument argument) {
-    if (!"language".equals(argument.name())) {
-      return McpCompleteCompletion.empty();
+    @McpPromptCompletion(name = "generateCode")
+    public CompletionResult completeGenerateCode(McpSchema.CompleteRequest.CompleteArgument argument) {
+        if (!"language".equals(argument.name())) {
+            return CompletionResult.empty();
+        }
+        return CompletionResult.builder()
+                .values(List.of("Java", "Python", "JavaScript", "Go", "Rust"))
+                .total(5)
+                .hasMore(false)
+                .build();
     }
-    return McpCompleteCompletion.builder()
-        .values(List.of("Java", "Python", "JavaScript", "Go", "Rust"))
-        .total(5)
-        .hasMore(false)
-        .build();
-  }
 }
 ```
 

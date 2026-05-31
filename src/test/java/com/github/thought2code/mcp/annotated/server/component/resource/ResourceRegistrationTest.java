@@ -12,8 +12,8 @@ import static org.mockito.Mockito.when;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
-import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.Invocation;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -38,8 +38,8 @@ class ResourceRegistrationTest {
   void registerSync_shouldRegisterResource() {
     McpSyncServer server = mock(McpSyncServer.class);
     McpApplicationContext context = mock(McpApplicationContext.class);
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<ResourceDefinition> resources() {
             McpSchema.Resource resource =
@@ -73,8 +73,8 @@ class ResourceRegistrationTest {
             "test.Source#b()",
             McpSchema.Resource.builder("test://b", "duplicate").build(),
             ctx -> Invocation.builder().result("b").build());
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<ResourceDefinition> resources() {
             return List.of(a, b);
@@ -92,8 +92,8 @@ class ResourceRegistrationTest {
     McpAsyncServer server = mock(McpAsyncServer.class);
     when(server.addResource(any())).thenReturn(Mono.empty());
     McpApplicationContext context = mock(McpApplicationContext.class);
-    ComponentModelProvider provider =
-        new ComponentModelProvider() {
+    ComponentProvider provider =
+        new ComponentProvider() {
           @Override
           public List<ResourceDefinition> resources() {
             McpSchema.Resource resource =

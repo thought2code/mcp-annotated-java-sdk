@@ -2,7 +2,7 @@ package com.github.thought2code.mcp.annotated.server.component.prompt;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
-import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -25,13 +25,11 @@ public final class PromptRegistration {
   private PromptRegistration() {}
 
   public static boolean registerSync(McpSyncServer server, McpApplicationContext context) {
-    return registerSync(server, context, ServiceLoader.load(ComponentModelProvider.class));
+    return registerSync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
   static boolean registerSync(
-      McpSyncServer server,
-      McpApplicationContext context,
-      Iterable<ComponentModelProvider> providers) {
+      McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<PromptDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
@@ -55,13 +53,11 @@ public final class PromptRegistration {
   }
 
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
-    return registerAsync(server, context, ServiceLoader.load(ComponentModelProvider.class));
+    return registerAsync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
   static boolean registerAsync(
-      McpAsyncServer server,
-      McpApplicationContext context,
-      Iterable<ComponentModelProvider> providers) {
+      McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<PromptDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
@@ -88,9 +84,9 @@ public final class PromptRegistration {
   }
 
   private static List<PromptDefinition> loadDefinitions(
-      Iterable<ComponentModelProvider> providers, McpApplicationContext context) {
+      Iterable<ComponentProvider> providers, McpApplicationContext context) {
     List<PromptDefinition> definitions = new ArrayList<>();
-    for (ComponentModelProvider provider : providers) {
+    for (ComponentProvider provider : providers) {
       for (PromptDefinition definition : provider.prompts()) {
         if (context.isInScope(definition.sourceMethod())) {
           definitions.add(definition);

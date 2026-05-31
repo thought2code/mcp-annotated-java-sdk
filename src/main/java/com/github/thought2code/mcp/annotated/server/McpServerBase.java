@@ -115,9 +115,9 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
   /**
    * Registers all MCP server components with the specified synchronous server.
    *
-   * <p>This method creates and registers the three main types of MCP components: resources,
-   * prompts, and tools. Each component type is handled by its respective registration class which
-   * scans for annotated methods and registers them with the server.
+   * <p>This method creates and registers MCP components: resources, prompts, tools, and
+   * completions. Each component type is handled by its respective registration class which loads
+   * build-time generated definitions and registers them with the server.
    *
    * @param server the synchronous server instance to register components with
    */
@@ -135,9 +135,9 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
   /**
    * Registers all MCP server components with the specified asynchronous server.
    *
-   * <p>This method creates and registers the three main types of MCP components: resources,
-   * prompts, and tools. Each component type is handled by its respective registration class which
-   * scans for annotated methods and registers them with the server.
+   * <p>This method creates and registers MCP components: resources, prompts, tools, and
+   * completions. Each component type is handled by its respective registration class which loads
+   * build-time generated definitions and registers them with the server.
    *
    * @param server the asynchronous server instance to register components with
    */
