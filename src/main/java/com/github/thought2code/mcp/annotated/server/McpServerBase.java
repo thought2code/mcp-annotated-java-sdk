@@ -1,15 +1,15 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.component.completion.CompletionSupport;
-import com.github.thought2code.mcp.annotated.component.prompt.PromptRegistration;
-import com.github.thought2code.mcp.annotated.component.resource.ResourceRegistration;
-import com.github.thought2code.mcp.annotated.component.tool.ToolRegistration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
 import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionSupport;
+import com.github.thought2code.mcp.annotated.server.component.prompt.PromptRegistration;
+import com.github.thought2code.mcp.annotated.server.component.resource.ResourceRegistration;
+import com.github.thought2code.mcp.annotated.server.component.tool.ToolRegistration;
 import com.github.thought2code.mcp.annotated.util.InetHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpSyncServer;

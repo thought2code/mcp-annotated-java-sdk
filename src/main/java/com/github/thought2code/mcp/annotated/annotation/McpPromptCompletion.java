@@ -1,6 +1,6 @@
 package com.github.thought2code.mcp.annotated.annotation;
 
-import com.github.thought2code.mcp.annotated.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

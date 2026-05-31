@@ -9,7 +9,7 @@ import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
-import com.github.thought2code.mcp.annotated.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.io.IOException;
 import java.io.Writer;
@@ -59,7 +59,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
 
   private static final String GENERATED_PACKAGE = "com.github.thought2code.mcp.annotated.generated";
   private static final String PROVIDER_INTERFACE =
-      "com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider";
+      "com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider";
   private static final String PROVIDER_SERVICE_FILE = "META-INF/services/" + PROVIDER_INTERFACE;
 
   private final List<ExecutableElement> tools = new ArrayList<>();
@@ -348,21 +348,23 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("package " + GENERATED_PACKAGE + ";\n\n");
       writer.write("import com.github.thought2code.mcp.annotated.McpApplicationContext;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.completion.CompletionDefinition;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.completion.CompletionDefinition;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.completion.CompletionInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.completion.CompletionInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.prompt.PromptDefinition;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.prompt.PromptDefinition;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.prompt.PromptInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.prompt.PromptInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.resource.ResourceDefinition;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.resource.ResourceDefinition;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.resource.ResourceInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.resource.ResourceInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;\n");
-      writer.write("import com.github.thought2code.mcp.annotated.component.tool.ToolDefinition;\n");
-      writer.write("import com.github.thought2code.mcp.annotated.component.tool.ToolInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;\n");
+      writer.write(
+          "import com.github.thought2code.mcp.annotated.server.component.tool.ToolDefinition;\n");
+      writer.write(
+          "import com.github.thought2code.mcp.annotated.server.component.tool.ToolInvoker;\n");
       writer.write("import com.github.thought2code.mcp.annotated.enums.McpServerError;\n");
       writer.write("import com.github.thought2code.mcp.annotated.reflect.Invocation;\n");
       writer.write("import com.github.thought2code.mcp.annotated.util.TypeConverter;\n");

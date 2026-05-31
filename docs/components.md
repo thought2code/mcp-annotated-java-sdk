@@ -152,7 +152,7 @@ Handlers must **return** `McpCompleteCompletion` and take **exactly one** parame
 
 ```java
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
-import com.github.thought2code.mcp.annotated.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -188,7 +188,7 @@ public class MyCompletions {
 
 ```java
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
-import com.github.thought2code.mcp.annotated.component.completion.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.server.component.completion.McpCompleteCompletion;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.List;
 
