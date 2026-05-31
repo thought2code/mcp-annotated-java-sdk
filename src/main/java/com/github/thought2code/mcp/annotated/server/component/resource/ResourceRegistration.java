@@ -1,8 +1,8 @@
-package com.github.thought2code.mcp.annotated.component.prompt;
+package com.github.thought2code.mcp.annotated.server.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
+import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -17,12 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Registers build-time component {@code @McpPrompt} definitions. */
-public final class PromptRegistration {
+/** Registers build-time component {@code @McpResource} definitions. */
+public final class ResourceRegistration {
 
-  private static final Logger log = LoggerFactory.getLogger(PromptRegistration.class);
+  private static final Logger log = LoggerFactory.getLogger(ResourceRegistration.class);
 
-  private PromptRegistration() {}
+  private ResourceRegistration() {}
 
   public static boolean registerSync(McpSyncServer server, McpApplicationContext context) {
     return registerSync(server, context, ServiceLoader.load(ComponentModelProvider.class));
@@ -32,24 +32,23 @@ public final class PromptRegistration {
       McpSyncServer server,
       McpApplicationContext context,
       Iterable<ComponentModelProvider> providers) {
-    List<PromptDefinition> definitions = loadDefinitions(providers, context);
+    List<ResourceDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
     }
     rejectDuplicateNames(definitions);
-    for (PromptDefinition definition : definitions) {
-      McpServerFeatures.SyncPromptSpecification specification =
-          new McpServerFeatures.SyncPromptSpecification(
-              definition.prompt(),
+    for (ResourceDefinition definition : definitions) {
+      McpServerFeatures.SyncResourceSpecification specification =
+          new McpServerFeatures.SyncResourceSpecification(
+              definition.resource(),
               (exchange, request) ->
                   invoke(
                       definition.invoker(),
                       context,
-                      definition.description(),
-                      request,
+                      definition.resource(),
                       definition.sourceMethod()));
-      server.addPrompt(specification);
-      log.debug("Sync McpPrompt {} registered successfully", definition.prompt().name());
+      server.addResource(specification);
+      log.debug("Sync McpResource {} registered successfully", definition.resource().name());
     }
     return true;
   }
@@ -62,36 +61,35 @@ public final class PromptRegistration {
       McpAsyncServer server,
       McpApplicationContext context,
       Iterable<ComponentModelProvider> providers) {
-    List<PromptDefinition> definitions = loadDefinitions(providers, context);
+    List<ResourceDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
     }
     rejectDuplicateNames(definitions);
-    for (PromptDefinition definition : definitions) {
-      McpServerFeatures.AsyncPromptSpecification specification =
-          new McpServerFeatures.AsyncPromptSpecification(
-              definition.prompt(),
+    for (ResourceDefinition definition : definitions) {
+      McpServerFeatures.AsyncResourceSpecification specification =
+          new McpServerFeatures.AsyncResourceSpecification(
+              definition.resource(),
               (exchange, request) ->
                   Mono.fromCallable(
                       () ->
                           invoke(
                               definition.invoker(),
                               context,
-                              definition.description(),
-                              request,
+                              definition.resource(),
                               definition.sourceMethod())));
-      Mono<Void> registration = server.addPrompt(specification);
-      awaitAsyncRegistration(registration, definition.prompt().name());
-      log.debug("Async McpPrompt {} registered successfully", definition.prompt().name());
+      Mono<Void> registration = server.addResource(specification);
+      awaitAsyncRegistration(registration, definition.resource().name());
+      log.debug("Async McpResource {} registered successfully", definition.resource().name());
     }
     return true;
   }
 
-  private static List<PromptDefinition> loadDefinitions(
+  private static List<ResourceDefinition> loadDefinitions(
       Iterable<ComponentModelProvider> providers, McpApplicationContext context) {
-    List<PromptDefinition> definitions = new ArrayList<>();
+    List<ResourceDefinition> definitions = new ArrayList<>();
     for (ComponentModelProvider provider : providers) {
-      for (PromptDefinition definition : provider.prompts()) {
+      for (ResourceDefinition definition : provider.resources()) {
         if (context.isInScope(definition.sourceMethod())) {
           definitions.add(definition);
         }
@@ -100,40 +98,41 @@ public final class PromptRegistration {
     return definitions;
   }
 
-  private static void rejectDuplicateNames(List<PromptDefinition> definitions) {
+  private static void rejectDuplicateNames(List<ResourceDefinition> definitions) {
     Map<String, String> registeredNames = new HashMap<>();
-    for (PromptDefinition definition : definitions) {
-      final String name = definition.prompt().name();
+    for (ResourceDefinition definition : definitions) {
+      final String name = definition.resource().name();
       String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
       if (previous != null) {
         throw new McpServerComponentRegistrationException(
             String.format(
-                "Duplicate McpPrompt name '%s' found for methods %s and %s",
+                "Duplicate McpResource name '%s' found for methods %s and %s",
                 name, previous, definition.sourceMethod()));
       }
     }
   }
 
-  private static McpSchema.GetPromptResult invoke(
-      PromptInvoker invoker,
+  private static McpSchema.ReadResourceResult invoke(
+      ResourceInvoker invoker,
       McpApplicationContext context,
-      String description,
-      McpSchema.GetPromptRequest request,
+      McpSchema.Resource resource,
       String sourceMethod) {
     log.debug(
-        "Handling component MCP GetPromptRequest for {}: {}",
+        "Handling component ReadResource request for {}: {}",
         sourceMethod,
-        JacksonHelper.toJsonString(request));
+        JacksonHelper.toJsonString(resource));
 
-    var invocation = invoker.invoke(context, request.arguments());
-    McpSchema.Content content = McpSchema.TextContent.builder(invocation.asText()).build();
-    McpSchema.PromptMessage message =
-        McpSchema.PromptMessage.builder(McpSchema.Role.USER, content).build();
-    McpSchema.GetPromptResult result =
-        McpSchema.GetPromptResult.builder(List.of(message)).description(description).build();
+    var invocation = invoker.invoke(context);
+    final String uri = resource.uri();
+    final String mimeType = resource.mimeType();
+    final String text = invocation.asText();
+    McpSchema.ResourceContents contents =
+        McpSchema.TextResourceContents.builder(uri, text).mimeType(mimeType).build();
+    McpSchema.ReadResourceResult result =
+        McpSchema.ReadResourceResult.builder(List.of(contents)).build();
 
     log.debug(
-        "Returning component MCP GetPromptResult for {}: {}",
+        "Returning component ReadResourceResult for {}: {}",
         sourceMethod,
         JacksonHelper.toJsonString(result));
     return result;
@@ -144,7 +143,7 @@ public final class PromptRegistration {
       registration.block();
     } catch (RuntimeException e) {
       final String message =
-          String.format("Failed to register async McpPrompt %s", specificationName);
+          String.format("Failed to register async McpResource %s", specificationName);
       log.error(message, e);
       throw new McpServerComponentRegistrationException(message, e);
     }

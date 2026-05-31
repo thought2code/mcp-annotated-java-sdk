@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.component.prompt;
+package com.github.thought2code.mcp.annotated.server.component.prompt;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;

@@ -1,9 +1,9 @@
-package com.github.thought2code.mcp.annotated.component.spi;
+package com.github.thought2code.mcp.annotated.server.component.spi;
 
-import com.github.thought2code.mcp.annotated.component.completion.CompletionDefinition;
-import com.github.thought2code.mcp.annotated.component.prompt.PromptDefinition;
-import com.github.thought2code.mcp.annotated.component.resource.ResourceDefinition;
-import com.github.thought2code.mcp.annotated.component.tool.ToolDefinition;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionDefinition;
+import com.github.thought2code.mcp.annotated.server.component.prompt.PromptDefinition;
+import com.github.thought2code.mcp.annotated.server.component.resource.ResourceDefinition;
+import com.github.thought2code.mcp.annotated.server.component.tool.ToolDefinition;
 import java.util.List;
 
 /**

@@ -1,9 +1,9 @@
-package com.github.thought2code.mcp.annotated.component.tool;
+package com.github.thought2code.mcp.annotated.server.component.tool;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
+import com.github.thought2code.mcp.annotated.server.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;

@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.component.resource;
+package com.github.thought2code.mcp.annotated.server.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;

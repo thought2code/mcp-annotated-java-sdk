@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.component.prompt;
+package com.github.thought2code.mcp.annotated.server.component.prompt;
 
 import io.modelcontextprotocol.spec.McpSchema;
 
