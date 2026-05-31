@@ -11,12 +11,12 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Runtime context for one annotated MCP application.
  *
- * <p>In the build-time compiled architecture, this context no longer performs classpath scanning.
- * Instead, it centralizes runtime concerns that compiled invokers still need:
+ * <p>In the build-time component architecture, this context no longer performs classpath scanning.
+ * Instead, it centralizes runtime concerns that component invokers still need:
  *
  * <ul>
  *   <li>Component instance lifecycle (lazy creation with one cached instance per component class)
- *   <li>Scope filtering for compiled model definitions based on the resolved application base
+ *   <li>Scope filtering for component model definitions based on the resolved application base
  *       package
  * </ul>
  *
@@ -69,12 +69,12 @@ public final class McpApplicationContext {
   }
 
   /**
-   * Returns whether a compiled source method belongs to this application's base package scope.
+   * Returns whether a component source method belongs to this application's base package scope.
    *
-   * <p>This method is used while loading compiled definitions to prevent out-of-scope components
+   * <p>This method is used while loading component definitions to prevent out-of-scope components
    * from being registered (for example, fixtures from other test packages or neighboring modules).
    *
-   * @param sourceMethod compiled source method descriptor in the form {@code fqcn#method(...)}
+   * @param sourceMethod component source method descriptor in the form {@code fqcn#method(...)}
    * @return {@code true} when the source method declaring class is within the configured base
    *     package
    */
@@ -97,7 +97,7 @@ public final class McpApplicationContext {
   }
 
   /**
-   * Resolves the base package used for compiled-definition scope filtering.
+   * Resolves the base package used for component-definition scope filtering.
    *
    * <p>Resolution priority:
    *

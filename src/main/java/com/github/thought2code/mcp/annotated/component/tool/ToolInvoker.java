@@ -1,14 +1,14 @@
-package com.github.thought2code.mcp.annotated.compiled.prompt;
+package com.github.thought2code.mcp.annotated.component.tool;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import java.util.Map;
 
-/** Strongly-typed invocation contract generated at build time for one {@code @McpPrompt} method. */
+/** Strongly-typed invocation contract generated at build time for one {@code @McpTool} method. */
 @FunctionalInterface
-public interface CompiledPromptInvoker {
+public interface ToolInvoker {
   /**
-   * Invokes one compiled prompt method using request arguments.
+   * Invokes one component tool method using request arguments.
    *
    * @param context application context
    * @param arguments request arguments

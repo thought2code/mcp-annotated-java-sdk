@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.compiled.completion;
+package com.github.thought2code.mcp.annotated.component.completion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -9,21 +9,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.compiled.spi.McpCompiledModelProvider;
+import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
-import com.github.thought2code.mcp.annotated.server.component.McpCompleteCompletion;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class CompiledCompletionSupportTest {
+class CompletionSupportTest {
 
   @Test
-  void allSync_shouldReturnEmptyWhenNoCompiledProvider() {
+  void allSync_shouldReturnEmptyWhenNoComponentProvider() {
     McpApplicationContext context = mock(McpApplicationContext.class);
     List<McpServerFeatures.SyncCompletionSpecification> specs =
-        CompiledCompletionSupport.allSync(context, List.of());
+        CompletionSupport.allSync(context, List.of());
     assertTrue(specs.isEmpty());
   }
 
@@ -31,12 +30,12 @@ class CompiledCompletionSupportTest {
   void allSync_shouldBuildCompletionSpecification() {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.isInScope(anyString())).thenReturn(true);
-    McpCompiledModelProvider provider =
-        new McpCompiledModelProvider() {
+    ComponentModelProvider provider =
+        new ComponentModelProvider() {
           @Override
-          public List<CompiledCompletionDefinition> completions() {
+          public List<CompletionDefinition> completions() {
             return List.of(
-                new CompiledCompletionDefinition(
+                new CompletionDefinition(
                     "test.Source#completion()",
                     McpSchema.PromptReference.builder("prompt_name").build(),
                     (ctx, argument) ->
@@ -47,7 +46,7 @@ class CompiledCompletionSupportTest {
         };
 
     List<McpServerFeatures.SyncCompletionSpecification> specs =
-        CompiledCompletionSupport.allSync(context, List.of(provider));
+        CompletionSupport.allSync(context, List.of(provider));
 
     assertEquals(1, specs.size());
     McpSchema.CompleteRequest request =
@@ -63,12 +62,12 @@ class CompiledCompletionSupportTest {
   void allAsync_shouldBuildCompletionSpecification() {
     McpApplicationContext context = mock(McpApplicationContext.class);
     when(context.isInScope(anyString())).thenReturn(true);
-    McpCompiledModelProvider provider =
-        new McpCompiledModelProvider() {
+    ComponentModelProvider provider =
+        new ComponentModelProvider() {
           @Override
-          public List<CompiledCompletionDefinition> completions() {
+          public List<CompletionDefinition> completions() {
             return List.of(
-                new CompiledCompletionDefinition(
+                new CompletionDefinition(
                     "test.Source#completion()",
                     new McpSchema.ResourceReference("resource://test"),
                     (ctx, argument) ->
@@ -79,7 +78,7 @@ class CompiledCompletionSupportTest {
         };
 
     List<McpServerFeatures.AsyncCompletionSpecification> specs =
-        CompiledCompletionSupport.allAsync(context, List.of(provider));
+        CompletionSupport.allAsync(context, List.of(provider));
 
     assertEquals(1, specs.size());
     assertFalse(specs.isEmpty());

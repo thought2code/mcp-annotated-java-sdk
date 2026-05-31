@@ -1,10 +1,10 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.compiled.completion.CompiledCompletionSupport;
-import com.github.thought2code.mcp.annotated.compiled.prompt.CompiledPromptRegistration;
-import com.github.thought2code.mcp.annotated.compiled.resource.CompiledResourceRegistration;
-import com.github.thought2code.mcp.annotated.compiled.tool.CompiledToolRegistration;
+import com.github.thought2code.mcp.annotated.component.completion.CompletionSupport;
+import com.github.thought2code.mcp.annotated.component.prompt.PromptRegistration;
+import com.github.thought2code.mcp.annotated.component.resource.ResourceRegistration;
+import com.github.thought2code.mcp.annotated.component.tool.ToolRegistration;
 import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
 import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
@@ -123,16 +123,12 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    */
   @Override
   public void registerComponents(McpSyncServer server) {
-    boolean compiledResourcesRegistered =
-        CompiledResourceRegistration.registerSync(server, context);
-    boolean compiledPromptsRegistered = CompiledPromptRegistration.registerSync(server, context);
-    boolean compiledToolsRegistered = CompiledToolRegistration.registerSync(server, context);
-    boolean compiledCompletionsRegistered = !CompiledCompletionSupport.allSync(context).isEmpty();
-    warnWhenNoCompiledComponent(
-        compiledResourcesRegistered,
-        compiledPromptsRegistered,
-        compiledToolsRegistered,
-        compiledCompletionsRegistered);
+    boolean resourcesRegistered = ResourceRegistration.registerSync(server, context);
+    boolean promptsRegistered = PromptRegistration.registerSync(server, context);
+    boolean toolsRegistered = ToolRegistration.registerSync(server, context);
+    boolean completionsRegistered = !CompletionSupport.allSync(context).isEmpty();
+    warnWhenNoComponent(
+        resourcesRegistered, promptsRegistered, toolsRegistered, completionsRegistered);
     log.info("MCP sync server components registered successfully");
   }
 
@@ -147,16 +143,12 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    */
   @Override
   public void registerComponents(McpAsyncServer server) {
-    boolean compiledResourcesRegistered =
-        CompiledResourceRegistration.registerAsync(server, context);
-    boolean compiledPromptsRegistered = CompiledPromptRegistration.registerAsync(server, context);
-    boolean compiledToolsRegistered = CompiledToolRegistration.registerAsync(server, context);
-    boolean compiledCompletionsRegistered = !CompiledCompletionSupport.allAsync(context).isEmpty();
-    warnWhenNoCompiledComponent(
-        compiledResourcesRegistered,
-        compiledPromptsRegistered,
-        compiledToolsRegistered,
-        compiledCompletionsRegistered);
+    boolean resourcesRegistered = ResourceRegistration.registerAsync(server, context);
+    boolean promptsRegistered = PromptRegistration.registerAsync(server, context);
+    boolean toolsRegistered = ToolRegistration.registerAsync(server, context);
+    boolean completionsRegistered = !CompletionSupport.allAsync(context).isEmpty();
+    warnWhenNoComponent(
+        resourcesRegistered, promptsRegistered, toolsRegistered, completionsRegistered);
     log.info("MCP async server components registered successfully");
   }
 
@@ -168,7 +160,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    * <ul>
    *   <li>The server capabilities defined by {@link #defineCapabilities()}
    *   <li>All available completion specifications from {@link
-   *       CompiledCompletionSupport#allSync(McpApplicationContext)}
+   *       CompletionSupport#allSync(McpApplicationContext)}
    *   <li>Server information (name, version) from the configuration
    *   <li>Instructions and request timeout from the configuration
    * </ul>
@@ -179,7 +171,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    *
    * @return a fully configured MCP synchronous server ready to start
    * @see McpSyncServer
-   * @see CompiledCompletionSupport
+   * @see CompletionSupport
    */
   @Override
   public McpSyncServer createSyncServer() {
@@ -188,7 +180,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
         capabilities ->
             createSyncSpecification()
                 .capabilities(capabilities)
-                .completions(CompiledCompletionSupport.allSync(context))
+                .completions(CompletionSupport.allSync(context))
                 .instructions(configuration.instructions())
                 .serverInfo(configuration.name(), configuration.version())
                 .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
@@ -203,7 +195,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    * <ul>
    *   <li>The server capabilities defined by {@link #defineCapabilities()}
    *   <li>All available async completion specifications from {@link
-   *       CompiledCompletionSupport#allAsync(McpApplicationContext)}
+   *       CompletionSupport#allAsync(McpApplicationContext)}
    *   <li>Server information (name, version) from the configuration
    *   <li>Instructions and request timeout from the configuration
    * </ul>
@@ -214,7 +206,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    *
    * @return a fully configured MCP asynchronous server ready to start
    * @see McpAsyncServer
-   * @see CompiledCompletionSupport
+   * @see CompletionSupport
    */
   @Override
   public McpAsyncServer createAsyncServer() {
@@ -223,7 +215,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
         capabilities ->
             createAsyncSpecification()
                 .capabilities(capabilities)
-                .completions(CompiledCompletionSupport.allAsync(context))
+                .completions(CompletionSupport.allAsync(context))
                 .instructions(configuration.instructions())
                 .serverInfo(configuration.name(), configuration.version())
                 .requestTimeout(Duration.ofMillis(configuration.requestTimeout()))
@@ -231,29 +223,25 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
   }
 
   /**
-   * Warns when no compiled MCP component definitions are discovered for the current application
-   * context.
+   * Warns when no MCP component definitions are discovered for the current application context.
    *
    * <p>This is a diagnostic signal to help users detect missing annotation-processor output or
    * package-scope misconfiguration.
    *
-   * @param compiledResourcesRegistered whether at least one compiled resource is registered
-   * @param compiledPromptsRegistered whether at least one compiled prompt is registered
-   * @param compiledToolsRegistered whether at least one compiled tool is registered
-   * @param compiledCompletionsRegistered whether at least one compiled completion is registered
+   * @param resourcesRegistered whether at least one resource component is registered
+   * @param promptsRegistered whether at least one prompt component is registered
+   * @param toolsRegistered whether at least one tool component is registered
+   * @param completionsRegistered whether at least one completion component is registered
    */
-  private void warnWhenNoCompiledComponent(
-      boolean compiledResourcesRegistered,
-      boolean compiledPromptsRegistered,
-      boolean compiledToolsRegistered,
-      boolean compiledCompletionsRegistered) {
-    if (compiledResourcesRegistered
-        || compiledPromptsRegistered
-        || compiledToolsRegistered
-        || compiledCompletionsRegistered) {
+  private void warnWhenNoComponent(
+      boolean resourcesRegistered,
+      boolean promptsRegistered,
+      boolean toolsRegistered,
+      boolean completionsRegistered) {
+    if (resourcesRegistered || promptsRegistered || toolsRegistered || completionsRegistered) {
       return;
     }
-    log.warn("No compiled Resource/Prompt/Tool/Completion models were discovered");
+    log.warn("No Resource/Prompt/Tool/Completion component models were discovered");
   }
 
   /**

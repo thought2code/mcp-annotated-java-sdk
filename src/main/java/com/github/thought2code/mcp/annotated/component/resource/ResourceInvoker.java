@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.compiled.resource;
+package com.github.thought2code.mcp.annotated.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
@@ -7,9 +7,9 @@ import com.github.thought2code.mcp.annotated.reflect.Invocation;
  * Strongly-typed invocation contract generated at build time for one {@code @McpResource} method.
  */
 @FunctionalInterface
-public interface CompiledResourceInvoker {
+public interface ResourceInvoker {
   /**
-   * Invokes one compiled resource method.
+   * Invokes one component resource method.
    *
    * @param context application context
    * @return invocation result

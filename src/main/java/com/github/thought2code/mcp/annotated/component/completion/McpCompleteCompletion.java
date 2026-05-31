@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.server.component;
+package com.github.thought2code.mcp.annotated.component.completion;
 
 import java.util.Collection;
 import java.util.List;

@@ -9,7 +9,7 @@ import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
-import com.github.thought2code.mcp.annotated.server.component.McpCompleteCompletion;
+import com.github.thought2code.mcp.annotated.component.completion.McpCompleteCompletion;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.io.IOException;
 import java.io.Writer;
@@ -59,7 +59,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
 
   private static final String GENERATED_PACKAGE = "com.github.thought2code.mcp.annotated.generated";
   private static final String PROVIDER_INTERFACE =
-      "com.github.thought2code.mcp.annotated.compiled.spi.McpCompiledModelProvider";
+      "com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider";
   private static final String PROVIDER_SERVICE_FILE = "META-INF/services/" + PROVIDER_INTERFACE;
 
   private final List<ExecutableElement> tools = new ArrayList<>();
@@ -348,23 +348,21 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("package " + GENERATED_PACKAGE + ";\n\n");
       writer.write("import com.github.thought2code.mcp.annotated.McpApplicationContext;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.completion.CompiledCompletionDefinition;\n");
+          "import com.github.thought2code.mcp.annotated.component.completion.CompletionDefinition;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.completion.CompiledCompletionInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.component.completion.CompletionInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.prompt.CompiledPromptDefinition;\n");
+          "import com.github.thought2code.mcp.annotated.component.prompt.PromptDefinition;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.prompt.CompiledPromptInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.component.prompt.PromptInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.resource.CompiledResourceDefinition;\n");
+          "import com.github.thought2code.mcp.annotated.component.resource.ResourceDefinition;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.resource.CompiledResourceInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.component.resource.ResourceInvoker;\n");
       writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.spi.McpCompiledModelProvider;\n");
-      writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.tool.CompiledToolDefinition;\n");
-      writer.write(
-          "import com.github.thought2code.mcp.annotated.compiled.tool.CompiledToolInvoker;\n");
+          "import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;\n");
+      writer.write("import com.github.thought2code.mcp.annotated.component.tool.ToolDefinition;\n");
+      writer.write("import com.github.thought2code.mcp.annotated.component.tool.ToolInvoker;\n");
       writer.write("import com.github.thought2code.mcp.annotated.enums.McpServerError;\n");
       writer.write("import com.github.thought2code.mcp.annotated.reflect.Invocation;\n");
       writer.write("import com.github.thought2code.mcp.annotated.util.TypeConverter;\n");
@@ -374,12 +372,11 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("import java.util.LinkedHashMap;\n");
       writer.write("import java.util.List;\n");
       writer.write("import java.util.Map;\n\n");
-      writer.write(
-          "public final class " + className + " implements McpCompiledModelProvider {\n\n");
+      writer.write("public final class " + className + " implements ComponentModelProvider {\n\n");
 
       writer.write("  @Override\n");
-      writer.write("  public List<CompiledToolDefinition> tools() {\n");
-      writer.write("    List<CompiledToolDefinition> definitions = new ArrayList<>();\n");
+      writer.write("  public List<ToolDefinition> tools() {\n");
+      writer.write("    List<ToolDefinition> definitions = new ArrayList<>();\n");
       for (int i = 0; i < sortedTools.size(); i++) {
         ExecutableElement method = sortedTools.get(i);
         writer.write("    definitions.add(toolDefinition" + i + "());\n");
@@ -388,8 +385,8 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("  }\n\n");
 
       writer.write("  @Override\n");
-      writer.write("  public List<CompiledResourceDefinition> resources() {\n");
-      writer.write("    List<CompiledResourceDefinition> definitions = new ArrayList<>();\n");
+      writer.write("  public List<ResourceDefinition> resources() {\n");
+      writer.write("    List<ResourceDefinition> definitions = new ArrayList<>();\n");
       for (int i = 0; i < sortedResources.size(); i++) {
         writer.write("    definitions.add(resourceDefinition" + i + "());\n");
       }
@@ -397,8 +394,8 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("  }\n\n");
 
       writer.write("  @Override\n");
-      writer.write("  public List<CompiledCompletionDefinition> completions() {\n");
-      writer.write("    List<CompiledCompletionDefinition> definitions = new ArrayList<>();\n");
+      writer.write("  public List<CompletionDefinition> completions() {\n");
+      writer.write("    List<CompletionDefinition> definitions = new ArrayList<>();\n");
       for (int i = 0; i < sortedCompletions.size(); i++) {
         writer.write("    definitions.add(completionDefinition" + i + "());\n");
       }
@@ -406,8 +403,8 @@ public final class McpToolModelProcessor extends AbstractProcessor {
       writer.write("  }\n\n");
 
       writer.write("  @Override\n");
-      writer.write("  public List<CompiledPromptDefinition> prompts() {\n");
-      writer.write("    List<CompiledPromptDefinition> definitions = new ArrayList<>();\n");
+      writer.write("  public List<PromptDefinition> prompts() {\n");
+      writer.write("    List<PromptDefinition> definitions = new ArrayList<>();\n");
       for (int i = 0; i < sortedPrompts.size(); i++) {
         writer.write("    definitions.add(promptDefinition" + i + "());\n");
       }
@@ -473,7 +470,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     String title = toolTitle(method);
     String description = toolDescription(method);
 
-    writer.write("  private static CompiledToolDefinition toolDefinition" + index + "() {\n");
+    writer.write("  private static ToolDefinition toolDefinition" + index + "() {\n");
     writer.write("    Map<String, Object> inputSchema = inputSchema" + index + "();\n");
     writer.write("    Map<String, Object> outputSchema = outputSchema" + index + "();\n");
     writer.write(
@@ -485,7 +482,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     writer.write("        .outputSchema(outputSchema)\n");
     writer.write("        .build();\n");
     writer.write(
-        "    return new CompiledToolDefinition(\""
+        "    return new ToolDefinition(\""
             + escape(sourceMethod)
             + "\", tool, new Invoker"
             + index
@@ -578,8 +575,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     String ownerType = owner.getQualifiedName().toString();
     boolean returnsVoid = method.getReturnType().getKind() == TypeKind.VOID;
 
-    writer.write(
-        "  private static final class Invoker" + index + " implements CompiledToolInvoker {\n");
+    writer.write("  private static final class Invoker" + index + " implements ToolInvoker {\n");
     writer.write("    @Override\n");
     writer.write(
         "    public Invocation invoke(McpApplicationContext context, Map<String, Object> arguments) {\n");
@@ -656,7 +652,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     String title = promptTitle(method);
     String description = promptDescription(method);
 
-    writer.write("  private static CompiledPromptDefinition promptDefinition" + index + "() {\n");
+    writer.write("  private static PromptDefinition promptDefinition" + index + "() {\n");
     writer.write("    List<McpSchema.PromptArgument> args = new ArrayList<>();\n");
     for (VariableElement parameter : method.getParameters()) {
       McpPromptParam promptParam = parameter.getAnnotation(McpPromptParam.class);
@@ -695,7 +691,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
             + "        .arguments(args)\n"
             + "        .build();\n");
     writer.write(
-        "    return new CompiledPromptDefinition(\""
+        "    return new PromptDefinition(\""
             + escape(sourceMethod)
             + "\", prompt, \""
             + escape(description)
@@ -712,9 +708,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     boolean returnsVoid = method.getReturnType().getKind() == TypeKind.VOID;
 
     writer.write(
-        "  private static final class PromptInvoker"
-            + index
-            + " implements CompiledPromptInvoker {\n");
+        "  private static final class PromptInvoker" + index + " implements PromptInvoker {\n");
     writer.write("    @Override\n");
     writer.write(
         "    public Invocation invoke(McpApplicationContext context, Map<String, Object> arguments) {\n");
@@ -795,8 +789,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     String rolesLiteral = resourceRolesLiteral(method);
     double priority = resourcePriority(method);
 
-    writer.write(
-        "  private static CompiledResourceDefinition resourceDefinition" + index + "() {\n");
+    writer.write("  private static ResourceDefinition resourceDefinition" + index + "() {\n");
     writer.write(
         "    McpSchema.Resource resource = McpSchema.Resource.builder(\""
             + escape(uri)
@@ -814,7 +807,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
             + ").build())\n");
     writer.write("        .build();\n");
     writer.write(
-        "    return new CompiledResourceDefinition(\""
+        "    return new ResourceDefinition(\""
             + escape(sourceMethod)
             + "\", resource, new ResourceInvoker"
             + index
@@ -829,9 +822,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     boolean returnsVoid = method.getReturnType().getKind() == TypeKind.VOID;
 
     writer.write(
-        "  private static final class ResourceInvoker"
-            + index
-            + " implements CompiledResourceInvoker {\n");
+        "  private static final class ResourceInvoker" + index + " implements ResourceInvoker {\n");
     writer.write("    @Override\n");
     writer.write("    public Invocation invoke(McpApplicationContext context) {\n");
     writer.write("      try {\n");
@@ -865,8 +856,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
   private void writeCompletionDefinitionMethod(Writer writer, ExecutableElement method, int index)
       throws IOException {
     String sourceMethod = sourceMethod(method);
-    writer.write(
-        "  private static CompiledCompletionDefinition completionDefinition" + index + "() {\n");
+    writer.write("  private static CompletionDefinition completionDefinition" + index + "() {\n");
     if (method.getAnnotation(McpPromptCompletion.class) != null) {
       McpPromptCompletion annotation = method.getAnnotation(McpPromptCompletion.class);
       writer.write(
@@ -885,7 +875,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
               + "\");\n");
     }
     writer.write(
-        "    return new CompiledCompletionDefinition(\""
+        "    return new CompletionDefinition(\""
             + escape(sourceMethod)
             + "\", reference, new CompletionInvoker"
             + index
@@ -901,7 +891,7 @@ public final class McpToolModelProcessor extends AbstractProcessor {
     writer.write(
         "  private static final class CompletionInvoker"
             + index
-            + " implements CompiledCompletionInvoker {\n");
+            + " implements CompletionInvoker {\n");
     writer.write("    @Override\n");
     writer.write(
         "    public Invocation invoke(McpApplicationContext context, McpSchema.CompleteRequest.CompleteArgument argument) {\n");

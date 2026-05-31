@@ -1,7 +1,7 @@
-package com.github.thought2code.mcp.annotated.compiled.tool;
+package com.github.thought2code.mcp.annotated.component.tool;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.compiled.spi.McpCompiledModelProvider;
+import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -18,34 +18,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Registers build-time compiled {@code @McpTool} definitions. */
-public final class CompiledToolRegistration {
+/** Registers build-time component {@code @McpTool} definitions. */
+public final class ToolRegistration {
 
-  private static final Logger log = LoggerFactory.getLogger(CompiledToolRegistration.class);
+  private static final Logger log = LoggerFactory.getLogger(ToolRegistration.class);
 
-  private CompiledToolRegistration() {}
+  private ToolRegistration() {}
 
   /**
-   * Registers all compiled tool definitions to a sync MCP server.
+   * Registers all component tool definitions to a sync MCP server.
    *
    * @param server sync MCP server
    * @param context application context
-   * @return {@code true} when at least one compiled tool was registered
+   * @return {@code true} when at least one component tool was registered
    */
   public static boolean registerSync(McpSyncServer server, McpApplicationContext context) {
-    return registerSync(server, context, ServiceLoader.load(McpCompiledModelProvider.class));
+    return registerSync(server, context, ServiceLoader.load(ComponentModelProvider.class));
   }
 
   static boolean registerSync(
       McpSyncServer server,
       McpApplicationContext context,
-      Iterable<McpCompiledModelProvider> providers) {
-    List<CompiledToolDefinition> definitions = loadDefinitions(providers, context);
+      Iterable<ComponentModelProvider> providers) {
+    List<ToolDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
     }
     rejectDuplicateNames(definitions);
-    for (CompiledToolDefinition definition : definitions) {
+    for (ToolDefinition definition : definitions) {
       McpServerFeatures.SyncToolSpecification specification =
           McpServerFeatures.SyncToolSpecification.builder()
               .tool(definition.tool())
@@ -54,32 +54,32 @@ public final class CompiledToolRegistration {
                       invoke(definition.invoker(), context, request, definition.sourceMethod()))
               .build();
       server.addTool(specification);
-      log.debug("Compiled sync McpTool {} registered successfully", definition.tool().name());
+      log.debug("Sync McpTool {} registered successfully", definition.tool().name());
     }
     return true;
   }
 
   /**
-   * Registers all compiled tool definitions to an async MCP server.
+   * Registers all component tool definitions to an async MCP server.
    *
    * @param server async MCP server
    * @param context application context
-   * @return {@code true} when at least one compiled tool was registered
+   * @return {@code true} when at least one component tool was registered
    */
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
-    return registerAsync(server, context, ServiceLoader.load(McpCompiledModelProvider.class));
+    return registerAsync(server, context, ServiceLoader.load(ComponentModelProvider.class));
   }
 
   static boolean registerAsync(
       McpAsyncServer server,
       McpApplicationContext context,
-      Iterable<McpCompiledModelProvider> providers) {
-    List<CompiledToolDefinition> definitions = loadDefinitions(providers, context);
+      Iterable<ComponentModelProvider> providers) {
+    List<ToolDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
     }
     rejectDuplicateNames(definitions);
-    for (CompiledToolDefinition definition : definitions) {
+    for (ToolDefinition definition : definitions) {
       McpServerFeatures.AsyncToolSpecification specification =
           McpServerFeatures.AsyncToolSpecification.builder()
               .tool(definition.tool())
@@ -95,16 +95,16 @@ public final class CompiledToolRegistration {
               .build();
       Mono<Void> registration = server.addTool(specification);
       awaitAsyncRegistration(registration, definition.tool().name());
-      log.debug("Compiled async McpTool {} registered successfully", definition.tool().name());
+      log.debug("Async McpTool {} registered successfully", definition.tool().name());
     }
     return true;
   }
 
-  private static List<CompiledToolDefinition> loadDefinitions(
-      Iterable<McpCompiledModelProvider> providers, McpApplicationContext context) {
-    List<CompiledToolDefinition> definitions = new ArrayList<>();
-    for (McpCompiledModelProvider provider : providers) {
-      for (CompiledToolDefinition definition : provider.tools()) {
+  private static List<ToolDefinition> loadDefinitions(
+      Iterable<ComponentModelProvider> providers, McpApplicationContext context) {
+    List<ToolDefinition> definitions = new ArrayList<>();
+    for (ComponentModelProvider provider : providers) {
+      for (ToolDefinition definition : provider.tools()) {
         if (context.isInScope(definition.sourceMethod())) {
           definitions.add(definition);
         }
@@ -113,9 +113,9 @@ public final class CompiledToolRegistration {
     return definitions;
   }
 
-  private static void rejectDuplicateNames(List<CompiledToolDefinition> definitions) {
+  private static void rejectDuplicateNames(List<ToolDefinition> definitions) {
     Map<String, String> registeredNames = new HashMap<>();
-    for (CompiledToolDefinition definition : definitions) {
+    for (ToolDefinition definition : definitions) {
       final String name = definition.tool().name();
       String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
       if (previous != null) {
@@ -128,12 +128,12 @@ public final class CompiledToolRegistration {
   }
 
   private static McpSchema.CallToolResult invoke(
-      CompiledToolInvoker invoker,
+      ToolInvoker invoker,
       McpApplicationContext context,
       McpSchema.CallToolRequest request,
       String sourceMethod) {
     log.debug(
-        "Handling compiled MCP CallToolRequest for {}: {}",
+        "Handling component MCP CallToolRequest for {}: {}",
         sourceMethod,
         JacksonHelper.toJsonString(request));
 
@@ -153,7 +153,7 @@ public final class CompiledToolRegistration {
             .isError(invocation.isError())
             .build();
     log.debug(
-        "Returning compiled MCP CallToolResult for {}: {}",
+        "Returning component MCP CallToolResult for {}: {}",
         sourceMethod,
         JacksonHelper.toJsonString(callToolResult));
     return callToolResult;

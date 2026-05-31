@@ -1,7 +1,7 @@
-package com.github.thought2code.mcp.annotated.compiled.resource;
+package com.github.thought2code.mcp.annotated.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.compiled.spi.McpCompiledModelProvider;
+import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -17,27 +17,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Registers build-time compiled {@code @McpResource} definitions. */
-public final class CompiledResourceRegistration {
+/** Registers build-time component {@code @McpResource} definitions. */
+public final class ResourceRegistration {
 
-  private static final Logger log = LoggerFactory.getLogger(CompiledResourceRegistration.class);
+  private static final Logger log = LoggerFactory.getLogger(ResourceRegistration.class);
 
-  private CompiledResourceRegistration() {}
+  private ResourceRegistration() {}
 
   public static boolean registerSync(McpSyncServer server, McpApplicationContext context) {
-    return registerSync(server, context, ServiceLoader.load(McpCompiledModelProvider.class));
+    return registerSync(server, context, ServiceLoader.load(ComponentModelProvider.class));
   }
 
   static boolean registerSync(
       McpSyncServer server,
       McpApplicationContext context,
-      Iterable<McpCompiledModelProvider> providers) {
-    List<CompiledResourceDefinition> definitions = loadDefinitions(providers, context);
+      Iterable<ComponentModelProvider> providers) {
+    List<ResourceDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
     }
     rejectDuplicateNames(definitions);
-    for (CompiledResourceDefinition definition : definitions) {
+    for (ResourceDefinition definition : definitions) {
       McpServerFeatures.SyncResourceSpecification specification =
           new McpServerFeatures.SyncResourceSpecification(
               definition.resource(),
@@ -48,26 +48,25 @@ public final class CompiledResourceRegistration {
                       definition.resource(),
                       definition.sourceMethod()));
       server.addResource(specification);
-      log.debug(
-          "Compiled sync McpResource {} registered successfully", definition.resource().name());
+      log.debug("Sync McpResource {} registered successfully", definition.resource().name());
     }
     return true;
   }
 
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
-    return registerAsync(server, context, ServiceLoader.load(McpCompiledModelProvider.class));
+    return registerAsync(server, context, ServiceLoader.load(ComponentModelProvider.class));
   }
 
   static boolean registerAsync(
       McpAsyncServer server,
       McpApplicationContext context,
-      Iterable<McpCompiledModelProvider> providers) {
-    List<CompiledResourceDefinition> definitions = loadDefinitions(providers, context);
+      Iterable<ComponentModelProvider> providers) {
+    List<ResourceDefinition> definitions = loadDefinitions(providers, context);
     if (definitions.isEmpty()) {
       return false;
     }
     rejectDuplicateNames(definitions);
-    for (CompiledResourceDefinition definition : definitions) {
+    for (ResourceDefinition definition : definitions) {
       McpServerFeatures.AsyncResourceSpecification specification =
           new McpServerFeatures.AsyncResourceSpecification(
               definition.resource(),
@@ -81,17 +80,16 @@ public final class CompiledResourceRegistration {
                               definition.sourceMethod())));
       Mono<Void> registration = server.addResource(specification);
       awaitAsyncRegistration(registration, definition.resource().name());
-      log.debug(
-          "Compiled async McpResource {} registered successfully", definition.resource().name());
+      log.debug("Async McpResource {} registered successfully", definition.resource().name());
     }
     return true;
   }
 
-  private static List<CompiledResourceDefinition> loadDefinitions(
-      Iterable<McpCompiledModelProvider> providers, McpApplicationContext context) {
-    List<CompiledResourceDefinition> definitions = new ArrayList<>();
-    for (McpCompiledModelProvider provider : providers) {
-      for (CompiledResourceDefinition definition : provider.resources()) {
+  private static List<ResourceDefinition> loadDefinitions(
+      Iterable<ComponentModelProvider> providers, McpApplicationContext context) {
+    List<ResourceDefinition> definitions = new ArrayList<>();
+    for (ComponentModelProvider provider : providers) {
+      for (ResourceDefinition definition : provider.resources()) {
         if (context.isInScope(definition.sourceMethod())) {
           definitions.add(definition);
         }
@@ -100,9 +98,9 @@ public final class CompiledResourceRegistration {
     return definitions;
   }
 
-  private static void rejectDuplicateNames(List<CompiledResourceDefinition> definitions) {
+  private static void rejectDuplicateNames(List<ResourceDefinition> definitions) {
     Map<String, String> registeredNames = new HashMap<>();
-    for (CompiledResourceDefinition definition : definitions) {
+    for (ResourceDefinition definition : definitions) {
       final String name = definition.resource().name();
       String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
       if (previous != null) {
@@ -115,12 +113,12 @@ public final class CompiledResourceRegistration {
   }
 
   private static McpSchema.ReadResourceResult invoke(
-      CompiledResourceInvoker invoker,
+      ResourceInvoker invoker,
       McpApplicationContext context,
       McpSchema.Resource resource,
       String sourceMethod) {
     log.debug(
-        "Handling compiled ReadResource request for {}: {}",
+        "Handling component ReadResource request for {}: {}",
         sourceMethod,
         JacksonHelper.toJsonString(resource));
 
@@ -134,7 +132,7 @@ public final class CompiledResourceRegistration {
         McpSchema.ReadResourceResult.builder(List.of(contents)).build();
 
     log.debug(
-        "Returning compiled ReadResourceResult for {}: {}",
+        "Returning component ReadResourceResult for {}: {}",
         sourceMethod,
         JacksonHelper.toJsonString(result));
     return result;

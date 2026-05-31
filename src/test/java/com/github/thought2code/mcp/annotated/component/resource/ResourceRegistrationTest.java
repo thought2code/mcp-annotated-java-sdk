@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.compiled.resource;
+package com.github.thought2code.mcp.annotated.component.resource;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.compiled.spi.McpCompiledModelProvider;
+import com.github.thought2code.mcp.annotated.component.spi.ComponentModelProvider;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.reflect.Invocation;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -21,31 +21,31 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-class CompiledResourceRegistrationTest {
+class ResourceRegistrationTest {
 
   @Test
-  void registerSync_shouldReturnFalseWhenNoCompiledProvider() {
+  void registerSync_shouldReturnFalseWhenNoComponentProvider() {
     McpSyncServer server = mock(McpSyncServer.class);
     McpApplicationContext context = mock(McpApplicationContext.class);
 
-    boolean registered = CompiledResourceRegistration.registerSync(server, context, List.of());
+    boolean registered = ResourceRegistration.registerSync(server, context, List.of());
 
     assertFalse(registered);
     verify(server, times(0)).addResource(any());
   }
 
   @Test
-  void registerSync_shouldRegisterCompiledResource() {
+  void registerSync_shouldRegisterResource() {
     McpSyncServer server = mock(McpSyncServer.class);
     McpApplicationContext context = mock(McpApplicationContext.class);
-    McpCompiledModelProvider provider =
-        new McpCompiledModelProvider() {
+    ComponentModelProvider provider =
+        new ComponentModelProvider() {
           @Override
-          public List<CompiledResourceDefinition> resources() {
+          public List<ResourceDefinition> resources() {
             McpSchema.Resource resource =
-                McpSchema.Resource.builder("test://uri", "compiled_resource").build();
+                McpSchema.Resource.builder("test://uri", "component_resource").build();
             return List.of(
-                new CompiledResourceDefinition(
+                new ResourceDefinition(
                     "test.Source#resource()",
                     resource,
                     ctx -> Invocation.builder().result("ok").build()));
@@ -53,8 +53,7 @@ class CompiledResourceRegistrationTest {
         };
     when(context.isInScope(anyString())).thenReturn(true);
 
-    boolean registered =
-        CompiledResourceRegistration.registerSync(server, context, List.of(provider));
+    boolean registered = ResourceRegistration.registerSync(server, context, List.of(provider));
 
     assertTrue(registered);
     verify(server, times(1)).addResource(any());
@@ -64,20 +63,20 @@ class CompiledResourceRegistrationTest {
   void registerSync_shouldRejectDuplicateResourceNames() {
     McpSyncServer server = mock(McpSyncServer.class);
     McpApplicationContext context = mock(McpApplicationContext.class);
-    CompiledResourceDefinition a =
-        new CompiledResourceDefinition(
+    ResourceDefinition a =
+        new ResourceDefinition(
             "test.Source#a()",
             McpSchema.Resource.builder("test://a", "duplicate").build(),
             ctx -> Invocation.builder().result("a").build());
-    CompiledResourceDefinition b =
-        new CompiledResourceDefinition(
+    ResourceDefinition b =
+        new ResourceDefinition(
             "test.Source#b()",
             McpSchema.Resource.builder("test://b", "duplicate").build(),
             ctx -> Invocation.builder().result("b").build());
-    McpCompiledModelProvider provider =
-        new McpCompiledModelProvider() {
+    ComponentModelProvider provider =
+        new ComponentModelProvider() {
           @Override
-          public List<CompiledResourceDefinition> resources() {
+          public List<ResourceDefinition> resources() {
             return List.of(a, b);
           }
         };
@@ -85,22 +84,22 @@ class CompiledResourceRegistrationTest {
 
     assertThrows(
         McpServerComponentRegistrationException.class,
-        () -> CompiledResourceRegistration.registerSync(server, context, List.of(provider)));
+        () -> ResourceRegistration.registerSync(server, context, List.of(provider)));
   }
 
   @Test
-  void registerAsync_shouldRegisterCompiledResource() {
+  void registerAsync_shouldRegisterResource() {
     McpAsyncServer server = mock(McpAsyncServer.class);
     when(server.addResource(any())).thenReturn(Mono.empty());
     McpApplicationContext context = mock(McpApplicationContext.class);
-    McpCompiledModelProvider provider =
-        new McpCompiledModelProvider() {
+    ComponentModelProvider provider =
+        new ComponentModelProvider() {
           @Override
-          public List<CompiledResourceDefinition> resources() {
+          public List<ResourceDefinition> resources() {
             McpSchema.Resource resource =
-                McpSchema.Resource.builder("test://uri", "compiled_resource_async").build();
+                McpSchema.Resource.builder("test://uri", "component_resource_async").build();
             return List.of(
-                new CompiledResourceDefinition(
+                new ResourceDefinition(
                     "test.Source#resource()",
                     resource,
                     ctx -> Invocation.builder().result("ok").build()));
@@ -108,8 +107,7 @@ class CompiledResourceRegistrationTest {
         };
     when(context.isInScope(anyString())).thenReturn(true);
 
-    boolean registered =
-        CompiledResourceRegistration.registerAsync(server, context, List.of(provider));
+    boolean registered = ResourceRegistration.registerAsync(server, context, List.of(provider));
 
     assertTrue(registered);
     verify(server, times(1)).addResource(any());
