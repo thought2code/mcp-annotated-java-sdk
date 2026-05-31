@@ -23,26 +23,62 @@ import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTranspor
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
 import io.modelcontextprotocol.json.McpJsonDefaults;
+import java.io.EOFException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
+import java.util.function.Predicate;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Hooks;
 
 @Tag("integration")
 @Execution(ExecutionMode.SAME_THREAD)
 @SuppressWarnings("deprecation")
 class McpApplicationIntegrationTest {
 
+  private static final Logger log = LoggerFactory.getLogger(McpApplicationIntegrationTest.class);
+
   static McpApplicationContext context;
+
+  /**
+   * Some HTTP client transports may emit dropped EOF/connection-close errors while test servers are
+   * shutting down. These are expected teardown-time signals and should not fail integration tests.
+   */
+  private static final Predicate<Throwable> EXPECTED_DROPPED_ERROR =
+      error ->
+          hasCause(
+                  error,
+                  cause ->
+                      cause instanceof IOException
+                          && cause.getMessage() != null
+                          && cause
+                              .getMessage()
+                              .contains("HTTP/1.1 header parser received no bytes"))
+              || hasCause(error, cause -> cause instanceof EOFException);
 
   private final Duration requestTimeout = Duration.ofSeconds(60);
 
   @BeforeAll
   static void setup() {
+    Hooks.onErrorDropped(
+        error -> {
+          if (!EXPECTED_DROPPED_ERROR.test(error)) {
+            log.error("Unexpected dropped error during integration test teardown", error);
+          }
+        });
     context = McpApplicationContext.from(IntegrationMcpApplication.class);
+  }
+
+  @AfterAll
+  static void cleanup() {
+    Hooks.resetOnErrorDropped();
   }
 
   @Test
@@ -76,6 +112,7 @@ class McpApplicationIntegrationTest {
         McpClientVerificationSupport.verifyAll(client);
       }
     } finally {
+      assert server != null;
       server.stop();
     }
   }
@@ -96,6 +133,7 @@ class McpApplicationIntegrationTest {
         McpClientVerificationSupport.verifyAll(client);
       }
     } finally {
+      assert server != null;
       server.stop();
     }
   }
@@ -151,5 +189,16 @@ class McpApplicationIntegrationTest {
                 context,
                 new McpConfigurationLoader("test-mcp-server-enable-unknown-mode.yml")
                     .loadConfig()));
+  }
+
+  private static boolean hasCause(Throwable error, Predicate<Throwable> matcher) {
+    Throwable current = error;
+    while (current != null) {
+      if (matcher.test(current)) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 }

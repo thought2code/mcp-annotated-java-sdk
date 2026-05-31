@@ -13,16 +13,11 @@
 
     <logger name="org.eclipse.jetty" level="WARN"/>
     <logger name="io.modelcontextprotocol" level="WARN"/>
+    <logger name="io.modelcontextprotocol.client.transport.StdioClientTransport" level="ERROR"/>
 
     <!-- Expected failure paths in unit/integration tests intentionally emit ERROR logs. -->
     <logger name="com.github.thought2code.mcp.annotated.util.JacksonHelper" level="OFF"/>
-    <logger name="com.github.thought2code.mcp.annotated.reflect.MethodInvoker" level="OFF"/>
-    <logger name="com.github.thought2code.mcp.annotated.reflect.ComponentInvocationSupport" level="OFF"/>
     <logger name="com.github.thought2code.mcp.annotated.server.JettyHttpServer" level="OFF"/>
-    <!-- AbstractDualModeComponentRegistrar logs async registration failures on the subclass logger. -->
-    <logger name="com.github.thought2code.mcp.annotated.server.component.McpServerTool" level="OFF"/>
-    <logger name="com.github.thought2code.mcp.annotated.server.component.McpServerPrompt" level="OFF"/>
-    <logger name="com.github.thought2code.mcp.annotated.server.component.McpServerResource" level="OFF"/>
 
     <root level="WARN">
         <appender-ref ref="CONSOLE"/>

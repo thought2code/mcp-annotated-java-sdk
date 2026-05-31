@@ -1,6 +1,5 @@
 package com.github.thought2code.mcp.annotated.server;
 
-import com.github.thought2code.mcp.annotated.server.component.McpServerTool;
 import io.modelcontextprotocol.spec.McpSchema;
 
 /**
@@ -84,7 +83,6 @@ import io.modelcontextprotocol.spec.McpSchema;
  * result of {@link Object#toString()}. If the default implementation doesn't meet requirements,
  * implementing classes should override this method.
  *
- * @see McpServerTool MCP tool component that uses this interface
  * @see McpSchema.CallToolResult MCP tool call result specification
  * @author codeboyzhou
  */

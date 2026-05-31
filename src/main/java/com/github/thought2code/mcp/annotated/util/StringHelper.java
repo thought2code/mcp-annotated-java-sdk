@@ -12,14 +12,14 @@ public final class StringHelper {
   /** The empty string constant. */
   public static final String EMPTY = "";
 
+  /** The hash character constant. */
+  public static final String HASH = "#";
+
   /** The dot character constant. */
   public static final String DOT = ".";
 
   /** The space character constant. */
   public static final String SPACE = " ";
-
-  /** The new line character constant. */
-  public static final String NewLine = "\n";
 
   /**
    * Private constructor to prevent instantiation of the utility class.

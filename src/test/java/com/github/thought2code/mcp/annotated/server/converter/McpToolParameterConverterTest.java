@@ -2,7 +2,6 @@ package com.github.thought2code.mcp.annotated.server.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.github.thought2code.mcp.annotated.annotation.McpTool;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.lang.reflect.Method;
@@ -32,13 +31,15 @@ class McpToolParameterConverterTest {
   }
 
   static class ToolMethods {
-    @McpTool
+    // This test verifies parameter conversion only; @McpTool is intentionally omitted to avoid
+    // triggering annotation-processor component validation during test-compile.
     public String mixedParams(
         @McpToolParam(name = "mcpParam") String mcpParam, String nonMcpParam) {
       return mcpParam + nonMcpParam;
     }
 
-    @McpTool
+    // This test verifies parameter conversion only; @McpTool is intentionally omitted to avoid
+    // triggering annotation-processor component validation during test-compile.
     public String numericParam(@McpToolParam(name = "param") int param) {
       return Integer.toString(param);
     }

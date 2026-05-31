@@ -2,7 +2,6 @@ package com.github.thought2code.mcp.annotated.server.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.github.thought2code.mcp.annotated.annotation.McpPrompt;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.lang.reflect.Method;
@@ -26,7 +25,8 @@ class McpPromptParameterConverterTest {
   }
 
   static class PromptMethods {
-    @McpPrompt
+    // This test verifies parameter conversion only; @McpPrompt is intentionally omitted to avoid
+    // triggering annotation-processor component validation during test-compile.
     public String mixedParams(
         @McpPromptParam(name = "mcpParam") String mcpParam, String nonMcpParam) {
       return mcpParam + nonMcpParam;

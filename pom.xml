@@ -62,7 +62,6 @@
         <logback.version>1.5.33</logback.version>
         <mcp-sdk.version>2.0.0-M3</mcp-sdk.version>
         <mockito.version>5.23.0</mockito.version>
-        <reflections.version>0.10.2</reflections.version>
     </properties>
 
     <dependencyManagement>
@@ -110,11 +109,6 @@
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>${reflections.version}</version>
         </dependency>
     </dependencies>
 
@@ -184,6 +178,19 @@
                         <arg>-Xlint:deprecation</arg>
                     </compilerArgs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <!--
+                              This module ships annotation processors for downstream consumers.
+                              Disable processor execution while compiling this module itself to avoid
+                              service-loader bootstrap failures before processor classes are compiled.
+                            -->
+                            <proc>none</proc>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
