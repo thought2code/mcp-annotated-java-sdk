@@ -2,8 +2,8 @@ package com.github.thought2code.mcp.annotated.server.component.completion;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
-import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;

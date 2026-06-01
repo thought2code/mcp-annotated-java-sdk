@@ -49,7 +49,8 @@ public final class ComponentRegistrationSupport {
       Function<D, String> sourceMethodExtractor,
       Function<D, String> nameExtractor,
       DuplicateMessageBuilder messageBuilder) {
-    List<D> definitions = loadDefinitions(providers, context, providerExtractor, sourceMethodExtractor);
+    List<D> definitions =
+        loadDefinitions(providers, context, providerExtractor, sourceMethodExtractor);
     rejectDuplicateNames(definitions, nameExtractor, sourceMethodExtractor, messageBuilder);
     return definitions;
   }

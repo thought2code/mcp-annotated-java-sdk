@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated.server.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -122,5 +122,4 @@ public final class ResourceRegistration {
   private static void logAsyncRegistered(ResourceDefinition definition) {
     log.debug("Async McpResource {} registered successfully", resourceName(definition));
   }
-
 }

@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated.server.component.prompt;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -123,5 +123,4 @@ public final class PromptRegistration {
   private static void logAsyncRegistered(PromptDefinition definition) {
     log.debug("Async McpPrompt {} registered successfully", promptName(definition));
   }
-
 }

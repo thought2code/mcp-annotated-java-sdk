@@ -36,10 +36,7 @@ class ComponentRegistrationSupportTest {
 
     List<Def> definitions =
         ComponentRegistrationSupport.loadDefinitions(
-            List.of(providerA, providerB),
-            context,
-            definitionsByProvider::get,
-            Def::sourceMethod);
+            List.of(providerA, providerB), context, definitionsByProvider::get, Def::sourceMethod);
 
     assertEquals(List.of(inScope), definitions);
   }

@@ -2,8 +2,8 @@ package com.github.thought2code.mcp.annotated.server.component.tool;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
-import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -53,7 +53,8 @@ public final class ToolRegistration {
                     .tool(definition.tool())
                     .callHandler(
                         (exchange, request) ->
-                            invoke(definition.invoker(), context, request, definition.sourceMethod()))
+                            invoke(
+                                definition.invoker(), context, request, definition.sourceMethod()))
                     .build()),
         ToolRegistration::logSyncRegistered);
   }
@@ -144,5 +145,4 @@ public final class ToolRegistration {
   private static void logAsyncRegistered(ToolDefinition definition) {
     log.debug("Async McpTool {} registered successfully", toolName(definition));
   }
-
 }
