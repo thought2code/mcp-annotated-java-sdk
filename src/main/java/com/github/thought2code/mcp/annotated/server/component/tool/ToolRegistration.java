@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated.server.component.tool;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -10,8 +10,6 @@ import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -39,23 +37,25 @@ public final class ToolRegistration {
 
   static boolean registerSync(
       McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<ToolDefinition> definitions = loadDefinitions(providers, context);
-    if (definitions.isEmpty()) {
-      return false;
-    }
-    rejectDuplicateNames(definitions);
-    for (ToolDefinition definition : definitions) {
-      McpServerFeatures.SyncToolSpecification specification =
-          McpServerFeatures.SyncToolSpecification.builder()
-              .tool(definition.tool())
-              .callHandler(
-                  (exchange, request) ->
-                      invoke(definition.invoker(), context, request, definition.sourceMethod()))
-              .build();
-      server.addTool(specification);
-      log.debug("Sync McpTool {} registered successfully", definition.tool().name());
-    }
-    return true;
+    List<ToolDefinition> definitions =
+        ComponentRegistrationSupport.prepareDefinitions(
+            providers,
+            context,
+            ComponentProvider::tools,
+            ToolDefinition::sourceMethod,
+            ToolRegistration::toolName,
+            DuplicateComponentMessageHelper::duplicateToolName);
+    return ComponentRegistrationSupport.registerSyncDefinitions(
+        definitions,
+        definition ->
+            server.addTool(
+                McpServerFeatures.SyncToolSpecification.builder()
+                    .tool(definition.tool())
+                    .callHandler(
+                        (exchange, request) ->
+                            invoke(definition.invoker(), context, request, definition.sourceMethod()))
+                    .build()),
+        ToolRegistration::logSyncRegistered);
   }
 
   /**
@@ -71,56 +71,34 @@ public final class ToolRegistration {
 
   static boolean registerAsync(
       McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<ToolDefinition> definitions = loadDefinitions(providers, context);
-    if (definitions.isEmpty()) {
-      return false;
-    }
-    rejectDuplicateNames(definitions);
-    for (ToolDefinition definition : definitions) {
-      McpServerFeatures.AsyncToolSpecification specification =
-          McpServerFeatures.AsyncToolSpecification.builder()
-              .tool(definition.tool())
-              .callHandler(
-                  (exchange, request) ->
-                      Mono.fromCallable(
-                          () ->
-                              invoke(
-                                  definition.invoker(),
-                                  context,
-                                  request,
-                                  definition.sourceMethod())))
-              .build();
-      Mono<Void> registration = server.addTool(specification);
-      awaitAsyncRegistration(registration, definition.tool().name());
-      log.debug("Async McpTool {} registered successfully", definition.tool().name());
-    }
-    return true;
-  }
-
-  private static List<ToolDefinition> loadDefinitions(
-      Iterable<ComponentProvider> providers, McpApplicationContext context) {
-    List<ToolDefinition> definitions = new ArrayList<>();
-    for (ComponentProvider provider : providers) {
-      for (ToolDefinition definition : provider.tools()) {
-        if (context.isInScope(definition.sourceMethod())) {
-          definitions.add(definition);
-        }
-      }
-    }
-    return definitions;
-  }
-
-  private static void rejectDuplicateNames(List<ToolDefinition> definitions) {
-    Map<String, String> registeredNames = new HashMap<>();
-    for (ToolDefinition definition : definitions) {
-      final String name = definition.tool().name();
-      String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
-      if (previous != null) {
-        throw new McpServerComponentRegistrationException(
-            DuplicateComponentMessageHelper.duplicateToolName(
-                name, previous, definition.sourceMethod()));
-      }
-    }
+    List<ToolDefinition> definitions =
+        ComponentRegistrationSupport.prepareDefinitions(
+            providers,
+            context,
+            ComponentProvider::tools,
+            ToolDefinition::sourceMethod,
+            ToolRegistration::toolName,
+            DuplicateComponentMessageHelper::duplicateToolName);
+    return ComponentRegistrationSupport.registerAsyncDefinitions(
+        definitions,
+        definition ->
+            server.addTool(
+                McpServerFeatures.AsyncToolSpecification.builder()
+                    .tool(definition.tool())
+                    .callHandler(
+                        (exchange, request) ->
+                            Mono.fromCallable(
+                                () ->
+                                    invoke(
+                                        definition.invoker(),
+                                        context,
+                                        request,
+                                        definition.sourceMethod())))
+                    .build()),
+        ToolRegistration::toolName,
+        "McpTool",
+        log,
+        ToolRegistration::logAsyncRegistered);
   }
 
   private static McpSchema.CallToolResult invoke(
@@ -155,14 +133,16 @@ public final class ToolRegistration {
     return callToolResult;
   }
 
-  private static void awaitAsyncRegistration(Mono<Void> registration, String specificationName) {
-    try {
-      registration.block();
-    } catch (RuntimeException e) {
-      final String message =
-          String.format("Failed to register async McpTool %s", specificationName);
-      log.error(message, e);
-      throw new McpServerComponentRegistrationException(message, e);
-    }
+  private static String toolName(ToolDefinition definition) {
+    return definition.tool().name();
   }
+
+  private static void logSyncRegistered(ToolDefinition definition) {
+    log.debug("Sync McpTool {} registered successfully", toolName(definition));
+  }
+
+  private static void logAsyncRegistered(ToolDefinition definition) {
+    log.debug("Async McpTool {} registered successfully", toolName(definition));
+  }
+
 }

@@ -1,7 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component.prompt;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -9,10 +9,7 @@ import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,26 +28,28 @@ public final class PromptRegistration {
 
   static boolean registerSync(
       McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<PromptDefinition> definitions = loadDefinitions(providers, context);
-    if (definitions.isEmpty()) {
-      return false;
-    }
-    rejectDuplicateNames(definitions);
-    for (PromptDefinition definition : definitions) {
-      McpServerFeatures.SyncPromptSpecification specification =
-          new McpServerFeatures.SyncPromptSpecification(
-              definition.prompt(),
-              (exchange, request) ->
-                  invoke(
-                      definition.invoker(),
-                      context,
-                      definition.description(),
-                      request,
-                      definition.sourceMethod()));
-      server.addPrompt(specification);
-      log.debug("Sync McpPrompt {} registered successfully", definition.prompt().name());
-    }
-    return true;
+    List<PromptDefinition> definitions =
+        ComponentRegistrationSupport.prepareDefinitions(
+            providers,
+            context,
+            ComponentProvider::prompts,
+            PromptDefinition::sourceMethod,
+            PromptRegistration::promptName,
+            DuplicateComponentMessageHelper::duplicatePromptName);
+    return ComponentRegistrationSupport.registerSyncDefinitions(
+        definitions,
+        definition ->
+            server.addPrompt(
+                new McpServerFeatures.SyncPromptSpecification(
+                    definition.prompt(),
+                    (exchange, request) ->
+                        invoke(
+                            definition.invoker(),
+                            context,
+                            definition.description(),
+                            request,
+                            definition.sourceMethod()))),
+        PromptRegistration::logSyncRegistered);
   }
 
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
@@ -59,55 +58,33 @@ public final class PromptRegistration {
 
   static boolean registerAsync(
       McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<PromptDefinition> definitions = loadDefinitions(providers, context);
-    if (definitions.isEmpty()) {
-      return false;
-    }
-    rejectDuplicateNames(definitions);
-    for (PromptDefinition definition : definitions) {
-      McpServerFeatures.AsyncPromptSpecification specification =
-          new McpServerFeatures.AsyncPromptSpecification(
-              definition.prompt(),
-              (exchange, request) ->
-                  Mono.fromCallable(
-                      () ->
-                          invoke(
-                              definition.invoker(),
-                              context,
-                              definition.description(),
-                              request,
-                              definition.sourceMethod())));
-      Mono<Void> registration = server.addPrompt(specification);
-      awaitAsyncRegistration(registration, definition.prompt().name());
-      log.debug("Async McpPrompt {} registered successfully", definition.prompt().name());
-    }
-    return true;
-  }
-
-  private static List<PromptDefinition> loadDefinitions(
-      Iterable<ComponentProvider> providers, McpApplicationContext context) {
-    List<PromptDefinition> definitions = new ArrayList<>();
-    for (ComponentProvider provider : providers) {
-      for (PromptDefinition definition : provider.prompts()) {
-        if (context.isInScope(definition.sourceMethod())) {
-          definitions.add(definition);
-        }
-      }
-    }
-    return definitions;
-  }
-
-  private static void rejectDuplicateNames(List<PromptDefinition> definitions) {
-    Map<String, String> registeredNames = new HashMap<>();
-    for (PromptDefinition definition : definitions) {
-      final String name = definition.prompt().name();
-      String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
-      if (previous != null) {
-        throw new McpServerComponentRegistrationException(
-            DuplicateComponentMessageHelper.duplicatePromptName(
-                name, previous, definition.sourceMethod()));
-      }
-    }
+    List<PromptDefinition> definitions =
+        ComponentRegistrationSupport.prepareDefinitions(
+            providers,
+            context,
+            ComponentProvider::prompts,
+            PromptDefinition::sourceMethod,
+            PromptRegistration::promptName,
+            DuplicateComponentMessageHelper::duplicatePromptName);
+    return ComponentRegistrationSupport.registerAsyncDefinitions(
+        definitions,
+        definition ->
+            server.addPrompt(
+                new McpServerFeatures.AsyncPromptSpecification(
+                    definition.prompt(),
+                    (exchange, request) ->
+                        Mono.fromCallable(
+                            () ->
+                                invoke(
+                                    definition.invoker(),
+                                    context,
+                                    definition.description(),
+                                    request,
+                                    definition.sourceMethod())))),
+        PromptRegistration::promptName,
+        "McpPrompt",
+        log,
+        PromptRegistration::logAsyncRegistered);
   }
 
   private static McpSchema.GetPromptResult invoke(
@@ -135,14 +112,16 @@ public final class PromptRegistration {
     return result;
   }
 
-  private static void awaitAsyncRegistration(Mono<Void> registration, String specificationName) {
-    try {
-      registration.block();
-    } catch (RuntimeException e) {
-      final String message =
-          String.format("Failed to register async McpPrompt %s", specificationName);
-      log.error(message, e);
-      throw new McpServerComponentRegistrationException(message, e);
-    }
+  private static String promptName(PromptDefinition definition) {
+    return definition.prompt().name();
   }
+
+  private static void logSyncRegistered(PromptDefinition definition) {
+    log.debug("Sync McpPrompt {} registered successfully", promptName(definition));
+  }
+
+  private static void logAsyncRegistered(PromptDefinition definition) {
+    log.debug("Async McpPrompt {} registered successfully", promptName(definition));
+  }
+
 }

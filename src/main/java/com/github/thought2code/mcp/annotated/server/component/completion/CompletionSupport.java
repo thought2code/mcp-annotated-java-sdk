@@ -2,14 +2,13 @@ package com.github.thought2code.mcp.annotated.server.component.completion;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 import reactor.core.publisher.Mono;
 
@@ -25,7 +24,9 @@ public final class CompletionSupport {
 
   static List<McpServerFeatures.SyncCompletionSpecification> allSync(
       McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<CompletionDefinition> definitions = loadDefinitions(providers, context);
+    List<CompletionDefinition> definitions =
+        ComponentRegistrationSupport.loadDefinitions(
+            providers, context, ComponentProvider::completions, CompletionDefinition::sourceMethod);
     rejectDuplicateReferences(definitions);
     List<McpServerFeatures.SyncCompletionSpecification> completions = new ArrayList<>();
     for (CompletionDefinition definition : definitions) {
@@ -43,7 +44,9 @@ public final class CompletionSupport {
 
   static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
       McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<CompletionDefinition> definitions = loadDefinitions(providers, context);
+    List<CompletionDefinition> definitions =
+        ComponentRegistrationSupport.loadDefinitions(
+            providers, context, ComponentProvider::completions, CompletionDefinition::sourceMethod);
     rejectDuplicateReferences(definitions);
     List<McpServerFeatures.AsyncCompletionSpecification> completions = new ArrayList<>();
     for (CompletionDefinition definition : definitions) {
@@ -56,33 +59,17 @@ public final class CompletionSupport {
     return completions;
   }
 
-  private static List<CompletionDefinition> loadDefinitions(
-      Iterable<ComponentProvider> providers, McpApplicationContext context) {
-    List<CompletionDefinition> definitions = new ArrayList<>();
-    for (ComponentProvider provider : providers) {
-      for (CompletionDefinition definition : provider.completions()) {
-        if (context.isInScope(definition.sourceMethod())) {
-          definitions.add(definition);
-        }
-      }
-    }
-    return definitions;
-  }
-
   private static void rejectDuplicateReferences(List<CompletionDefinition> definitions) {
-    Map<String, String> registeredReferences = new HashMap<>();
-    for (CompletionDefinition definition : definitions) {
-      String referenceKey = completionReferenceKey(definition.reference());
-      String previous = registeredReferences.putIfAbsent(referenceKey, definition.sourceMethod());
-      if (previous != null) {
-        throw new McpServerComponentRegistrationException(
+    ComponentRegistrationSupport.rejectDuplicateDefinitions(
+        definitions,
+        definition -> completionReferenceKey(definition.reference()),
+        CompletionDefinition::sourceMethod,
+        (definition, previousMethod, currentMethod) ->
             DuplicateComponentMessageHelper.duplicateCompletionReference(
                 DuplicateComponentMessageHelper.completionReferenceDescription(
                     definition.reference()),
-                previous,
-                definition.sourceMethod()));
-      }
-    }
+                previousMethod,
+                currentMethod));
   }
 
   private static String completionReferenceKey(McpSchema.CompleteReference reference) {

@@ -1,7 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
+import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -9,10 +9,7 @@ import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,25 +28,27 @@ public final class ResourceRegistration {
 
   static boolean registerSync(
       McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<ResourceDefinition> definitions = loadDefinitions(providers, context);
-    if (definitions.isEmpty()) {
-      return false;
-    }
-    rejectDuplicateNames(definitions);
-    for (ResourceDefinition definition : definitions) {
-      McpServerFeatures.SyncResourceSpecification specification =
-          new McpServerFeatures.SyncResourceSpecification(
-              definition.resource(),
-              (exchange, request) ->
-                  invoke(
-                      definition.invoker(),
-                      context,
-                      definition.resource(),
-                      definition.sourceMethod()));
-      server.addResource(specification);
-      log.debug("Sync McpResource {} registered successfully", definition.resource().name());
-    }
-    return true;
+    List<ResourceDefinition> definitions =
+        ComponentRegistrationSupport.prepareDefinitions(
+            providers,
+            context,
+            ComponentProvider::resources,
+            ResourceDefinition::sourceMethod,
+            ResourceRegistration::resourceName,
+            DuplicateComponentMessageHelper::duplicateResourceName);
+    return ComponentRegistrationSupport.registerSyncDefinitions(
+        definitions,
+        definition ->
+            server.addResource(
+                new McpServerFeatures.SyncResourceSpecification(
+                    definition.resource(),
+                    (exchange, request) ->
+                        invoke(
+                            definition.invoker(),
+                            context,
+                            definition.resource(),
+                            definition.sourceMethod()))),
+        ResourceRegistration::logSyncRegistered);
   }
 
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
@@ -58,54 +57,32 @@ public final class ResourceRegistration {
 
   static boolean registerAsync(
       McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
-    List<ResourceDefinition> definitions = loadDefinitions(providers, context);
-    if (definitions.isEmpty()) {
-      return false;
-    }
-    rejectDuplicateNames(definitions);
-    for (ResourceDefinition definition : definitions) {
-      McpServerFeatures.AsyncResourceSpecification specification =
-          new McpServerFeatures.AsyncResourceSpecification(
-              definition.resource(),
-              (exchange, request) ->
-                  Mono.fromCallable(
-                      () ->
-                          invoke(
-                              definition.invoker(),
-                              context,
-                              definition.resource(),
-                              definition.sourceMethod())));
-      Mono<Void> registration = server.addResource(specification);
-      awaitAsyncRegistration(registration, definition.resource().name());
-      log.debug("Async McpResource {} registered successfully", definition.resource().name());
-    }
-    return true;
-  }
-
-  private static List<ResourceDefinition> loadDefinitions(
-      Iterable<ComponentProvider> providers, McpApplicationContext context) {
-    List<ResourceDefinition> definitions = new ArrayList<>();
-    for (ComponentProvider provider : providers) {
-      for (ResourceDefinition definition : provider.resources()) {
-        if (context.isInScope(definition.sourceMethod())) {
-          definitions.add(definition);
-        }
-      }
-    }
-    return definitions;
-  }
-
-  private static void rejectDuplicateNames(List<ResourceDefinition> definitions) {
-    Map<String, String> registeredNames = new HashMap<>();
-    for (ResourceDefinition definition : definitions) {
-      final String name = definition.resource().name();
-      String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
-      if (previous != null) {
-        throw new McpServerComponentRegistrationException(
-            DuplicateComponentMessageHelper.duplicateResourceName(
-                name, previous, definition.sourceMethod()));
-      }
-    }
+    List<ResourceDefinition> definitions =
+        ComponentRegistrationSupport.prepareDefinitions(
+            providers,
+            context,
+            ComponentProvider::resources,
+            ResourceDefinition::sourceMethod,
+            ResourceRegistration::resourceName,
+            DuplicateComponentMessageHelper::duplicateResourceName);
+    return ComponentRegistrationSupport.registerAsyncDefinitions(
+        definitions,
+        definition ->
+            server.addResource(
+                new McpServerFeatures.AsyncResourceSpecification(
+                    definition.resource(),
+                    (exchange, request) ->
+                        Mono.fromCallable(
+                            () ->
+                                invoke(
+                                    definition.invoker(),
+                                    context,
+                                    definition.resource(),
+                                    definition.sourceMethod())))),
+        ResourceRegistration::resourceName,
+        "McpResource",
+        log,
+        ResourceRegistration::logAsyncRegistered);
   }
 
   private static McpSchema.ReadResourceResult invoke(
@@ -134,14 +111,16 @@ public final class ResourceRegistration {
     return result;
   }
 
-  private static void awaitAsyncRegistration(Mono<Void> registration, String specificationName) {
-    try {
-      registration.block();
-    } catch (RuntimeException e) {
-      final String message =
-          String.format("Failed to register async McpResource %s", specificationName);
-      log.error(message, e);
-      throw new McpServerComponentRegistrationException(message, e);
-    }
+  private static String resourceName(ResourceDefinition definition) {
+    return definition.resource().name();
   }
+
+  private static void logSyncRegistered(ResourceDefinition definition) {
+    log.debug("Sync McpResource {} registered successfully", resourceName(definition));
+  }
+
+  private static void logAsyncRegistered(ResourceDefinition definition) {
+    log.debug("Async McpResource {} registered successfully", resourceName(definition));
+  }
+
 }
