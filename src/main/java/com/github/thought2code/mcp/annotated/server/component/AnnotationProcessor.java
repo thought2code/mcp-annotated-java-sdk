@@ -351,6 +351,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
       writer.write(
           "import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;\n");
       writer.write(
+          "import com.github.thought2code.mcp.annotated.server.component.InvocationLogMessageHelper;\n");
+      writer.write(
           "import com.github.thought2code.mcp.annotated.server.component.tool.ToolDefinition;\n");
       writer.write(
           "import com.github.thought2code.mcp.annotated.server.component.tool.ToolInvoker;\n");
@@ -363,7 +365,10 @@ public final class AnnotationProcessor extends AbstractProcessor {
       writer.write("import java.util.LinkedHashMap;\n");
       writer.write("import java.util.List;\n");
       writer.write("import java.util.Map;\n\n");
+      writer.write("import org.slf4j.Logger;\n");
+      writer.write("import org.slf4j.LoggerFactory;\n\n");
       writer.write("public final class " + className + " implements ComponentProvider {\n\n");
+      writer.write("  private static final Logger log = LoggerFactory.getLogger(" + className + ".class);\n\n");
 
       writer.write("  @Override\n");
       writer.write("  public List<ToolDefinition> tools() {\n");

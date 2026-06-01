@@ -61,6 +61,7 @@ public final class CompletionCodegen {
 
   private static void writeCompletionInvoker(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
+    String sourceMethod = support.sourceMethod(method);
     TypeElement owner = (TypeElement) method.getEnclosingElement();
     String ownerType = owner.getQualifiedName().toString();
 
@@ -86,6 +87,10 @@ public final class CompletionCodegen {
     writer.write(
         "        return Invocation.builder().result(result == null ? resultIfNull : result).build();\n");
     writer.write("      } catch (Exception e) {\n");
+    writer.write(
+        "        log.error(InvocationLogMessageHelper.COMPLETION_INVOCATION_FAILED, \""
+            + support.escape(sourceMethod)
+            + "\", e);\n");
     writer.write(
         "        return Invocation.builder().result(McpServerError.METHOD_INVOCATION_ERROR.toString()).isError(true).build();\n");
     writer.write("      }\n");
