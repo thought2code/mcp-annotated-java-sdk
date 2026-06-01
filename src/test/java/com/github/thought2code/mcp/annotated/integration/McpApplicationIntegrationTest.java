@@ -5,10 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
@@ -23,9 +27,12 @@ import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTranspor
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
 import io.modelcontextprotocol.json.McpJsonDefaults;
+import io.modelcontextprotocol.spec.McpSchema;
 import java.io.EOFException;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterAll;
@@ -139,6 +146,40 @@ class McpApplicationIntegrationTest {
   }
 
   @Test
+  void toolInvocationFailure_shouldKeepClientContractAndEmitSourceMethodLog() {
+    int port = new Random().nextInt(8000, 9000);
+    ListAppender<ILoggingEvent> appender = attachInMemoryLogAppender();
+    AnnotatedMcpServer server =
+        TestMcpServerLifecycle.start(context, TestMcpConfigurations.streamable(port));
+    try {
+      HttpClientStreamableHttpTransport transport =
+          HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+              .endpoint("/mcp/message")
+              .build();
+
+      try (McpSyncClient client =
+          McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
+        client.initialize();
+        McpSchema.CallToolRequest request =
+            McpSchema.CallToolRequest.builder("tool_with_exception").arguments(Map.of()).build();
+        McpSchema.CallToolResult result = client.callTool(request);
+        McpSchema.TextContent content = (McpSchema.TextContent) result.content().get(0);
+
+        assertTrue(result.isError());
+        assertEquals(McpServerError.METHOD_INVOCATION_ERROR.toString(), content.text());
+      }
+
+      assertTrue(
+          hasInvocationFailureLog(appender.list),
+          "Expected invocation failure log with sourceMethod and exception detail");
+    } finally {
+      assert server != null;
+      server.stop();
+      detachInMemoryLogAppender(appender);
+    }
+  }
+
+  @Test
   void configurationLoader_shouldLoadDefaultClasspathConfig() {
     ServerConfiguration configuration = new ConfigurationLoader("mcp-server.yml").loadConfig();
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
@@ -196,6 +237,38 @@ class McpApplicationIntegrationTest {
         return true;
       }
       current = current.getCause();
+    }
+    return false;
+  }
+
+  private static ListAppender<ILoggingEvent> attachInMemoryLogAppender() {
+    ch.qos.logback.classic.Logger rootLogger =
+        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+    ListAppender<ILoggingEvent> appender = new ListAppender<>();
+    appender.start();
+    rootLogger.addAppender(appender);
+    return appender;
+  }
+
+  private static void detachInMemoryLogAppender(ListAppender<ILoggingEvent> appender) {
+    ch.qos.logback.classic.Logger rootLogger =
+        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+    rootLogger.detachAppender(appender);
+    appender.stop();
+  }
+
+  private static boolean hasInvocationFailureLog(List<ILoggingEvent> events) {
+    for (ILoggingEvent event : events) {
+      String message = event.getFormattedMessage();
+      boolean sourceMethodMessage =
+          message != null && message.contains("Tool invocation failed for sourceMethod=");
+      boolean hasExceptionDetail =
+          event.getThrowableProxy() != null
+              && event.getThrowableProxy().getMessage() != null
+              && event.getThrowableProxy().getMessage().contains("sensitive tool failure detail");
+      if (sourceMethodMessage && hasExceptionDetail) {
+        return true;
+      }
     }
     return false;
   }
