@@ -3,12 +3,14 @@ package com.github.thought2code.mcp.annotated.server.component.completion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
+import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.server.component.Invocation;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -82,5 +84,67 @@ class CompletionSupportTest {
 
     assertEquals(1, specs.size());
     assertFalse(specs.isEmpty());
+  }
+
+  @Test
+  void allSync_shouldRejectDuplicatePromptReferences() {
+    McpApplicationContext context = mock(McpApplicationContext.class);
+    when(context.isInScope(anyString())).thenReturn(true);
+    CompletionDefinition a =
+        new CompletionDefinition(
+            "test.Source#a()",
+            McpSchema.PromptReference.builder("duplicate_prompt").build(),
+            (ctx, argument) ->
+                Invocation.builder().result(new CompletionResult(List.of("a"), 1, false)).build());
+    CompletionDefinition b =
+        new CompletionDefinition(
+            "test.Source#b()",
+            McpSchema.PromptReference.builder("duplicate_prompt").build(),
+            (ctx, argument) ->
+                Invocation.builder().result(new CompletionResult(List.of("b"), 1, false)).build());
+    ComponentProvider provider =
+        new ComponentProvider() {
+          @Override
+          public List<CompletionDefinition> completions() {
+            return List.of(a, b);
+          }
+        };
+
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> CompletionSupport.allSync(context, List.of(provider)));
+    assertTrue(exception.getMessage().contains("prompt name 'duplicate_prompt'"));
+  }
+
+  @Test
+  void allAsync_shouldRejectDuplicateResourceReferences() {
+    McpApplicationContext context = mock(McpApplicationContext.class);
+    when(context.isInScope(anyString())).thenReturn(true);
+    CompletionDefinition a =
+        new CompletionDefinition(
+            "test.Source#a()",
+            new McpSchema.ResourceReference("resource://duplicate"),
+            (ctx, argument) ->
+                Invocation.builder().result(new CompletionResult(List.of("a"), 1, false)).build());
+    CompletionDefinition b =
+        new CompletionDefinition(
+            "test.Source#b()",
+            new McpSchema.ResourceReference("resource://duplicate"),
+            (ctx, argument) ->
+                Invocation.builder().result(new CompletionResult(List.of("b"), 1, false)).build());
+    ComponentProvider provider =
+        new ComponentProvider() {
+          @Override
+          public List<CompletionDefinition> completions() {
+            return List.of(a, b);
+          }
+        };
+
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> CompletionSupport.allAsync(context, List.of(provider)));
+    assertTrue(exception.getMessage().contains("resource uri 'resource://duplicate'"));
   }
 }

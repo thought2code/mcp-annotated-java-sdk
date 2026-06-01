@@ -3,10 +3,13 @@ package com.github.thought2code.mcp.annotated.server.component.completion;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import reactor.core.publisher.Mono;
 
@@ -23,6 +26,7 @@ public final class CompletionSupport {
   static List<McpServerFeatures.SyncCompletionSpecification> allSync(
       McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<CompletionDefinition> definitions = loadDefinitions(providers, context);
+    rejectDuplicateReferences(definitions);
     List<McpServerFeatures.SyncCompletionSpecification> completions = new ArrayList<>();
     for (CompletionDefinition definition : definitions) {
       completions.add(
@@ -40,6 +44,7 @@ public final class CompletionSupport {
   static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
       McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<CompletionDefinition> definitions = loadDefinitions(providers, context);
+    rejectDuplicateReferences(definitions);
     List<McpServerFeatures.AsyncCompletionSpecification> completions = new ArrayList<>();
     for (CompletionDefinition definition : definitions) {
       completions.add(
@@ -62,6 +67,32 @@ public final class CompletionSupport {
       }
     }
     return definitions;
+  }
+
+  private static void rejectDuplicateReferences(List<CompletionDefinition> definitions) {
+    Map<String, String> registeredReferences = new HashMap<>();
+    for (CompletionDefinition definition : definitions) {
+      String referenceKey = completionReferenceKey(definition.reference());
+      String previous = registeredReferences.putIfAbsent(referenceKey, definition.sourceMethod());
+      if (previous != null) {
+        throw new McpServerComponentRegistrationException(
+            DuplicateComponentMessageHelper.duplicateCompletionReference(
+                DuplicateComponentMessageHelper.completionReferenceDescription(
+                    definition.reference()),
+                previous,
+                definition.sourceMethod()));
+      }
+    }
+  }
+
+  private static String completionReferenceKey(McpSchema.CompleteReference reference) {
+    if (reference instanceof McpSchema.ResourceReference resourceReference) {
+      return "resource:" + resourceReference.uri();
+    }
+    if (reference instanceof McpSchema.PromptReference promptReference) {
+      return "prompt:" + promptReference.name();
+    }
+    return reference == null ? "unknown:null" : "unknown:" + reference;
   }
 
   private static McpSchema.CompleteResult invoke(

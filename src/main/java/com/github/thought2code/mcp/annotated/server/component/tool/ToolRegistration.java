@@ -4,6 +4,7 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.McpStructuredContent;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -116,8 +117,7 @@ public final class ToolRegistration {
       String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
       if (previous != null) {
         throw new McpServerComponentRegistrationException(
-            String.format(
-                "Duplicate McpTool name '%s' found for methods %s and %s",
+            DuplicateComponentMessageHelper.duplicateToolName(
                 name, previous, definition.sourceMethod()));
       }
     }

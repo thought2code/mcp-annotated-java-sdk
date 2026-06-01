@@ -82,9 +82,11 @@ class ResourceRegistrationTest {
         };
     when(context.isInScope(anyString())).thenReturn(true);
 
-    assertThrows(
-        McpServerComponentRegistrationException.class,
-        () -> ResourceRegistration.registerSync(server, context, List.of(provider)));
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> ResourceRegistration.registerSync(server, context, List.of(provider)));
+    assertTrue(exception.getMessage().contains("Duplicate resource name 'duplicate'"));
   }
 
   @Test

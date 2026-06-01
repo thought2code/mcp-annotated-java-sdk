@@ -3,6 +3,7 @@ package com.github.thought2code.mcp.annotated.server.component.prompt;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
+import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -103,8 +104,7 @@ public final class PromptRegistration {
       String previous = registeredNames.putIfAbsent(name, definition.sourceMethod());
       if (previous != null) {
         throw new McpServerComponentRegistrationException(
-            String.format(
-                "Duplicate McpPrompt name '%s' found for methods %s and %s",
+            DuplicateComponentMessageHelper.duplicatePromptName(
                 name, previous, definition.sourceMethod()));
       }
     }

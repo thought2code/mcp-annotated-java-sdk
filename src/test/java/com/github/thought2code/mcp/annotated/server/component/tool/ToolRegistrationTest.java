@@ -81,9 +81,11 @@ class ToolRegistrationTest {
         };
     when(context.isInScope(anyString())).thenReturn(true);
 
-    assertThrows(
-        McpServerComponentRegistrationException.class,
-        () -> ToolRegistration.registerSync(server, context, List.of(provider)));
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> ToolRegistration.registerSync(server, context, List.of(provider)));
+    assertTrue(exception.getMessage().contains("Duplicate tool name 'duplicate'"));
   }
 
   @Test

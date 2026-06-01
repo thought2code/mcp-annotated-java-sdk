@@ -228,12 +228,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
       if (previous != null) {
         messager.printMessage(
             Diagnostic.Kind.ERROR,
-            "Duplicate @McpTool name '"
-                + name
-                + "' found for methods "
-                + previous
-                + " and "
-                + source,
+            DuplicateComponentMessageHelper.duplicateToolName(name, previous, source),
             method);
         valid = false;
       }
@@ -251,12 +246,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
       if (previous != null) {
         messager.printMessage(
             Diagnostic.Kind.ERROR,
-            "Duplicate @McpPrompt name '"
-                + name
-                + "' found for methods "
-                + previous
-                + " and "
-                + source,
+            DuplicateComponentMessageHelper.duplicatePromptName(name, previous, source),
             method);
         valid = false;
       }
@@ -274,12 +264,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
       if (previous != null) {
         messager.printMessage(
             Diagnostic.Kind.ERROR,
-            "Duplicate @McpResource name '"
-                + name
-                + "' found for methods "
-                + previous
-                + " and "
-                + source,
+            DuplicateComponentMessageHelper.duplicateResourceName(name, previous, source),
             method);
         valid = false;
       }
@@ -292,17 +277,14 @@ public final class AnnotationProcessor extends AbstractProcessor {
     boolean valid = true;
     for (ExecutableElement method : completions) {
       String reference = completionReferenceKey(method);
+      String referenceDescription = completionReferenceDescription(method);
       String source = sourceMethod(method);
       String previous = references.putIfAbsent(reference, source);
       if (previous != null) {
         messager.printMessage(
             Diagnostic.Kind.ERROR,
-            "Duplicate completion reference '"
-                + reference
-                + "' found for methods "
-                + previous
-                + " and "
-                + source,
+            DuplicateComponentMessageHelper.duplicateCompletionReference(
+                referenceDescription, previous, source),
             method);
         valid = false;
       }
@@ -602,6 +584,18 @@ public final class AnnotationProcessor extends AbstractProcessor {
       return "resource:" + resource.uri();
     }
     return "unknown:" + sourceMethod(method);
+  }
+
+  private String completionReferenceDescription(ExecutableElement method) {
+    McpPromptCompletion prompt = method.getAnnotation(McpPromptCompletion.class);
+    if (prompt != null) {
+      return DuplicateComponentMessageHelper.completionPromptReferenceDescription(prompt.name());
+    }
+    McpResourceCompletion resource = method.getAnnotation(McpResourceCompletion.class);
+    if (resource != null) {
+      return DuplicateComponentMessageHelper.completionResourceReferenceDescription(resource.uri());
+    }
+    return "'" + completionReferenceKey(method) + "'";
   }
 
   private int componentHash(

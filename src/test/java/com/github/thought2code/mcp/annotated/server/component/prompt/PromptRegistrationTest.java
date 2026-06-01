@@ -84,9 +84,11 @@ class PromptRegistrationTest {
         };
     when(context.isInScope(anyString())).thenReturn(true);
 
-    assertThrows(
-        McpServerComponentRegistrationException.class,
-        () -> PromptRegistration.registerSync(server, context, List.of(provider)));
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> PromptRegistration.registerSync(server, context, List.of(provider)));
+    assertTrue(exception.getMessage().contains("Duplicate prompt name 'duplicate'"));
   }
 
   @Test
