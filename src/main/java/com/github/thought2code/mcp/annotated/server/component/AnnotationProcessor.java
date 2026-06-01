@@ -368,7 +368,10 @@ public final class AnnotationProcessor extends AbstractProcessor {
       writer.write("import org.slf4j.Logger;\n");
       writer.write("import org.slf4j.LoggerFactory;\n\n");
       writer.write("public final class " + className + " implements ComponentProvider {\n\n");
-      writer.write("  private static final Logger log = LoggerFactory.getLogger(" + className + ".class);\n\n");
+      writer.write(
+          "  private static final Logger log = LoggerFactory.getLogger("
+              + className
+              + ".class);\n\n");
 
       writer.write("  @Override\n");
       writer.write("  public List<ToolDefinition> tools() {\n");

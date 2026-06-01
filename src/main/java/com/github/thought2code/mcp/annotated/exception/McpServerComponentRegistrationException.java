@@ -12,7 +12,7 @@ package com.github.thought2code.mcp.annotated.exception;
  *   <li>Missing or incorrect annotations on component methods
  *   <li>Dependency injection failures during component creation
  *   <li>Configuration errors in component metadata
- *   <li>Reflection-related errors during component discovery
+ *   <li>Build-time model loading or runtime registration failures
  * </ul>
  *
  * <p>This exception extends {@link McpServerException} and is part of the MCP annotated framework's
@@ -45,9 +45,9 @@ public class McpServerComponentRegistrationException extends McpServerException 
    * another exception. The cause exception is preserved and can be accessed later for detailed
    * error analysis and debugging.
    *
-   * <p>Common causes include reflection exceptions, dependency injection failures, or validation
-   * errors during component creation. The message should provide context about the registration
-   * operation that failed.
+   * <p>Common causes include component instantiation failures, build-time model loading issues, or
+   * validation errors during component registration. The message should provide context about the
+   * registration operation that failed.
    *
    * @param message the detail message explaining the reason for the exception, may be null but
    *     should provide meaningful error information

@@ -5,8 +5,7 @@ public final class InvocationLogMessageHelper {
 
   private InvocationLogMessageHelper() {}
 
-  public static final String TOOL_INVOCATION_FAILED =
-      "Tool invocation failed for sourceMethod={}";
+  public static final String TOOL_INVOCATION_FAILED = "Tool invocation failed for sourceMethod={}";
 
   public static final String PROMPT_INVOCATION_FAILED =
       "Prompt invocation failed for sourceMethod={}";

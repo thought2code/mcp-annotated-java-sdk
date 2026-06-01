@@ -13,18 +13,24 @@ class DuplicateComponentMessageHelperTest {
   @ParameterizedTest
   @MethodSource("duplicateNameMessageCases")
   void duplicateNameMessage_shouldMatchTemplate(
-      String componentKind, String name, String previousMethod, String currentMethod, String expected) {
+      String componentKind,
+      String name,
+      String previousMethod,
+      String currentMethod,
+      String expected) {
     String actual =
         switch (componentKind) {
           case "tool" ->
-              DuplicateComponentMessageHelper.duplicateToolName(name, previousMethod, currentMethod);
+              DuplicateComponentMessageHelper.duplicateToolName(
+                  name, previousMethod, currentMethod);
           case "prompt" ->
               DuplicateComponentMessageHelper.duplicatePromptName(
                   name, previousMethod, currentMethod);
           case "resource" ->
               DuplicateComponentMessageHelper.duplicateResourceName(
                   name, previousMethod, currentMethod);
-          default -> throw new IllegalArgumentException("Unsupported component kind: " + componentKind);
+          default ->
+              throw new IllegalArgumentException("Unsupported component kind: " + componentKind);
         };
     assertEquals(expected, actual);
   }
@@ -86,7 +92,8 @@ class DuplicateComponentMessageHelperTest {
   private static Stream<Arguments> completionReferenceDescriptionCases() {
     return Stream.of(
         Arguments.of(
-            McpSchema.PromptReference.builder("generateCode").build(), "prompt name 'generateCode'"),
+            McpSchema.PromptReference.builder("generateCode").build(),
+            "prompt name 'generateCode'"),
         Arguments.of(new McpSchema.ResourceReference("file://"), "resource uri 'file://'"),
         Arguments.of(null, "'null'"));
   }

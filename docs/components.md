@@ -211,7 +211,7 @@ public class MyPromptCompletions {
 
 ## Automatic Registration
 
-After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are in the package scanning path of the server application.
+After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are within the registration scope of the server application.
 
 ### One instance per component class
 
@@ -235,7 +235,7 @@ If you need to specify a specific package path, you can use the following method
 @McpServerApplication(basePackage = "com.example.mcp.components")
 ```
 
-If no package path is specified, the package of the class passed to `McpApplication.run()` will be scanned.
+If no package path is specified, the package of the class passed to `McpApplication.run()` is used as the default registration scope.
 
 ## Structured Content
 

@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
  * <p>This class provides the entry point for running MCP servers with annotation-based
  * configuration. It supports STDIO and STREAMABLE modes. {@link ServerMode#SSE} is deprecated but
  * still supported for backward compatibility. The application automatically loads configuration,
- * initializes reflection scanning, and starts the appropriate server based on the configuration
- * settings.
+ * resolves component registration scope, and starts the appropriate server based on the
+ * configuration settings.
  *
  * @author codeboyzhou
  */
@@ -39,10 +39,11 @@ public final class McpApplication {
   /**
    * Runs the MCP application with the specified main class and command-line arguments.
    *
-   * <p>This method initializes the reflection provider and starts the MCP server based on the
+   * <p>This method resolves application context scope and starts the MCP server based on the
    * configuration settings.
    *
-   * @param mainClass the main class of the application, used as the base for reflection scanning
+   * @param mainClass the main class of the application, used to resolve component registration
+   *     scope
    * @param args the command-line arguments passed to the application
    * @param configFileName the name of the configuration file to load
    * @see McpApplicationContext
@@ -58,10 +59,11 @@ public final class McpApplication {
    * Runs the MCP application with the specified main class and command-line arguments using the
    * default configuration file.
    *
-   * <p>This method initializes the reflection provider and starts the MCP server based on the
+   * <p>This method resolves application context scope and starts the MCP server based on the
    * configuration settings.
    *
-   * @param mainClass the main class of the application, used as the base for reflection scanning
+   * @param mainClass the main class of the application, used to resolve component registration
+   *     scope
    * @param args the command-line arguments passed to the application
    */
   public static void run(Class<?> mainClass, String[] args) {

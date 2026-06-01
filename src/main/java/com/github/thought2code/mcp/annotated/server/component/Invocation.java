@@ -3,7 +3,7 @@ package com.github.thought2code.mcp.annotated.server.component;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This record represents the result of reflection invocation of Java method.
+ * This record represents the result of invoking one generated MCP component binding.
  *
  * @author codeboyzhou
  */

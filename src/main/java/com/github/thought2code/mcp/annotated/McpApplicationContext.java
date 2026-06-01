@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Runtime context for one annotated MCP application.
  *
- * <p>In the build-time component architecture, this context no longer performs classpath scanning.
- * Instead, it centralizes runtime concerns that component invokers still need:
+ * <p>In the build-time component architecture, this context no longer performs runtime classpath
+ * discovery. Instead, it centralizes runtime concerns that component invokers still need:
  *
  * <ul>
  *   <li>Component instance lifecycle (lazy creation with one cached instance per component class)

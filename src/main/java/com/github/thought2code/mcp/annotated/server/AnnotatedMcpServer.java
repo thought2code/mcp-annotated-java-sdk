@@ -81,9 +81,8 @@ public interface AnnotatedMcpServer {
    * Registers all MCP server components (resources, prompts, tools) with the specified synchronous
    * server instance.
    *
-   * <p>This method should scan for annotated methods and register them as appropriate MCP
-   * components with the server. Components are discovered using reflection and registered through
-   * the component registry.
+   * <p>This method should load build-time generated component definitions and register the in-scope
+   * components with the server.
    *
    * @param mcpSyncServer the synchronous server instance to register components with
    */
@@ -93,9 +92,8 @@ public interface AnnotatedMcpServer {
    * Registers all MCP server components (resources, prompts, tools) with the specified asynchronous
    * server instance.
    *
-   * <p>This method should scan for annotated methods and register them as appropriate MCP
-   * components with the server. Components are discovered using reflection and registered through
-   * the component registry.
+   * <p>This method should load build-time generated component definitions and register the in-scope
+   * components with the server.
    *
    * @param mcpAsyncServer the asynchronous server instance to register components with
    */
