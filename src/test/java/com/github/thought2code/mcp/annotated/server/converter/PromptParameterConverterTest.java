@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class McpPromptParameterConverterTest {
+class PromptParameterConverterTest {
 
-  private final McpPromptParameterConverter converter = new McpPromptParameterConverter();
+  private final PromptParameterConverter converter = new PromptParameterConverter();
 
   @Test
   void convertAll_shouldConvertAnnotatedParametersAndDefaultUnannotatedOnes() throws Exception {

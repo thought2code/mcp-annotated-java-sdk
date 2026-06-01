@@ -298,7 +298,7 @@ SDK 为每个组件类创建 **唯一实例**（无参构造），该类上所�
 本项目基于官方 [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**，属于 **预发布里程碑**。2.0 正式版发布前 API 可能变更 — 请锁定依赖版本，升级后重新跑集成测试。
 
 - 新项目 HTTP 传输推荐 **STREAMABLE**。
-- **SSE**（`ServerMode.SSE`、`McpSseServer`、`McpServerSSE`、YAML 中的 `sse.*`）自 **0.16.0** 起已标记为 **`@Deprecated(forRemoval = true)`**，将在后续版本中移除。现有部署仍可兼容使用；请迁移至 **STREAMABLE**（`McpStreamableServer`、`streamable.*`）。
+- **SSE**（`ServerMode.SSE`、`McpSseServer`、`ServerSse`、YAML 中的 `sse.*`）自 **0.16.0** 起已标记为 **`@Deprecated(forRemoval = true)`**，将在后续版本中移除。现有部署仍可兼容使用；请迁移至 **STREAMABLE**（`McpStreamableServer`、`streamable.*`）。
 
 ## 🏗️ 推荐项目结构
 

@@ -9,42 +9,41 @@ import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationExc
 import com.github.thought2code.mcp.annotated.support.TestMcpConfigurations;
 import org.junit.jupiter.api.Test;
 
-class McpConfigurationCheckerTest {
+class ConfigurationCheckerTest {
 
   @Test
   void check_shouldAcceptValidStdioConfiguration() {
-    assertDoesNotThrow(() -> McpConfigurationChecker.check(TestMcpConfigurations.stdio()));
+    assertDoesNotThrow(() -> ConfigurationChecker.check(TestMcpConfigurations.stdio()));
   }
 
   @Test
   @SuppressWarnings("deprecation")
   void check_shouldAcceptValidSseConfiguration() {
-    assertDoesNotThrow(() -> McpConfigurationChecker.check(TestMcpConfigurations.sse(8081)));
+    assertDoesNotThrow(() -> ConfigurationChecker.check(TestMcpConfigurations.sse(8081)));
   }
 
   @Test
   void check_shouldAcceptValidStreamableConfiguration() {
-    assertDoesNotThrow(() -> McpConfigurationChecker.check(TestMcpConfigurations.streamable(9000)));
+    assertDoesNotThrow(() -> ConfigurationChecker.check(TestMcpConfigurations.streamable(9000)));
   }
 
   @Test
   void check_shouldRejectMissingName() {
-    McpServerConfiguration configuration =
+    ServerConfiguration configuration =
         TestMcpConfigurations.baseBuilder().name(null).mode(ServerMode.STDIO).build();
     McpServerConfigurationException exception =
         assertThrows(
-            McpServerConfigurationException.class,
-            () -> McpConfigurationChecker.check(configuration));
+            McpServerConfigurationException.class, () -> ConfigurationChecker.check(configuration));
     assertTrue(exception.getMessage().contains("name"));
   }
 
   @Test
   void check_shouldRejectMissingSubscribeResourceWhenResourceEnabled() {
-    McpServerConfiguration configuration =
+    ServerConfiguration configuration =
         TestMcpConfigurations.baseBuilder()
             .mode(ServerMode.STDIO)
             .capabilities(
-                McpServerCapabilities.builder()
+                ServerCapabilities.builder()
                     .resource(true)
                     .subscribeResource(null)
                     .prompt(true)
@@ -54,31 +53,28 @@ class McpConfigurationCheckerTest {
             .build();
     McpServerConfigurationException exception =
         assertThrows(
-            McpServerConfigurationException.class,
-            () -> McpConfigurationChecker.check(configuration));
+            McpServerConfigurationException.class, () -> ConfigurationChecker.check(configuration));
     assertTrue(exception.getMessage().contains("capabilities.subscribe-resource"));
   }
 
   @Test
   @SuppressWarnings("deprecation")
   void check_shouldRejectMissingSseSettingsWhenModeIsSse() {
-    McpServerConfiguration configuration =
+    ServerConfiguration configuration =
         TestMcpConfigurations.baseBuilder().mode(ServerMode.SSE).sse(null).build();
     McpServerConfigurationException exception =
         assertThrows(
-            McpServerConfigurationException.class,
-            () -> McpConfigurationChecker.check(configuration));
+            McpServerConfigurationException.class, () -> ConfigurationChecker.check(configuration));
     assertTrue(exception.getMessage().contains("sse"));
   }
 
   @Test
   void check_shouldRejectMissingStreamableSettingsWhenModeIsStreamable() {
-    McpServerConfiguration configuration =
+    ServerConfiguration configuration =
         TestMcpConfigurations.baseBuilder().mode(ServerMode.STREAMABLE).streamable(null).build();
     McpServerConfigurationException exception =
         assertThrows(
-            McpServerConfigurationException.class,
-            () -> McpConfigurationChecker.check(configuration));
+            McpServerConfigurationException.class, () -> ConfigurationChecker.check(configuration));
     assertTrue(exception.getMessage().contains("streamable"));
   }
 }

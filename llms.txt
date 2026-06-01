@@ -131,7 +131,7 @@ change-notification:
 
 - Use `McpApplication.run()` as the server entry point; components are discovered through `@McpServerApplication` package scanning
 - `instructions` must be a non-blank string in `mcp-server.yml` (validated at startup)
-- SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0; use STREAMABLE for new HTTP deployments
+- SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0; use STREAMABLE for new HTTP deployments
 - Built on MCP Java SDK **2.0.0-M3** (milestone) — pin versions and retest when upgrading
 - `type: ASYNC` uses the async MCP server API; annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)` — not Project Reactor
 - One instance per component class is created and shared across concurrent requests — keep components stateless or thread-safe

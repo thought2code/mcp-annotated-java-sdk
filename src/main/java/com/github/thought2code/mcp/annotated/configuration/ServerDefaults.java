@@ -21,15 +21,15 @@ import java.time.Duration;
  * </ul>
  *
  * @author codeboyzhou
- * @see McpServerConfiguration
- * @see McpServerCapabilities
- * @see McpServerChangeNotification
- * @see McpServerSSE
- * @see McpServerStreamable
+ * @see ServerConfiguration
+ * @see ServerCapabilities
+ * @see ServerChangeNotification
+ * @see ServerSse
+ * @see ServerStreamable
  */
-public final class McpServerDefaults {
+public final class ServerDefaults {
 
-  private McpServerDefaults() {
+  private ServerDefaults() {
     throw new UnsupportedOperationException("Utility class should not be instantiated");
   }
 

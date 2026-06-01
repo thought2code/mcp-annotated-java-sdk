@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated;
 
-import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.configuration.McpServerDefaults;
+import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerDefaults;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
@@ -65,7 +65,7 @@ public final class McpApplication {
    * @param args the command-line arguments passed to the application
    */
   public static void run(Class<?> mainClass, String[] args) {
-    run(mainClass, args, McpServerDefaults.CONFIG_FILE_NAME);
+    run(mainClass, args, ServerDefaults.CONFIG_FILE_NAME);
   }
 
   /**
@@ -92,14 +92,14 @@ public final class McpApplication {
    * @param configFileName the name of the configuration file to load
    * @param context the application context for component discovery and localization
    * @see McpApplicationContext
-   * @see McpConfigurationLoader
-   * @see McpServerConfiguration
+   * @see ConfigurationLoader
+   * @see ServerConfiguration
    * @see AnnotatedMcpServer
    * @see McpSyncServer
    */
   private static void startMcpServer(String configFileName, McpApplicationContext context) {
-    McpConfigurationLoader configurationLoader = new McpConfigurationLoader(configFileName);
-    McpServerConfiguration configuration = configurationLoader.loadConfig();
+    ConfigurationLoader configurationLoader = new ConfigurationLoader(configFileName);
+    ServerConfiguration configuration = configurationLoader.loadConfig();
     log.info("Starting MCP server with config: {}", JacksonHelper.toJsonString(configuration));
 
     if (!configuration.enabled()) {
@@ -143,7 +143,7 @@ public final class McpApplication {
    */
   @Deprecated(since = "0.16.0", forRemoval = true)
   private static AnnotatedMcpServer createSseServer(
-      McpServerConfiguration configuration, McpApplicationContext context) {
+      ServerConfiguration configuration, McpApplicationContext context) {
     return new McpSseServer(configuration, context);
   }
 }

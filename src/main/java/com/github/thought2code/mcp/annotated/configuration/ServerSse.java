@@ -8,41 +8,41 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
- * @deprecated HTTP SSE mode is deprecated; use {@link McpServerStreamable} with {@link
+ * @deprecated HTTP SSE mode is deprecated; use {@link ServerStreamable} with {@link
  *     com.github.thought2code.mcp.annotated.enums.ServerMode#STREAMABLE} instead.
  */
 @Deprecated(since = "0.16.0", forRemoval = true)
-public record McpServerSSE(
+public record ServerSse(
     @JsonProperty("message-endpoint") String messageEndpoint,
     @JsonProperty("endpoint") String endpoint,
     @JsonProperty("base-url") String baseUrl,
     @JsonProperty("port") Integer port) {
 
   /**
-   * Creates a new instance of {@code Builder} to build {@code McpServerSSE}.
+   * Creates a new instance of {@code Builder} to build {@code ServerSse}.
    *
    * @return A new instance of {@code Builder}.
-   * @deprecated HTTP SSE mode is deprecated; use {@link McpServerStreamable} instead.
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerStreamable} instead.
    */
   @Deprecated(since = "0.16.0", forRemoval = true)
   public static Builder builder() {
     return new Builder();
   }
 
-  /** Builder class for {@code McpServerSSE}. */
+  /** Builder class for {@code ServerSse}. */
   @Deprecated(since = "0.16.0", forRemoval = true)
   public static class Builder {
     /** The message endpoint. */
-    private String messageEndpoint = McpServerDefaults.SSE_MESSAGE_ENDPOINT;
+    private String messageEndpoint = ServerDefaults.SSE_MESSAGE_ENDPOINT;
 
     /** The endpoint. */
-    private String endpoint = McpServerDefaults.SSE_ENDPOINT;
+    private String endpoint = ServerDefaults.SSE_ENDPOINT;
 
     /** The base URL. */
-    private String baseUrl = McpServerDefaults.SSE_BASE_URL;
+    private String baseUrl = ServerDefaults.SSE_BASE_URL;
 
     /** The port. */
-    private Integer port = McpServerDefaults.PORT;
+    private Integer port = ServerDefaults.PORT;
 
     /**
      * Sets the message endpoint.
@@ -89,14 +89,14 @@ public record McpServerSSE(
     }
 
     /**
-     * Builds an instance of {@code McpServerSSE} with the configured values.
+     * Builds an instance of {@code ServerSse} with the configured values.
      *
-     * @return A new instance of {@code McpServerSSE}.
-     * @deprecated HTTP SSE mode is deprecated; use {@link McpServerStreamable} instead.
+     * @return A new instance of {@code ServerSse}.
+     * @deprecated HTTP SSE mode is deprecated; use {@link ServerStreamable} instead.
      */
     @Deprecated(since = "0.16.0", forRemoval = true)
-    public McpServerSSE build() {
-      return new McpServerSSE(messageEndpoint, endpoint, baseUrl, port);
+    public ServerSse build() {
+      return new ServerSse(messageEndpoint, endpoint, baseUrl, port);
     }
   }
 }

@@ -1,7 +1,7 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
@@ -46,7 +46,7 @@ public class McpStdioServer extends McpServerBase {
    * @param configuration the server configuration
    * @param context the application-scoped runtime context
    */
-  public McpStdioServer(McpServerConfiguration configuration, McpApplicationContext context) {
+  public McpStdioServer(ServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
     this.transportProvider =
         new DeferredActivationServerTransportProvider(

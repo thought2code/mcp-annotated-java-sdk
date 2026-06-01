@@ -24,10 +24,10 @@ import org.slf4j.LoggerFactory;
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
  */
-public record McpConfigurationLoader(String configFileName) {
+public record ConfigurationLoader(String configFileName) {
 
   /** The logger instance for this class. */
-  private static final Logger log = LoggerFactory.getLogger(McpConfigurationLoader.class);
+  private static final Logger log = LoggerFactory.getLogger(ConfigurationLoader.class);
 
   /**
    * Loads the MCP server configuration from the specified YAML file.
@@ -35,10 +35,9 @@ public record McpConfigurationLoader(String configFileName) {
    * @return the loaded MCP server configuration
    * @throws McpServerConfigurationException if the configuration file cannot be loaded
    */
-  public McpServerConfiguration loadConfig() {
+  public ServerConfiguration loadConfig() {
     File file = getConfigFilePath(configFileName).toFile();
-    McpServerConfiguration configuration =
-        JacksonHelper.fromYaml(file, McpServerConfiguration.class);
+    ServerConfiguration configuration = JacksonHelper.fromYaml(file, ServerConfiguration.class);
     log.info("Configuration loaded successfully from file: {}", configFileName);
 
     final String profile = configuration.profile();
@@ -48,13 +47,13 @@ public record McpConfigurationLoader(String configFileName) {
       final String profileConfigFileName = configFileName.replace(".yml", "-" + profile + ".yml");
       File profileConfigFile = getConfigFilePath(profileConfigFileName).toFile();
       configuration =
-          JacksonHelper.mergeYaml(configuration, profileConfigFile, McpServerConfiguration.class);
+          JacksonHelper.mergeYaml(configuration, profileConfigFile, ServerConfiguration.class);
       log.info("Profile configuration merged successfully from file: {}", profileConfigFileName);
     }
 
-    McpServerConfiguration mergedConfig =
-        McpConfigurationSupport.finalizeMerged(Objects.requireNonNull(configuration), profile);
-    McpConfigurationChecker.check(mergedConfig);
+    ServerConfiguration mergedConfig =
+        ConfigurationSupport.finalizeMerged(Objects.requireNonNull(configuration), profile);
+    ConfigurationChecker.check(mergedConfig);
     return mergedConfig;
   }
 
@@ -67,7 +66,7 @@ public record McpConfigurationLoader(String configFileName) {
    */
   private Path getConfigFilePath(String fileName) {
     try {
-      ClassLoader classLoader = McpConfigurationLoader.class.getClassLoader();
+      ClassLoader classLoader = ConfigurationLoader.class.getClassLoader();
       URL configFileUrl = classLoader.getResource(fileName);
       if (configFileUrl == null) {
         throw new McpServerConfigurationException(

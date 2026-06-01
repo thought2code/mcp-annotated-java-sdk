@@ -17,7 +17,7 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
  */
-public record McpServerConfiguration(
+public record ServerConfiguration(
     @JsonProperty("profile") String profile,
     @JsonProperty("enabled") Boolean enabled,
     @JsonProperty("mode") ServerMode mode,
@@ -26,14 +26,13 @@ public record McpServerConfiguration(
     @JsonProperty("type") ServerType type,
     @JsonProperty("instructions") String instructions,
     @JsonProperty("request-timeout") Long requestTimeout,
-    @JsonMerge @JsonProperty("capabilities") McpServerCapabilities capabilities,
-    @JsonMerge @JsonProperty("change-notification") McpServerChangeNotification changeNotification,
-    @Deprecated(since = "0.16.0", forRemoval = true) @JsonMerge @JsonProperty("sse")
-        McpServerSSE sse,
-    @JsonMerge @JsonProperty("streamable") McpServerStreamable streamable) {
+    @JsonMerge @JsonProperty("capabilities") ServerCapabilities capabilities,
+    @JsonMerge @JsonProperty("change-notification") ServerChangeNotification changeNotification,
+    @Deprecated(since = "0.16.0", forRemoval = true) @JsonMerge @JsonProperty("sse") ServerSse sse,
+    @JsonMerge @JsonProperty("streamable") ServerStreamable streamable) {
 
   /**
-   * Creates a new instance of {@code Builder} to build {@code McpServerConfiguration}.
+   * Creates a new instance of {@code Builder} to build {@code ServerConfiguration}.
    *
    * @return A new instance of {@code Builder}.
    */
@@ -41,45 +40,45 @@ public record McpServerConfiguration(
     return new Builder();
   }
 
-  /** Builder class for {@code McpServerConfiguration}. */
+  /** Builder class for {@code ServerConfiguration}. */
   public static class Builder {
     /** The profile. */
     private String profile = StringHelper.EMPTY;
 
     /** The enabled status. */
-    private Boolean enabled = McpServerDefaults.ENABLED;
+    private Boolean enabled = ServerDefaults.ENABLED;
 
     /** The server mode. */
-    private ServerMode mode = McpServerDefaults.MODE;
+    private ServerMode mode = ServerDefaults.MODE;
 
     /** The server name. */
-    private String name = McpServerDefaults.NAME;
+    private String name = ServerDefaults.NAME;
 
     /** The server version. */
-    private String version = McpServerDefaults.VERSION;
+    private String version = ServerDefaults.VERSION;
 
     /** The server type. */
-    private ServerType type = McpServerDefaults.TYPE;
+    private ServerType type = ServerDefaults.TYPE;
 
     /** The server instructions. */
-    private String instructions = McpServerDefaults.INSTRUCTIONS;
+    private String instructions = ServerDefaults.INSTRUCTIONS;
 
     /** The request timeout. */
-    private Long requestTimeout = McpServerDefaults.REQUEST_TIMEOUT;
+    private Long requestTimeout = ServerDefaults.REQUEST_TIMEOUT;
 
     /** The server capabilities. */
-    private McpServerCapabilities capabilities = McpServerCapabilities.builder().build();
+    private ServerCapabilities capabilities = ServerCapabilities.builder().build();
 
     /** The change notification configuration. */
-    private McpServerChangeNotification changeNotification =
-        McpServerChangeNotification.builder().build();
+    private ServerChangeNotification changeNotification =
+        ServerChangeNotification.builder().build();
 
     /** The SSE configuration. */
     @Deprecated(since = "0.16.0", forRemoval = true)
-    private McpServerSSE sse = McpServerSSE.builder().build();
+    private ServerSse sse = ServerSse.builder().build();
 
     /** The streamable configuration. */
-    private McpServerStreamable streamable = McpServerStreamable.builder().build();
+    private ServerStreamable streamable = ServerStreamable.builder().build();
 
     /**
      * Sets the profile.
@@ -175,7 +174,7 @@ public record McpServerConfiguration(
      * @param capabilities The server capabilities.
      * @return This builder instance.
      */
-    public Builder capabilities(McpServerCapabilities capabilities) {
+    public Builder capabilities(ServerCapabilities capabilities) {
       this.capabilities = capabilities;
       return this;
     }
@@ -186,7 +185,7 @@ public record McpServerConfiguration(
      * @param changeNotification The change notification configuration.
      * @return This builder instance.
      */
-    public Builder changeNotification(McpServerChangeNotification changeNotification) {
+    public Builder changeNotification(ServerChangeNotification changeNotification) {
       this.changeNotification = changeNotification;
       return this;
     }
@@ -196,11 +195,10 @@ public record McpServerConfiguration(
      *
      * @param sse The SSE configuration.
      * @return This builder instance.
-     * @deprecated HTTP SSE mode is deprecated; use {@link #streamable(McpServerStreamable)}
-     *     instead.
+     * @deprecated HTTP SSE mode is deprecated; use {@link #streamable(ServerStreamable)} instead.
      */
     @Deprecated(since = "0.16.0", forRemoval = true)
-    public Builder sse(McpServerSSE sse) {
+    public Builder sse(ServerSse sse) {
       this.sse = sse;
       return this;
     }
@@ -211,18 +209,18 @@ public record McpServerConfiguration(
      * @param streamable The streamable configuration.
      * @return This builder instance.
      */
-    public Builder streamable(McpServerStreamable streamable) {
+    public Builder streamable(ServerStreamable streamable) {
       this.streamable = streamable;
       return this;
     }
 
     /**
-     * Builds a new instance of {@code McpServerConfiguration}.
+     * Builds a new instance of {@code ServerConfiguration}.
      *
-     * @return A new instance of {@code McpServerConfiguration}.
+     * @return A new instance of {@code ServerConfiguration}.
      */
-    public McpServerConfiguration build() {
-      return new McpServerConfiguration(
+    public ServerConfiguration build() {
+      return new ServerConfiguration(
           profile,
           enabled,
           mode,

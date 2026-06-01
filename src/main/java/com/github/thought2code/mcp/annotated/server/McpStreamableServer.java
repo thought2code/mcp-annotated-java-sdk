@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerStreamable;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
@@ -37,8 +37,8 @@ import java.util.function.Function;
  *
  * @author codeboyzhou
  * @see McpServerBase
- * @see McpServerConfiguration
- * @see McpServerStreamable
+ * @see ServerConfiguration
+ * @see ServerStreamable
  * @see HttpServletStreamableServerTransportProvider
  * @see JettyHttpServer
  */
@@ -57,9 +57,9 @@ public class McpStreamableServer extends McpServerBase {
    * @param configuration the server configuration containing streamable settings
    * @param context the application-scoped runtime context
    */
-  public McpStreamableServer(McpServerConfiguration configuration, McpApplicationContext context) {
+  public McpStreamableServer(ServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
-    McpServerStreamable streamable = configuration.streamable();
+    ServerStreamable streamable = configuration.streamable();
     this.port = streamable.port();
     this.transportProvider =
         HttpServletStreamableServerTransportProvider.builder()
@@ -78,7 +78,7 @@ public class McpStreamableServer extends McpServerBase {
    *
    * @return a synchronization specification configured for HTTP streaming transport
    * @see HttpServletStreamableServerTransportProvider
-   * @see McpServerStreamable
+   * @see ServerStreamable
    * @see McpJsonDefaults
    */
   @Override

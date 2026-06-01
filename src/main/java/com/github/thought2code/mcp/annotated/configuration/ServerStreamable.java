@@ -13,14 +13,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
  */
-public record McpServerStreamable(
+public record ServerStreamable(
     @JsonProperty("mcp-endpoint") String mcpEndpoint,
     @JsonProperty("disallow-delete") Boolean disallowDelete,
     @JsonProperty("keep-alive-interval") Long keepAliveInterval,
     @JsonProperty("port") Integer port) {
 
   /**
-   * Creates a new instance of {@code Builder} to build {@code McpServerStreamable}.
+   * Creates a new instance of {@code Builder} to build {@code ServerStreamable}.
    *
    * @return A new instance of {@code Builder}.
    */
@@ -28,19 +28,19 @@ public record McpServerStreamable(
     return new Builder();
   }
 
-  /** Builder class for {@code McpServerStreamable}. */
+  /** Builder class for {@code ServerStreamable}. */
   public static class Builder {
     /** The MCP endpoint. */
-    private String mcpEndpoint = McpServerDefaults.STREAMABLE_MCP_ENDPOINT;
+    private String mcpEndpoint = ServerDefaults.STREAMABLE_MCP_ENDPOINT;
 
     /** The disallow delete flag. */
-    private Boolean disallowDelete = McpServerDefaults.STREAMABLE_DISALLOW_DELETE;
+    private Boolean disallowDelete = ServerDefaults.STREAMABLE_DISALLOW_DELETE;
 
     /** The keep-alive interval. */
-    private Long keepAliveInterval = McpServerDefaults.STREAMABLE_KEEP_ALIVE_INTERVAL;
+    private Long keepAliveInterval = ServerDefaults.STREAMABLE_KEEP_ALIVE_INTERVAL;
 
     /** The port. */
-    private Integer port = McpServerDefaults.PORT;
+    private Integer port = ServerDefaults.PORT;
 
     /**
      * Sets the MCP endpoint.
@@ -87,12 +87,12 @@ public record McpServerStreamable(
     }
 
     /**
-     * Builds an instance of {@code McpServerStreamable} with the configured values.
+     * Builds an instance of {@code ServerStreamable} with the configured values.
      *
-     * @return A new instance of {@code McpServerStreamable}.
+     * @return A new instance of {@code ServerStreamable}.
      */
-    public McpServerStreamable build() {
-      return new McpServerStreamable(mcpEndpoint, disallowDelete, keepAliveInterval, port);
+    public ServerStreamable build() {
+      return new ServerStreamable(mcpEndpoint, disallowDelete, keepAliveInterval, port);
     }
   }
 }

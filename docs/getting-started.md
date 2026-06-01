@@ -210,7 +210,7 @@ The SDK creates **one instance per component class** and reuses it for all reque
 This SDK depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
 
 - **STREAMABLE** is the recommended HTTP transport for new projects.
-- **SSE** (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
+- **SSE** (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
 
 ## Profile-based Configuration
 

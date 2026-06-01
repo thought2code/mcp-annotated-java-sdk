@@ -1,15 +1,16 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
-import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaDefinition;
 import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaProperty;
 import com.github.thought2code.mcp.annotated.annotation.McpPrompt;
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
-import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
 import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpTool;
-import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
+import com.github.thought2code.mcp.annotated.server.component.completion.CompletionCodegen;
 import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
+import com.github.thought2code.mcp.annotated.server.component.prompt.PromptCodegen;
+import com.github.thought2code.mcp.annotated.server.component.resource.ResourceCodegen;
+import com.github.thought2code.mcp.annotated.server.component.tool.ToolCodegen;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import java.io.IOException;
 import java.io.Writer;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -37,15 +39,12 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.StandardLocation;
 
 /**
- * Annotation processor that compiles MCP component annotations into static model classes at build
- * time.
+ * Annotation processor that compiles MCP component annotations into static classes at build time.
  *
  * <p>Handles {@code @McpTool}, {@code @McpPrompt}, {@code @McpResource},
  * {@code @McpPromptCompletion}, and {@code @McpResourceCompletion}.
@@ -58,7 +57,7 @@ import javax.tools.StandardLocation;
   "com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion",
   "com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion"
 })
-public final class ComponentProcessor extends AbstractProcessor {
+public final class AnnotationProcessor extends AbstractProcessor {
 
   private static final String GENERATED_PACKAGE = "com.github.thought2code.mcp.annotated.generated";
   private static final String PROVIDER_INTERFACE =
@@ -77,6 +76,11 @@ public final class ComponentProcessor extends AbstractProcessor {
 
   private Filer filer;
   private Messager messager;
+  private final ToolCodegen.Support toolCodegenSupport = new ToolCodegenSupport(this);
+  private final PromptCodegen.Support promptCodegenSupport = new PromptCodegenSupport(this);
+  private final ResourceCodegen.Support resourceCodegenSupport = new ResourceCodegenSupport(this);
+  private final CompletionCodegen.Support completionCodegenSupport =
+      new CompletionCodegenSupport(this);
 
   @Override
   public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -107,7 +111,7 @@ public final class ComponentProcessor extends AbstractProcessor {
       generated = true;
     } catch (IOException e) {
       messager.printMessage(
-          Diagnostic.Kind.ERROR, "Failed to generate MCP component model: " + e.getMessage());
+          Diagnostic.Kind.ERROR, "Failed to generate MCP component class: " + e.getMessage());
     }
     return false;
   }
@@ -344,7 +348,7 @@ public final class ComponentProcessor extends AbstractProcessor {
     String className =
         "GeneratedComponentProvider_"
             + Integer.toHexString(
-                modelHash(sortedTools, sortedPrompts, sortedResources, sortedCompletions));
+                componentHash(sortedTools, sortedPrompts, sortedResources, sortedCompletions));
     String qualifiedName = GENERATED_PACKAGE + "." + className;
 
     try (Writer writer = filer.createSourceFile(qualifiedName).openWriter()) {
@@ -416,45 +420,10 @@ public final class ComponentProcessor extends AbstractProcessor {
       writer.write("    return definitions;\n");
       writer.write("  }\n\n");
 
-      for (int i = 0; i < sortedTools.size(); i++) {
-        writeToolDefinitionMethod(writer, sortedTools.get(i), i);
-      }
-
-      for (int i = 0; i < sortedTools.size(); i++) {
-        writeInputSchemaMethod(writer, sortedTools.get(i), i);
-      }
-
-      for (int i = 0; i < sortedTools.size(); i++) {
-        writeOutputSchemaMethod(writer, sortedTools.get(i), i);
-      }
-
-      for (int i = 0; i < sortedTools.size(); i++) {
-        writeInvoker(writer, sortedTools.get(i), i);
-      }
-
-      for (int i = 0; i < sortedPrompts.size(); i++) {
-        writePromptDefinitionMethod(writer, sortedPrompts.get(i), i);
-      }
-
-      for (int i = 0; i < sortedPrompts.size(); i++) {
-        writePromptInvoker(writer, sortedPrompts.get(i), i);
-      }
-
-      for (int i = 0; i < sortedResources.size(); i++) {
-        writeResourceDefinitionMethod(writer, sortedResources.get(i), i);
-      }
-
-      for (int i = 0; i < sortedResources.size(); i++) {
-        writeResourceInvoker(writer, sortedResources.get(i), i);
-      }
-
-      for (int i = 0; i < sortedCompletions.size(); i++) {
-        writeCompletionDefinitionMethod(writer, sortedCompletions.get(i), i);
-      }
-
-      for (int i = 0; i < sortedCompletions.size(); i++) {
-        writeCompletionInvoker(writer, sortedCompletions.get(i), i);
-      }
+      ToolCodegen.writeSections(writer, sortedTools, toolCodegenSupport);
+      PromptCodegen.writeSections(writer, sortedPrompts, promptCodegenSupport);
+      ResourceCodegen.writeSections(writer, sortedResources, resourceCodegenSupport);
+      CompletionCodegen.writeSections(writer, sortedCompletions, completionCodegenSupport);
 
       writer.write("}\n");
     }
@@ -466,460 +435,6 @@ public final class ComponentProcessor extends AbstractProcessor {
       serviceWriter.write(qualifiedName);
       serviceWriter.write('\n');
     }
-  }
-
-  private void writeToolDefinitionMethod(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    String sourceMethod = sourceMethod(method);
-    String name = toolName(method);
-    String title = toolTitle(method);
-    String description = toolDescription(method);
-
-    writer.write("  private static ToolDefinition toolDefinition" + index + "() {\n");
-    writer.write("    Map<String, Object> inputSchema = inputSchema" + index + "();\n");
-    writer.write("    Map<String, Object> outputSchema = outputSchema" + index + "();\n");
-    writer.write(
-        "    McpSchema.Tool tool = McpSchema.Tool.builder(\""
-            + escape(name)
-            + "\", inputSchema)\n");
-    writer.write("        .title(\"" + escape(title) + "\")\n");
-    writer.write("        .description(\"" + escape(description) + "\")\n");
-    writer.write("        .outputSchema(outputSchema)\n");
-    writer.write("        .build();\n");
-    writer.write(
-        "    return new ToolDefinition(\""
-            + escape(sourceMethod)
-            + "\", tool, new Invoker"
-            + index
-            + "());\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeInputSchemaMethod(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    writer.write("  private static Map<String, Object> inputSchema" + index + "() {\n");
-    writer.write("    Map<String, Object> properties = new LinkedHashMap<>();\n");
-    writer.write("    Map<String, Object> definitions = new LinkedHashMap<>();\n");
-    writer.write("    List<String> required = new ArrayList<>();\n");
-
-    List<? extends VariableElement> parameters = method.getParameters();
-    for (VariableElement parameter : parameters) {
-      McpToolParam toolParam = parameter.getAnnotation(McpToolParam.class);
-      if (toolParam == null) {
-        continue;
-      }
-      String paramName = toolParam.name();
-      String description = StringHelper.defaultIfBlank(toolParam.description(), paramName);
-      String javaType = erasedType(parameter.asType());
-      TypeElement typeElement = asTypeElement(parameter.asType());
-
-      writer.write("    {\n");
-      writer.write("      Map<String, Object> property = new HashMap<>();\n");
-      if (typeElement != null && typeElement.getAnnotation(McpJsonSchemaDefinition.class) != null) {
-        String definitionName = typeElement.getSimpleName().toString();
-        writer.write(
-            "      property.put(\"$ref\", \"#/definitions/" + escape(definitionName) + "\");\n");
-        writeDefinitionLiteral(writer, "      ", "definitions", definitionName, typeElement);
-      } else {
-        writer.write(
-            "      property.put(\"type\", \"" + escape(toJsonSchemaType(javaType)) + "\");\n");
-        writer.write("      property.put(\"description\", \"" + escape(description) + "\");\n");
-      }
-      writer.write("      properties.put(\"" + escape(paramName) + "\", property);\n");
-      if (toolParam.required()) {
-        writer.write("      required.add(\"" + escape(paramName) + "\");\n");
-      }
-      writer.write("    }\n");
-    }
-
-    writer.write("    Map<String, Object> schema = new LinkedHashMap<>();\n");
-    writer.write("    schema.put(\"type\", \"object\");\n");
-    writer.write("    schema.put(\"properties\", properties);\n");
-    writer.write("    schema.put(\"required\", required);\n");
-    writer.write("    schema.put(\"additionalProperties\", false);\n");
-    writer.write("    schema.put(\"definitions\", definitions);\n");
-    writer.write("    return schema;\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeOutputSchemaMethod(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    writer.write("  private static Map<String, Object> outputSchema" + index + "() {\n");
-    writer.write("    Map<String, Object> schema = new HashMap<>();\n");
-    writer.write("    schema.put(\"type\", \"object\");\n");
-    writer.write("    Map<String, Object> properties = new LinkedHashMap<>();\n");
-    writer.write("    List<String> required = new ArrayList<>();\n");
-
-    TypeElement returnType = asTypeElement(method.getReturnType());
-    if (returnType != null) {
-      for (PropertySpec property : schemaProperties(returnType)) {
-        writer.write("    {\n");
-        writer.write("      Map<String, Object> fieldProperties = new HashMap<>();\n");
-        writer.write("      fieldProperties.put(\"type\", \"" + escape(property.type()) + "\");\n");
-        writer.write(
-            "      fieldProperties.put(\"description\", \""
-                + escape(property.description())
-                + "\");\n");
-        writer.write(
-            "      properties.put(\"" + escape(property.name()) + "\", fieldProperties);\n");
-        if (property.required()) {
-          writer.write("      required.add(\"" + escape(property.name()) + "\");\n");
-        }
-        writer.write("    }\n");
-      }
-    }
-
-    writer.write("    schema.put(\"properties\", properties);\n");
-    writer.write("    schema.put(\"required\", required);\n");
-    writer.write("    return schema;\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeInvoker(Writer writer, ExecutableElement method, int index) throws IOException {
-    TypeElement owner = (TypeElement) method.getEnclosingElement();
-    String ownerType = owner.getQualifiedName().toString();
-    boolean returnsVoid = method.getReturnType().getKind() == TypeKind.VOID;
-
-    writer.write("  private static final class Invoker" + index + " implements ToolInvoker {\n");
-    writer.write("    @Override\n");
-    writer.write(
-        "    public Invocation invoke(McpApplicationContext context, Map<String, Object> arguments) {\n");
-    writer.write(
-        "      Map<String, Object> safeArguments = arguments == null ? Map.of() : arguments;\n");
-    writer.write("      try {\n");
-    writer.write(
-        "        "
-            + ownerType
-            + " instance = ("
-            + ownerType
-            + ") context.getComponentInstance("
-            + ownerType
-            + ".class);\n");
-
-    List<? extends VariableElement> parameters = method.getParameters();
-    List<String> argumentNames = new ArrayList<>(parameters.size());
-    for (int i = 0; i < parameters.size(); i++) {
-      VariableElement parameter = parameters.get(i);
-      String paramType = parameterDeclarationType(parameter.asType());
-      String targetClassLiteral = classLiteral(parameter.asType());
-      McpToolParam toolParam = parameter.getAnnotation(McpToolParam.class);
-      String valueExpr =
-          toolParam == null
-              ? "TypeConverter.convert(null, " + targetClassLiteral + ")"
-              : "TypeConverter.convert(safeArguments.get(\""
-                  + escape(toolParam.name())
-                  + "\"), "
-                  + targetClassLiteral
-                  + ")";
-      String argumentName = "arg" + i;
-      argumentNames.add(argumentName);
-      writer.write(
-          "        "
-              + paramType
-              + " "
-              + argumentName
-              + " = ("
-              + paramType
-              + ") "
-              + valueExpr
-              + ";\n");
-    }
-
-    String joinedArguments = String.join(", ", argumentNames);
-    if (returnsVoid) {
-      writer.write("        instance." + method.getSimpleName() + "(" + joinedArguments + ");\n");
-      writer.write(
-          "        return Invocation.builder().result(\"The method call succeeded but has a void return type\").build();\n");
-    } else {
-      writer.write(
-          "        Object result = instance."
-              + method.getSimpleName()
-              + "("
-              + joinedArguments
-              + ");\n");
-      writer.write(
-          "        Object resultIfNull = \"The method call succeeded but the return value is null\";\n");
-      writer.write(
-          "        return Invocation.builder().result(result == null ? resultIfNull : result).build();\n");
-    }
-    writer.write("      } catch (Exception e) {\n");
-    writer.write(
-        "        return Invocation.builder().result(McpServerError.METHOD_INVOCATION_ERROR.toString()).isError(true).build();\n");
-    writer.write("      }\n");
-    writer.write("    }\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writePromptDefinitionMethod(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    String sourceMethod = sourceMethod(method);
-    String name = promptName(method);
-    String title = promptTitle(method);
-    String description = promptDescription(method);
-
-    writer.write("  private static PromptDefinition promptDefinition" + index + "() {\n");
-    writer.write("    List<McpSchema.PromptArgument> args = new ArrayList<>();\n");
-    for (VariableElement parameter : method.getParameters()) {
-      McpPromptParam promptParam = parameter.getAnnotation(McpPromptParam.class);
-      if (promptParam == null) {
-        continue;
-      }
-      String paramName = promptParam.name();
-      String paramTitle = StringHelper.defaultIfBlank(promptParam.title(), paramName);
-      String paramDescription = StringHelper.defaultIfBlank(promptParam.description(), paramName);
-      writer.write(
-          "    args.add(McpSchema.PromptArgument.builder(\""
-              + escape(paramName)
-              + "\")\n"
-              + "        .title(\""
-              + escape(paramTitle)
-              + "\")\n"
-              + "        .description(\""
-              + escape(paramDescription)
-              + "\")\n"
-              + "        .required("
-              + promptParam.required()
-              + ")\n"
-              + "        .build());\n");
-    }
-
-    writer.write(
-        "    McpSchema.Prompt prompt = McpSchema.Prompt.builder(\""
-            + escape(name)
-            + "\")\n"
-            + "        .title(\""
-            + escape(title)
-            + "\")\n"
-            + "        .description(\""
-            + escape(description)
-            + "\")\n"
-            + "        .arguments(args)\n"
-            + "        .build();\n");
-    writer.write(
-        "    return new PromptDefinition(\""
-            + escape(sourceMethod)
-            + "\", prompt, \""
-            + escape(description)
-            + "\", new PromptInvoker"
-            + index
-            + "());\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writePromptInvoker(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    TypeElement owner = (TypeElement) method.getEnclosingElement();
-    String ownerType = owner.getQualifiedName().toString();
-    boolean returnsVoid = method.getReturnType().getKind() == TypeKind.VOID;
-
-    writer.write(
-        "  private static final class PromptInvoker" + index + " implements PromptInvoker {\n");
-    writer.write("    @Override\n");
-    writer.write(
-        "    public Invocation invoke(McpApplicationContext context, Map<String, Object> arguments) {\n");
-    writer.write(
-        "      Map<String, Object> safeArguments = arguments == null ? Map.of() : arguments;\n");
-    writer.write("      try {\n");
-    writer.write(
-        "        "
-            + ownerType
-            + " instance = ("
-            + ownerType
-            + ") context.getComponentInstance("
-            + ownerType
-            + ".class);\n");
-
-    List<? extends VariableElement> parameters = method.getParameters();
-    List<String> argumentNames = new ArrayList<>(parameters.size());
-    for (int i = 0; i < parameters.size(); i++) {
-      VariableElement parameter = parameters.get(i);
-      String paramType = parameterDeclarationType(parameter.asType());
-      String targetClassLiteral = classLiteral(parameter.asType());
-      McpPromptParam promptParam = parameter.getAnnotation(McpPromptParam.class);
-      String valueExpr =
-          promptParam == null
-              ? "TypeConverter.convert(null, " + targetClassLiteral + ")"
-              : "TypeConverter.convert(safeArguments.get(\""
-                  + escape(promptParam.name())
-                  + "\"), "
-                  + targetClassLiteral
-                  + ")";
-      String argumentName = "arg" + i;
-      argumentNames.add(argumentName);
-      writer.write(
-          "        "
-              + paramType
-              + " "
-              + argumentName
-              + " = ("
-              + paramType
-              + ") "
-              + valueExpr
-              + ";\n");
-    }
-
-    String joinedArguments = String.join(", ", argumentNames);
-    if (returnsVoid) {
-      writer.write("        instance." + method.getSimpleName() + "(" + joinedArguments + ");\n");
-      writer.write(
-          "        return Invocation.builder().result(\"The method call succeeded but has a void return type\").build();\n");
-    } else {
-      writer.write(
-          "        Object result = instance."
-              + method.getSimpleName()
-              + "("
-              + joinedArguments
-              + ");\n");
-      writer.write(
-          "        Object resultIfNull = \"The method call succeeded but the return value is null\";\n");
-      writer.write(
-          "        return Invocation.builder().result(result == null ? resultIfNull : result).build();\n");
-    }
-    writer.write("      } catch (Exception e) {\n");
-    writer.write(
-        "        return Invocation.builder().result(McpServerError.METHOD_INVOCATION_ERROR.toString()).isError(true).build();\n");
-    writer.write("      }\n");
-    writer.write("    }\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeResourceDefinitionMethod(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    String sourceMethod = sourceMethod(method);
-    String uri = resourceUri(method);
-    String name = resourceName(method);
-    String title = resourceTitle(method);
-    String description = resourceDescription(method);
-    String mimeType = resourceMimeType(method);
-    String rolesLiteral = resourceRolesLiteral(method);
-    double priority = resourcePriority(method);
-
-    writer.write("  private static ResourceDefinition resourceDefinition" + index + "() {\n");
-    writer.write(
-        "    McpSchema.Resource resource = McpSchema.Resource.builder(\""
-            + escape(uri)
-            + "\", \""
-            + escape(name)
-            + "\")\n");
-    writer.write("        .title(\"" + escape(title) + "\")\n");
-    writer.write("        .description(\"" + escape(description) + "\")\n");
-    writer.write("        .mimeType(\"" + escape(mimeType) + "\")\n");
-    writer.write(
-        "        .annotations(McpSchema.Annotations.builder().audience("
-            + rolesLiteral
-            + ").priority("
-            + priority
-            + ").build())\n");
-    writer.write("        .build();\n");
-    writer.write(
-        "    return new ResourceDefinition(\""
-            + escape(sourceMethod)
-            + "\", resource, new ResourceInvoker"
-            + index
-            + "());\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeResourceInvoker(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    TypeElement owner = (TypeElement) method.getEnclosingElement();
-    String ownerType = owner.getQualifiedName().toString();
-    boolean returnsVoid = method.getReturnType().getKind() == TypeKind.VOID;
-
-    writer.write(
-        "  private static final class ResourceInvoker" + index + " implements ResourceInvoker {\n");
-    writer.write("    @Override\n");
-    writer.write("    public Invocation invoke(McpApplicationContext context) {\n");
-    writer.write("      try {\n");
-    writer.write(
-        "        "
-            + ownerType
-            + " instance = ("
-            + ownerType
-            + ") context.getComponentInstance("
-            + ownerType
-            + ".class);\n");
-    if (returnsVoid) {
-      writer.write("        instance." + method.getSimpleName() + "();\n");
-      writer.write(
-          "        return Invocation.builder().result(\"The method call succeeded but has a void return type\").build();\n");
-    } else {
-      writer.write("        Object result = instance." + method.getSimpleName() + "();\n");
-      writer.write(
-          "        Object resultIfNull = \"The method call succeeded but the return value is null\";\n");
-      writer.write(
-          "        return Invocation.builder().result(result == null ? resultIfNull : result).build();\n");
-    }
-    writer.write("      } catch (Exception e) {\n");
-    writer.write(
-        "        return Invocation.builder().result(McpServerError.METHOD_INVOCATION_ERROR.toString()).isError(true).build();\n");
-    writer.write("      }\n");
-    writer.write("    }\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeCompletionDefinitionMethod(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    String sourceMethod = sourceMethod(method);
-    writer.write("  private static CompletionDefinition completionDefinition" + index + "() {\n");
-    if (method.getAnnotation(McpPromptCompletion.class) != null) {
-      McpPromptCompletion annotation = method.getAnnotation(McpPromptCompletion.class);
-      writer.write(
-          "    McpSchema.CompleteReference reference = McpSchema.PromptReference.builder(\""
-              + escape(annotation.name())
-              + "\")");
-      if (!StringHelper.isBlank(annotation.title())) {
-        writer.write(".title(\"" + escape(annotation.title()) + "\")");
-      }
-      writer.write(".build();\n");
-    } else {
-      McpResourceCompletion annotation = method.getAnnotation(McpResourceCompletion.class);
-      writer.write(
-          "    McpSchema.CompleteReference reference = new McpSchema.ResourceReference(\""
-              + escape(annotation.uri())
-              + "\");\n");
-    }
-    writer.write(
-        "    return new CompletionDefinition(\""
-            + escape(sourceMethod)
-            + "\", reference, new CompletionInvoker"
-            + index
-            + "());\n");
-    writer.write("  }\n\n");
-  }
-
-  private void writeCompletionInvoker(Writer writer, ExecutableElement method, int index)
-      throws IOException {
-    TypeElement owner = (TypeElement) method.getEnclosingElement();
-    String ownerType = owner.getQualifiedName().toString();
-
-    writer.write(
-        "  private static final class CompletionInvoker"
-            + index
-            + " implements CompletionInvoker {\n");
-    writer.write("    @Override\n");
-    writer.write(
-        "    public Invocation invoke(McpApplicationContext context, McpSchema.CompleteRequest.CompleteArgument argument) {\n");
-    writer.write("      try {\n");
-    writer.write(
-        "        "
-            + ownerType
-            + " instance = ("
-            + ownerType
-            + ") context.getComponentInstance("
-            + ownerType
-            + ".class);\n");
-    writer.write("        Object result = instance." + method.getSimpleName() + "(argument);\n");
-    writer.write(
-        "        Object resultIfNull = \"The method call succeeded but the return value is null\";\n");
-    writer.write(
-        "        return Invocation.builder().result(result == null ? resultIfNull : result).build();\n");
-    writer.write("      } catch (Exception e) {\n");
-    writer.write(
-        "        return Invocation.builder().result(McpServerError.METHOD_INVOCATION_ERROR.toString()).isError(true).build();\n");
-    writer.write("      }\n");
-    writer.write("    }\n");
-    writer.write("  }\n\n");
   }
 
   private void writeDefinitionLiteral(
@@ -996,77 +511,77 @@ public final class ComponentProcessor extends AbstractProcessor {
 
   private String sourceMethod(ExecutableElement method) {
     TypeElement owner = (TypeElement) method.getEnclosingElement();
-    return owner.getQualifiedName() + "#" + method;
+    return owner.getQualifiedName() + StringHelper.HASH + method;
   }
 
   private String toolName(ExecutableElement method) {
-    McpTool annotation = method.getAnnotation(McpTool.class);
+    McpTool annotation = Objects.requireNonNull(method.getAnnotation(McpTool.class));
     String defaultName = StringHelper.toSnakeCase(method.getSimpleName().toString());
     return StringHelper.defaultIfBlank(annotation.name(), defaultName);
   }
 
   private String toolTitle(ExecutableElement method) {
-    McpTool annotation = method.getAnnotation(McpTool.class);
+    McpTool annotation = Objects.requireNonNull(method.getAnnotation(McpTool.class));
     String name = toolName(method);
     return StringHelper.defaultIfBlank(annotation.title(), name);
   }
 
   private String toolDescription(ExecutableElement method) {
-    McpTool annotation = method.getAnnotation(McpTool.class);
+    McpTool annotation = Objects.requireNonNull(method.getAnnotation(McpTool.class));
     String name = toolName(method);
     return StringHelper.defaultIfBlank(annotation.description(), name);
   }
 
   private String promptName(ExecutableElement method) {
-    McpPrompt annotation = method.getAnnotation(McpPrompt.class);
+    McpPrompt annotation = Objects.requireNonNull(method.getAnnotation(McpPrompt.class));
     String defaultName = StringHelper.toSnakeCase(method.getSimpleName().toString());
     return StringHelper.defaultIfBlank(annotation.name(), defaultName);
   }
 
   private String promptTitle(ExecutableElement method) {
-    McpPrompt annotation = method.getAnnotation(McpPrompt.class);
+    McpPrompt annotation = Objects.requireNonNull(method.getAnnotation(McpPrompt.class));
     String name = promptName(method);
     return StringHelper.defaultIfBlank(annotation.title(), name);
   }
 
   private String promptDescription(ExecutableElement method) {
-    McpPrompt annotation = method.getAnnotation(McpPrompt.class);
+    McpPrompt annotation = Objects.requireNonNull(method.getAnnotation(McpPrompt.class));
     String name = promptName(method);
     return StringHelper.defaultIfBlank(annotation.description(), name);
   }
 
   private String resourceUri(ExecutableElement method) {
-    return method.getAnnotation(McpResource.class).uri();
+    return Objects.requireNonNull(method.getAnnotation(McpResource.class)).uri();
   }
 
   private String resourceName(ExecutableElement method) {
-    McpResource annotation = method.getAnnotation(McpResource.class);
+    McpResource annotation = Objects.requireNonNull(method.getAnnotation(McpResource.class));
     String defaultName = StringHelper.toSnakeCase(method.getSimpleName().toString());
     return StringHelper.defaultIfBlank(annotation.name(), defaultName);
   }
 
   private String resourceTitle(ExecutableElement method) {
-    McpResource annotation = method.getAnnotation(McpResource.class);
+    McpResource annotation = Objects.requireNonNull(method.getAnnotation(McpResource.class));
     String name = resourceName(method);
     return StringHelper.defaultIfBlank(annotation.title(), name);
   }
 
   private String resourceDescription(ExecutableElement method) {
-    McpResource annotation = method.getAnnotation(McpResource.class);
+    McpResource annotation = Objects.requireNonNull(method.getAnnotation(McpResource.class));
     String name = resourceName(method);
     return StringHelper.defaultIfBlank(annotation.description(), name);
   }
 
   private String resourceMimeType(ExecutableElement method) {
-    return method.getAnnotation(McpResource.class).mimeType();
+    return Objects.requireNonNull(method.getAnnotation(McpResource.class)).mimeType();
   }
 
   private double resourcePriority(ExecutableElement method) {
-    return method.getAnnotation(McpResource.class).priority();
+    return Objects.requireNonNull(method.getAnnotation(McpResource.class)).priority();
   }
 
   private String resourceRolesLiteral(ExecutableElement method) {
-    var roles = method.getAnnotation(McpResource.class).roles();
+    var roles = Objects.requireNonNull(method.getAnnotation(McpResource.class)).roles();
     if (roles.length == 0) {
       return "List.of()";
     }
@@ -1089,7 +604,7 @@ public final class ComponentProcessor extends AbstractProcessor {
     return "unknown:" + sourceMethod(method);
   }
 
-  private int modelHash(
+  private int componentHash(
       List<ExecutableElement> toolsToHash,
       List<ExecutableElement> promptsToHash,
       List<ExecutableElement> resourcesToHash,
@@ -1173,6 +688,184 @@ public final class ComponentProcessor extends AbstractProcessor {
 
   private String escape(String value) {
     return value.replace("\\", "\\\\").replace("\"", "\\\"");
+  }
+
+  private record ToolCodegenSupport(AnnotationProcessor processor) implements ToolCodegen.Support {
+
+    @Override
+    public String sourceMethod(ExecutableElement method) {
+      return processor.sourceMethod(method);
+    }
+
+    @Override
+    public String toolName(ExecutableElement method) {
+      return processor.toolName(method);
+    }
+
+    @Override
+    public String toolTitle(ExecutableElement method) {
+      return processor.toolTitle(method);
+    }
+
+    @Override
+    public String toolDescription(ExecutableElement method) {
+      return processor.toolDescription(method);
+    }
+
+    @Override
+    public String escape(String value) {
+      return processor.escape(value);
+    }
+
+    @Override
+    public String erasedType(TypeMirror mirror) {
+      return processor.erasedType(mirror);
+    }
+
+    @Override
+    public TypeElement asTypeElement(TypeMirror mirror) {
+      return processor.asTypeElement(mirror);
+    }
+
+    @Override
+    public String toJsonSchemaType(String javaType) {
+      return processor.toJsonSchemaType(javaType);
+    }
+
+    @Override
+    public void writeDefinitionLiteral(
+        Writer writer,
+        String indent,
+        String targetMap,
+        String definitionName,
+        TypeElement definitionType)
+        throws IOException {
+      processor.writeDefinitionLiteral(writer, indent, targetMap, definitionName, definitionType);
+    }
+
+    @Override
+    public List<ToolCodegen.PropertySpec> schemaProperties(TypeElement type) {
+      List<PropertySpec> properties = processor.schemaProperties(type);
+      List<ToolCodegen.PropertySpec> specs = new ArrayList<>(properties.size());
+      for (PropertySpec property : properties) {
+        specs.add(
+            new ToolCodegen.PropertySpec(
+                property.name(), property.type(), property.description(), property.required()));
+      }
+      return specs;
+    }
+
+    @Override
+    public String parameterDeclarationType(TypeMirror mirror) {
+      return processor.parameterDeclarationType(mirror);
+    }
+
+    @Override
+    public String classLiteral(TypeMirror mirror) {
+      return processor.classLiteral(mirror);
+    }
+  }
+
+  private record PromptCodegenSupport(AnnotationProcessor processor)
+      implements PromptCodegen.Support {
+
+    @Override
+    public String sourceMethod(ExecutableElement method) {
+      return processor.sourceMethod(method);
+    }
+
+    @Override
+    public String promptName(ExecutableElement method) {
+      return processor.promptName(method);
+    }
+
+    @Override
+    public String promptTitle(ExecutableElement method) {
+      return processor.promptTitle(method);
+    }
+
+    @Override
+    public String promptDescription(ExecutableElement method) {
+      return processor.promptDescription(method);
+    }
+
+    @Override
+    public String escape(String value) {
+      return processor.escape(value);
+    }
+
+    @Override
+    public String parameterDeclarationType(TypeMirror mirror) {
+      return processor.parameterDeclarationType(mirror);
+    }
+
+    @Override
+    public String classLiteral(TypeMirror mirror) {
+      return processor.classLiteral(mirror);
+    }
+  }
+
+  private record ResourceCodegenSupport(AnnotationProcessor processor)
+      implements ResourceCodegen.Support {
+
+    @Override
+    public String sourceMethod(ExecutableElement method) {
+      return processor.sourceMethod(method);
+    }
+
+    @Override
+    public String resourceUri(ExecutableElement method) {
+      return processor.resourceUri(method);
+    }
+
+    @Override
+    public String resourceName(ExecutableElement method) {
+      return processor.resourceName(method);
+    }
+
+    @Override
+    public String resourceTitle(ExecutableElement method) {
+      return processor.resourceTitle(method);
+    }
+
+    @Override
+    public String resourceDescription(ExecutableElement method) {
+      return processor.resourceDescription(method);
+    }
+
+    @Override
+    public String resourceMimeType(ExecutableElement method) {
+      return processor.resourceMimeType(method);
+    }
+
+    @Override
+    public String resourceRolesLiteral(ExecutableElement method) {
+      return processor.resourceRolesLiteral(method);
+    }
+
+    @Override
+    public double resourcePriority(ExecutableElement method) {
+      return processor.resourcePriority(method);
+    }
+
+    @Override
+    public String escape(String value) {
+      return processor.escape(value);
+    }
+  }
+
+  private record CompletionCodegenSupport(AnnotationProcessor processor)
+      implements CompletionCodegen.Support {
+
+    @Override
+    public String sourceMethod(ExecutableElement method) {
+      return processor.sourceMethod(method);
+    }
+
+    @Override
+    public String escape(String value) {
+      return processor.escape(value);
+    }
   }
 
   private record PropertySpec(String name, String type, String description, boolean required) {}

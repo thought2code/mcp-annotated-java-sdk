@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
@@ -92,10 +92,8 @@ class JacksonHelperTest {
     File baseFile = classpathResource("test-mcp-server-with-profile.yml");
     File profileFile = classpathResource("test-mcp-server-with-profile-dev.yml");
 
-    McpServerConfiguration configuration =
-        JacksonHelper.fromYaml(baseFile, McpServerConfiguration.class);
-    configuration =
-        JacksonHelper.mergeYaml(configuration, profileFile, McpServerConfiguration.class);
+    ServerConfiguration configuration = JacksonHelper.fromYaml(baseFile, ServerConfiguration.class);
+    configuration = JacksonHelper.mergeYaml(configuration, profileFile, ServerConfiguration.class);
 
     assertEquals("mcp-server-dev", configuration.name());
     assertFalse(configuration.capabilities().resource());

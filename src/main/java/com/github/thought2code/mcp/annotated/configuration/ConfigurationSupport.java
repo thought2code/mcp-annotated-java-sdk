@@ -9,9 +9,9 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  * <p>Jackson profile merging handles field overlays; this class applies MCP-specific rules that are
  * not expressible through generic YAML merge alone.
  */
-public final class McpConfigurationSupport {
+public final class ConfigurationSupport {
 
-  private McpConfigurationSupport() {
+  private ConfigurationSupport() {
     throw new UnsupportedOperationException("Utility class should not be instantiated");
   }
 
@@ -27,13 +27,13 @@ public final class McpConfigurationSupport {
    * @param profileFromBase profile name from the base configuration file
    * @return finalized configuration
    */
-  public static McpServerConfiguration finalizeMerged(
-      McpServerConfiguration configuration, String profileFromBase) {
+  public static ServerConfiguration finalizeMerged(
+      ServerConfiguration configuration, String profileFromBase) {
     ServerMode mode = configuration.mode();
     final String profile =
         StringHelper.isBlank(profileFromBase) ? configuration.profile() : profileFromBase;
 
-    return new McpServerConfiguration(
+    return new ServerConfiguration(
         profile,
         configuration.enabled(),
         mode,

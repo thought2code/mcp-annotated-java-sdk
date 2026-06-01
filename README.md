@@ -296,7 +296,7 @@ The SDK creates **one instance per component class** (no-arg constructor) and re
 This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**, a **pre-release milestone**. APIs may change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
 
 - **STREAMABLE** is the recommended HTTP transport for new projects.
-- **SSE** (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
+- **SSE** (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
 
 ## 🏗️ Project Structure
 

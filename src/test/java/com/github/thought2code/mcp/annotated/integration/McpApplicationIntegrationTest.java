@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
@@ -140,15 +140,14 @@ class McpApplicationIntegrationTest {
 
   @Test
   void configurationLoader_shouldLoadDefaultClasspathConfig() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("mcp-server.yml").loadConfig();
+    ServerConfiguration configuration = new ConfigurationLoader("mcp-server.yml").loadConfig();
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
   }
 
   @Test
   void disabledConfiguration_shouldNotStartServer() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-disabled.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-disabled.yml").loadConfig();
     AnnotatedMcpServer server =
         assertDoesNotThrow(() -> TestMcpServerLifecycle.start(context, configuration));
     assertNull(server);
@@ -161,22 +160,22 @@ class McpApplicationIntegrationTest {
    */
   @Test
   void stdioModeConfig_shouldLoadWithoutStartingInProcessServer() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-enable-stdio-mode.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-enable-stdio-mode.yml").loadConfig();
     assertEquals(ServerMode.STDIO, configuration.mode());
   }
 
   @Test
   void sseModeConfig_shouldLoadWithoutStartingInProcessServer() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-enable-http-sse-mode.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-enable-http-sse-mode.yml").loadConfig();
     assertEquals(ServerMode.SSE, configuration.mode());
   }
 
   @Test
   void streamableModeConfig_shouldLoadWithoutStartingInProcessServer() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-enable-streamable-http-mode.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-enable-streamable-http-mode.yml").loadConfig();
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
   }
 
@@ -187,8 +186,7 @@ class McpApplicationIntegrationTest {
         () ->
             TestMcpServerLifecycle.start(
                 context,
-                new McpConfigurationLoader("test-mcp-server-enable-unknown-mode.yml")
-                    .loadConfig()));
+                new ConfigurationLoader("test-mcp-server-enable-unknown-mode.yml").loadConfig()));
   }
 
   private static boolean hasCause(Throwable error, Predicate<Throwable> matcher) {

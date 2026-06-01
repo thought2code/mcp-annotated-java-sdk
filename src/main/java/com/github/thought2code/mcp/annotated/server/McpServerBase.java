@@ -1,9 +1,9 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
-import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerCapabilities;
+import com.github.thought2code.mcp.annotated.configuration.ServerChangeNotification;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.component.completion.CompletionSupport;
@@ -46,14 +46,14 @@ import org.slf4j.LoggerFactory;
  * @see McpStdioServer
  * @see McpSseServer
  * @see McpStreamableServer
- * @see McpServerConfiguration
+ * @see ServerConfiguration
  */
 public abstract class McpServerBase implements AnnotatedMcpServer {
 
   private static final Logger log = LoggerFactory.getLogger(McpServerBase.class);
 
   /** The server configuration used by this MCP server. */
-  protected final McpServerConfiguration configuration;
+  protected final ServerConfiguration configuration;
 
   /** Application-scoped runtime context used for discovery and localization. */
   protected final McpApplicationContext context;
@@ -68,7 +68,7 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    * @param configuration the server configuration
    * @param context the application-scoped runtime context for component discovery and localization
    */
-  public McpServerBase(McpServerConfiguration configuration, McpApplicationContext context) {
+  public McpServerBase(ServerConfiguration configuration, McpApplicationContext context) {
     this.configuration = configuration;
     this.context = context;
   }
@@ -81,13 +81,13 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
    * (resources, prompts, tools, completions) and their respective change notification settings.
    *
    * @return a configured ServerCapabilities object reflecting the server's supported features
-   * @see McpServerCapabilities
-   * @see McpServerChangeNotification
+   * @see ServerCapabilities
+   * @see ServerChangeNotification
    */
   @Override
   public McpSchema.ServerCapabilities defineCapabilities() {
-    McpServerCapabilities capabilitiesConfig = configuration.capabilities();
-    McpServerChangeNotification serverChangeNotification = configuration.changeNotification();
+    ServerCapabilities capabilitiesConfig = configuration.capabilities();
+    ServerChangeNotification serverChangeNotification = configuration.changeNotification();
 
     McpSchema.ServerCapabilities.Builder capabilities = McpSchema.ServerCapabilities.builder();
 

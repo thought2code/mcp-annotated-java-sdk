@@ -478,7 +478,7 @@ public String createUser(
 ## Important Notes
 
 1. **Entry point**: Use `McpApplication.run()`; component classes are discovered via `@McpServerApplication` package scanning.
-2. **Deprecated SSE (for removal since 0.16.0)**: HTTP SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `McpServerSSE`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0. Use STREAMABLE mode (`McpStreamableServer`, `streamable.*`) for new HTTP projects.
+2. **Deprecated SSE (for removal since 0.16.0)**: HTTP SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0. Use STREAMABLE mode (`McpStreamableServer`, `streamable.*`) for new HTTP projects.
 3. **MCP SDK milestone**: This project depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
 4. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
 5. **Singleton components**: One instance per component class is shared across concurrent requests. Keep components stateless or thread-safe.

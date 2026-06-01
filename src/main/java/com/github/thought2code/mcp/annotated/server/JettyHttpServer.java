@@ -1,6 +1,6 @@
 package com.github.thought2code.mcp.annotated.server;
 
-import com.github.thought2code.mcp.annotated.configuration.McpServerDefaults;
+import com.github.thought2code.mcp.annotated.configuration.ServerDefaults;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import jakarta.servlet.http.HttpServlet;
 import java.util.Objects;
@@ -35,7 +35,7 @@ public class JettyHttpServer {
   private HttpServlet mcpTransportProvider;
 
   /** Port to bind Jetty HTTP server. */
-  private int port = McpServerDefaults.PORT;
+  private int port = ServerDefaults.PORT;
 
   /** Jetty server instance. */
   private Server server;

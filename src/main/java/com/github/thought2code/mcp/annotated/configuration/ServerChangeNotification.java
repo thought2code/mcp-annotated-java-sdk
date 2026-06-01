@@ -11,13 +11,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author codeboyzhou
  */
-public record McpServerChangeNotification(
+public record ServerChangeNotification(
     @JsonProperty("resource") Boolean resource,
     @JsonProperty("prompt") Boolean prompt,
     @JsonProperty("tool") Boolean tool) {
 
   /**
-   * Creates a new instance of {@code Builder} to build {@code McpServerChangeNotification}.
+   * Creates a new instance of {@code Builder} to build {@code ServerChangeNotification}.
    *
    * @return A new instance of {@code Builder}.
    */
@@ -25,16 +25,16 @@ public record McpServerChangeNotification(
     return new Builder();
   }
 
-  /** Builder class for {@code McpServerChangeNotification}. */
+  /** Builder class for {@code ServerChangeNotification}. */
   public static class Builder {
     /** The resource change notification flag. */
-    private Boolean resource = McpServerDefaults.CHANGE_NOTIFICATION_ENABLED;
+    private Boolean resource = ServerDefaults.CHANGE_NOTIFICATION_ENABLED;
 
     /** The prompt change notification flag. */
-    private Boolean prompt = McpServerDefaults.CHANGE_NOTIFICATION_ENABLED;
+    private Boolean prompt = ServerDefaults.CHANGE_NOTIFICATION_ENABLED;
 
     /** The tool change notification flag. */
-    private Boolean tool = McpServerDefaults.CHANGE_NOTIFICATION_ENABLED;
+    private Boolean tool = ServerDefaults.CHANGE_NOTIFICATION_ENABLED;
 
     /**
      * Sets the resource change notification flag.
@@ -70,12 +70,12 @@ public record McpServerChangeNotification(
     }
 
     /**
-     * Builds an instance of {@code McpServerChangeNotification} with the configured values.
+     * Builds an instance of {@code ServerChangeNotification} with the configured values.
      *
-     * @return A new instance of {@code McpServerChangeNotification}.
+     * @return A new instance of {@code ServerChangeNotification}.
      */
-    public McpServerChangeNotification build() {
-      return new McpServerChangeNotification(resource, prompt, tool);
+    public ServerChangeNotification build() {
+      return new ServerChangeNotification(resource, prompt, tool);
     }
   }
 }

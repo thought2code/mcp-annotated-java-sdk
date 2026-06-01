@@ -13,12 +13,12 @@ import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import org.junit.jupiter.api.Test;
 
-class McpConfigurationLoaderTest {
+class ConfigurationLoaderTest {
 
   @Test
   void loadConfig_shouldMergeProfileOverrides() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-with-profile.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-with-profile.yml").loadConfig();
     assertNotNull(configuration);
     assertEquals("dev", configuration.profile());
     assertTrue(configuration.enabled());
@@ -44,9 +44,7 @@ class McpConfigurationLoaderTest {
     McpServerConfigurationException exception =
         assertThrows(
             McpServerConfigurationException.class,
-            () ->
-                new McpConfigurationLoader("test-mcp-server-with-invalid-profile.yml")
-                    .loadConfig());
+            () -> new ConfigurationLoader("test-mcp-server-with-invalid-profile.yml").loadConfig());
     assertTrue(exception.getMessage().contains("subscribe-resource"));
   }
 
@@ -55,15 +53,14 @@ class McpConfigurationLoaderTest {
     McpServerConfigurationException exception =
         assertThrows(
             McpServerConfigurationException.class,
-            () -> new McpConfigurationLoader("missing-config.yml").loadConfig());
+            () -> new ConfigurationLoader("missing-config.yml").loadConfig());
     assertTrue(exception.getMessage().contains(McpServerError.CONFIG_FILE_NOT_FOUND.getCode()));
     assertTrue(exception.getMessage().contains("missing-config.yml"));
   }
 
   @Test
   void loadConfig_shouldLoadDefaultClasspathConfigWithoutProfile() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("mcp-server.yml").loadConfig();
+    ServerConfiguration configuration = new ConfigurationLoader("mcp-server.yml").loadConfig();
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
     assertTrue(configuration.enabled());
     assertNull(configuration.sse());
@@ -71,8 +68,8 @@ class McpConfigurationLoaderTest {
 
   @Test
   void loadConfig_shouldClearTransportSettingsForStdioModeAfterProfileMerge() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-stdio-with-profile.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-stdio-with-profile.yml").loadConfig();
 
     assertEquals(ServerMode.STDIO, configuration.mode());
     assertEquals("mcp-server-dev", configuration.name());
@@ -83,8 +80,8 @@ class McpConfigurationLoaderTest {
   @Test
   @SuppressWarnings("deprecation")
   void loadConfig_shouldMergePartialSseOverridesFromProfile() {
-    McpServerConfiguration configuration =
-        new McpConfigurationLoader("test-mcp-server-sse-with-profile.yml").loadConfig();
+    ServerConfiguration configuration =
+        new ConfigurationLoader("test-mcp-server-sse-with-profile.yml").loadConfig();
 
     assertEquals(ServerMode.SSE, configuration.mode());
     assertEquals(8081, configuration.sse().port());

@@ -1,20 +1,20 @@
 package com.github.thought2code.mcp.annotated.support;
 
-import com.github.thought2code.mcp.annotated.configuration.McpServerCapabilities;
-import com.github.thought2code.mcp.annotated.configuration.McpServerChangeNotification;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
-import com.github.thought2code.mcp.annotated.configuration.McpServerStreamable;
+import com.github.thought2code.mcp.annotated.configuration.ServerCapabilities;
+import com.github.thought2code.mcp.annotated.configuration.ServerChangeNotification;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerSse;
+import com.github.thought2code.mcp.annotated.configuration.ServerStreamable;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 
-/** Builds valid {@link McpServerConfiguration} instances for unit and integration tests. */
+/** Builds valid {@link ServerConfiguration} instances for unit and integration tests. */
 public final class TestMcpConfigurations {
 
   private TestMcpConfigurations() {}
 
-  public static McpServerConfiguration.Builder baseBuilder() {
-    return McpServerConfiguration.builder()
+  public static ServerConfiguration.Builder baseBuilder() {
+    return ServerConfiguration.builder()
         .enabled(true)
         .name("mcp-server")
         .version("1.0.0")
@@ -22,7 +22,7 @@ public final class TestMcpConfigurations {
         .instructions("test")
         .requestTimeout(60_000L)
         .capabilities(
-            McpServerCapabilities.builder()
+            ServerCapabilities.builder()
                 .resource(true)
                 .subscribeResource(true)
                 .prompt(true)
@@ -30,18 +30,18 @@ public final class TestMcpConfigurations {
                 .completion(true)
                 .build())
         .changeNotification(
-            McpServerChangeNotification.builder().resource(true).prompt(true).tool(true).build());
+            ServerChangeNotification.builder().resource(true).prompt(true).tool(true).build());
   }
 
-  public static McpServerConfiguration stdio() {
+  public static ServerConfiguration stdio() {
     return baseBuilder().mode(ServerMode.STDIO).build();
   }
 
-  public static McpServerConfiguration streamable(int port) {
+  public static ServerConfiguration streamable(int port) {
     return baseBuilder()
         .mode(ServerMode.STREAMABLE)
         .streamable(
-            McpServerStreamable.builder()
+            ServerStreamable.builder()
                 .mcpEndpoint("/mcp/message")
                 .disallowDelete(false)
                 .keepAliveInterval(20_000L)
@@ -57,11 +57,11 @@ public final class TestMcpConfigurations {
    */
   @Deprecated(since = "0.16.0", forRemoval = true)
   @SuppressWarnings("deprecation")
-  public static McpServerConfiguration sse(int port) {
+  public static ServerConfiguration sse(int port) {
     return baseBuilder()
         .mode(ServerMode.SSE)
         .sse(
-            McpServerSSE.builder()
+            ServerSse.builder()
                 .messageEndpoint("/mcp/message")
                 .endpoint("/sse")
                 .baseUrl("http://localhost:" + port)

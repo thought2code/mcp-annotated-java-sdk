@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated.server;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
-import com.github.thought2code.mcp.annotated.configuration.McpServerSSE;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ServerSse;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
@@ -53,9 +53,9 @@ public class McpSseServer extends McpServerBase {
    *     McpStreamableServer} instead.
    */
   @Deprecated(since = "0.16.0", forRemoval = true)
-  public McpSseServer(McpServerConfiguration configuration, McpApplicationContext context) {
+  public McpSseServer(ServerConfiguration configuration, McpApplicationContext context) {
     super(configuration, context);
-    McpServerSSE sse = configuration.sse();
+    ServerSse sse = configuration.sse();
     this.port = sse.port();
     this.transportProvider =
         HttpServletSseServerTransportProvider.builder()
@@ -77,7 +77,7 @@ public class McpSseServer extends McpServerBase {
    *
    * @return a synchronization specification configured for SSE transport
    * @see HttpServletSseServerTransportProvider
-   * @see McpServerSSE
+   * @see ServerSse
    * @see McpJsonDefaults
    * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
    *     McpStreamableServer} instead.

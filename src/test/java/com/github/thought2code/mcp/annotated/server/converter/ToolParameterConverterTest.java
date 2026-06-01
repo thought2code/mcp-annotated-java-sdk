@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class McpToolParameterConverterTest {
+class ToolParameterConverterTest {
 
-  private final McpToolParameterConverter converter = new McpToolParameterConverter();
+  private final ToolParameterConverter converter = new ToolParameterConverter();
 
   @Test
   void convertAll_shouldConvertAnnotatedParametersAndDefaultUnannotatedOnes() throws Exception {

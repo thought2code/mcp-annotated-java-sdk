@@ -1,8 +1,8 @@
 package com.github.thought2code.mcp.annotated.support;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
-import com.github.thought2code.mcp.annotated.configuration.McpConfigurationLoader;
-import com.github.thought2code.mcp.annotated.configuration.McpServerConfiguration;
+import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
+import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
 import com.github.thought2code.mcp.annotated.server.McpSseServer;
@@ -31,7 +31,7 @@ public final class TestMcpServerLifecycle {
    * @return started server, or {@code null} when the configuration is disabled
    */
   public static AnnotatedMcpServer start(McpApplicationContext context, String configFileName) {
-    McpServerConfiguration configuration = new McpConfigurationLoader(configFileName).loadConfig();
+    ServerConfiguration configuration = new ConfigurationLoader(configFileName).loadConfig();
     return start(context, configuration);
   }
 
@@ -44,7 +44,7 @@ public final class TestMcpServerLifecycle {
    */
   @SuppressWarnings("deprecation")
   public static AnnotatedMcpServer start(
-      McpApplicationContext context, McpServerConfiguration configuration) {
+      McpApplicationContext context, ServerConfiguration configuration) {
     if (!configuration.enabled()) {
       return null;
     }

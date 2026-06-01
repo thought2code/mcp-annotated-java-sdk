@@ -12,12 +12,12 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  * validates both base configuration properties and mode-specific settings for SSE and STREAMABLE
  * server modes.
  *
- * @see McpServerConfiguration
+ * @see ServerConfiguration
  * @author codeboyzhou
  */
-public final class McpConfigurationChecker {
+public final class ConfigurationChecker {
 
-  private McpConfigurationChecker() {
+  private ConfigurationChecker() {
     throw new UnsupportedOperationException("Utility class should not be instantiated");
   }
 
@@ -27,7 +27,7 @@ public final class McpConfigurationChecker {
    * @param configuration the MCP server configuration to validate
    * @throws McpServerConfigurationException if any required configuration property is missing
    */
-  public static void check(McpServerConfiguration configuration) {
+  public static void check(ServerConfiguration configuration) {
     checkCore(configuration);
     checkCapabilities(configuration.capabilities());
     checkChangeNotification(configuration.changeNotification());
@@ -38,7 +38,7 @@ public final class McpConfigurationChecker {
     }
   }
 
-  private static void checkCore(McpServerConfiguration configuration) {
+  private static void checkCore(ServerConfiguration configuration) {
     checkNull("enabled", configuration.enabled());
     checkNull("mode", configuration.mode());
     checkBlank("name", configuration.name());
@@ -50,7 +50,7 @@ public final class McpConfigurationChecker {
     checkNull("change-notification", configuration.changeNotification());
   }
 
-  private static void checkCapabilities(McpServerCapabilities capabilities) {
+  private static void checkCapabilities(ServerCapabilities capabilities) {
     checkNull("capabilities.resource", capabilities.resource());
     if (capabilities.resource()) {
       checkNull("capabilities.subscribe-resource", capabilities.subscribeResource());
@@ -60,7 +60,7 @@ public final class McpConfigurationChecker {
     checkNull("capabilities.completion", capabilities.completion());
   }
 
-  private static void checkChangeNotification(McpServerChangeNotification changeNotification) {
+  private static void checkChangeNotification(ServerChangeNotification changeNotification) {
     checkNull("change-notification.resource", changeNotification.resource());
     checkNull("change-notification.prompt", changeNotification.prompt());
     checkNull("change-notification.tool", changeNotification.tool());
@@ -73,7 +73,7 @@ public final class McpConfigurationChecker {
    * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} instead.
    */
   @Deprecated(since = "0.16.0", forRemoval = true)
-  private static void checkSse(McpServerSSE sse) {
+  private static void checkSse(ServerSse sse) {
     checkNull("sse", sse);
     checkBlank("sse.message-endpoint", sse.messageEndpoint());
     checkBlank("sse.endpoint", sse.endpoint());
@@ -81,7 +81,7 @@ public final class McpConfigurationChecker {
     checkNull("sse.port", sse.port());
   }
 
-  private static void checkStreamable(McpServerStreamable streamable) {
+  private static void checkStreamable(ServerStreamable streamable) {
     checkNull("streamable", streamable);
     checkBlank("streamable.mcp-endpoint", streamable.mcpEndpoint());
     checkNull("streamable.disallow-delete", streamable.disallowDelete());

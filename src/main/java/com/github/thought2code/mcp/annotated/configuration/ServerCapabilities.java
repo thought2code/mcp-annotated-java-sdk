@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author codeboyzhou
  */
-public record McpServerCapabilities(
+public record ServerCapabilities(
     @JsonProperty("resource") Boolean resource,
     @JsonProperty("subscribe-resource") Boolean subscribeResource,
     @JsonProperty("prompt") Boolean prompt,
@@ -15,7 +15,7 @@ public record McpServerCapabilities(
     @JsonProperty("completion") Boolean completion) {
 
   /**
-   * Creates a new instance of {@code Builder} to build {@code McpServerCapabilities}.
+   * Creates a new instance of {@code Builder} to build {@code ServerCapabilities}.
    *
    * @return A new instance of {@code Builder}.
    */
@@ -23,22 +23,22 @@ public record McpServerCapabilities(
     return new Builder();
   }
 
-  /** Builder class for {@code McpServerCapabilities}. */
+  /** Builder class for {@code ServerCapabilities}. */
   public static class Builder {
     /** The resource capability. */
-    private Boolean resource = McpServerDefaults.CAPABILITY_ENABLED;
+    private Boolean resource = ServerDefaults.CAPABILITY_ENABLED;
 
     /** The subscribe-resource capability. */
-    private Boolean subscribeResource = McpServerDefaults.CAPABILITY_ENABLED;
+    private Boolean subscribeResource = ServerDefaults.CAPABILITY_ENABLED;
 
     /** The prompt capability. */
-    private Boolean prompt = McpServerDefaults.CAPABILITY_ENABLED;
+    private Boolean prompt = ServerDefaults.CAPABILITY_ENABLED;
 
     /** The tool capability. */
-    private Boolean tool = McpServerDefaults.CAPABILITY_ENABLED;
+    private Boolean tool = ServerDefaults.CAPABILITY_ENABLED;
 
     /** The completion capability. */
-    private Boolean completion = McpServerDefaults.CAPABILITY_ENABLED;
+    private Boolean completion = ServerDefaults.CAPABILITY_ENABLED;
 
     /**
      * Sets the resource capability.
@@ -96,12 +96,12 @@ public record McpServerCapabilities(
     }
 
     /**
-     * Builds an instance of {@code McpServerCapabilities} with the configured values.
+     * Builds an instance of {@code ServerCapabilities} with the configured values.
      *
-     * @return A new instance of {@code McpServerCapabilities}.
+     * @return A new instance of {@code ServerCapabilities}.
      */
-    public McpServerCapabilities build() {
-      return new McpServerCapabilities(resource, subscribeResource, prompt, tool, completion);
+    public ServerCapabilities build() {
+      return new ServerCapabilities(resource, subscribeResource, prompt, tool, completion);
     }
   }
 }
