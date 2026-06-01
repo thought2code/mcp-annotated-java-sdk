@@ -18,6 +18,7 @@
     <!-- Expected failure paths in unit/integration tests intentionally emit ERROR logs. -->
     <logger name="com.github.thought2code.mcp.annotated.util.JacksonHelper" level="OFF"/>
     <logger name="com.github.thought2code.mcp.annotated.server.JettyHttpServer" level="OFF"/>
+    <logger name="com.github.thought2code.mcp.annotated.generated" level="OFF"/>
 
     <root level="WARN">
         <appender-ref ref="CONSOLE"/>

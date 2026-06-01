@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
@@ -148,7 +149,7 @@ class McpApplicationIntegrationTest {
   @Test
   void toolInvocationFailure_shouldKeepClientContractAndEmitSourceMethodLog() {
     int port = new Random().nextInt(8000, 9000);
-    ListAppender<ILoggingEvent> appender = attachInMemoryLogAppender();
+    GeneratedLogCapture capture = attachGeneratedInvocationLogAppender();
     AnnotatedMcpServer server =
         TestMcpServerLifecycle.start(context, TestMcpConfigurations.streamable(port));
     try {
@@ -170,12 +171,12 @@ class McpApplicationIntegrationTest {
       }
 
       assertTrue(
-          hasInvocationFailureLog(appender.list),
+          hasInvocationFailureLog(capture.appender().list),
           "Expected invocation failure log with sourceMethod and exception detail");
     } finally {
       assert server != null;
       server.stop();
-      detachInMemoryLogAppender(appender);
+      detachGeneratedInvocationLogAppender(capture);
     }
   }
 
@@ -241,20 +242,25 @@ class McpApplicationIntegrationTest {
     return false;
   }
 
-  private static ListAppender<ILoggingEvent> attachInMemoryLogAppender() {
-    ch.qos.logback.classic.Logger rootLogger =
-        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+  private static GeneratedLogCapture attachGeneratedInvocationLogAppender() {
+    ch.qos.logback.classic.Logger generatedLogger =
+        (ch.qos.logback.classic.Logger)
+            LoggerFactory.getLogger("com.github.thought2code.mcp.annotated.generated");
+    Level previousLevel = generatedLogger.getLevel();
+    boolean previousAdditivity = generatedLogger.isAdditive();
     ListAppender<ILoggingEvent> appender = new ListAppender<>();
     appender.start();
-    rootLogger.addAppender(appender);
-    return appender;
+    generatedLogger.setLevel(Level.ERROR);
+    generatedLogger.setAdditive(false);
+    generatedLogger.addAppender(appender);
+    return new GeneratedLogCapture(generatedLogger, appender, previousLevel, previousAdditivity);
   }
 
-  private static void detachInMemoryLogAppender(ListAppender<ILoggingEvent> appender) {
-    ch.qos.logback.classic.Logger rootLogger =
-        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-    rootLogger.detachAppender(appender);
-    appender.stop();
+  private static void detachGeneratedInvocationLogAppender(GeneratedLogCapture capture) {
+    capture.logger().detachAppender(capture.appender());
+    capture.logger().setLevel(capture.previousLevel());
+    capture.logger().setAdditive(capture.previousAdditivity());
+    capture.appender().stop();
   }
 
   private static boolean hasInvocationFailureLog(List<ILoggingEvent> events) {
@@ -272,4 +278,10 @@ class McpApplicationIntegrationTest {
     }
     return false;
   }
+
+  private record GeneratedLogCapture(
+      ch.qos.logback.classic.Logger logger,
+      ListAppender<ILoggingEvent> appender,
+      Level previousLevel,
+      boolean previousAdditivity) {}
 }
