@@ -412,7 +412,7 @@ public String divide(
 
 ## Automatic Registration
 
-After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are in the package scanning path of the server application.
+After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are within the registration scope of the server application.
 
 ### Specify Package Path
 
@@ -422,7 +422,7 @@ After defining MCP components, they will be automatically registered to the serv
 @McpServerApplication(basePackage = "com.example.mcp.components")
 ```
 
-If no package path is specified, the package of the class passed to `McpApplication.run()` will be scanned.
+If no package path is specified, the package of the class passed to `McpApplication.run()` is used as the default registration scope.
 
 ## Project Structure
 
@@ -477,7 +477,7 @@ public String createUser(
 
 ## Important Notes
 
-1. **Entry point**: Use `McpApplication.run()`; component classes are discovered via `@McpServerApplication` package scanning.
+1. **Entry point**: Use `McpApplication.run()`; component classes are registered when they match the `@McpServerApplication` registration scope.
 2. **Deprecated SSE (for removal since 0.16.0)**: HTTP SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0. Use STREAMABLE mode (`McpStreamableServer`, `streamable.*`) for new HTTP projects.
 3. **MCP SDK milestone**: This project depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
 4. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
