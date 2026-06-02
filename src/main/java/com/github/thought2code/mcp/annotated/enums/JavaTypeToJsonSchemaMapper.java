@@ -1,7 +1,10 @@
 package com.github.thought2code.mcp.annotated.enums;
 
 /**
- * This enum is used to map Java types to JSON schema data types.
+ * Maps common Java types to JSON Schema primitive type strings.
+ *
+ * <p>Used when reflecting tool parameter and output schemas. Unknown types default to {@code
+ * string} via {@link #getJsonSchemaType(Class)}.
  *
  * @author codeboyzhou
  */

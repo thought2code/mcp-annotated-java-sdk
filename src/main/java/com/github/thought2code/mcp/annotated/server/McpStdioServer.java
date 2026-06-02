@@ -120,6 +120,12 @@ public class McpStdioServer extends McpServerBase {
     }
   }
 
+  /**
+   * Releases the main-thread latch and closes the STDIO transport.
+   *
+   * <p>Unblocks {@link #awaitShutdown()} and gracefully shuts down the underlying transport
+   * provider.
+   */
   @Override
   public void stop() {
     running.countDown();

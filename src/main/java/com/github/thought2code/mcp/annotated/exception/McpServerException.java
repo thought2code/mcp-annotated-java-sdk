@@ -1,7 +1,10 @@
 package com.github.thought2code.mcp.annotated.exception;
 
 /**
- * This exception is thrown to indicate a general error in the MCP (Model Context Protocol) server.
+ * Base unchecked exception for MCP server runtime failures.
+ *
+ * <p>More specific failures use subclasses such as {@link McpServerConfigurationException} and
+ * {@link McpServerComponentRegistrationException}.
  *
  * @author codeboyzhou
  */

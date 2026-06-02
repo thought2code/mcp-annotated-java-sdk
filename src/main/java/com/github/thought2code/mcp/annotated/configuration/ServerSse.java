@@ -3,8 +3,12 @@ package com.github.thought2code.mcp.annotated.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Server-Sent Events (SSE) configuration for an MCP server.
+ * Deprecated HTTP SSE transport settings for an MCP server.
  *
+ * @param messageEndpoint client POST endpoint for outbound messages
+ * @param endpoint SSE stream endpoint path
+ * @param baseUrl optional base URL override for published endpoints
+ * @param port Jetty listen port
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
@@ -29,7 +33,11 @@ public record ServerSse(
     return new Builder();
   }
 
-  /** Builder class for {@code ServerSse}. */
+  /**
+   * Mutable builder for {@link ServerSse}.
+   *
+   * @deprecated HTTP SSE mode is deprecated; use {@link ServerStreamable} instead.
+   */
   @Deprecated(since = "0.16.0", forRemoval = true)
   public static class Builder {
     /** The message endpoint. */

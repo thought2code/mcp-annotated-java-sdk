@@ -11,6 +11,8 @@ import java.util.List;
  *
  * <p>The build-time pipeline generates metadata and invocation bindings for tools, prompts,
  * resources, and completions.
+ *
+ * @author codeboyzhou
  */
 public interface ComponentProvider {
   /**

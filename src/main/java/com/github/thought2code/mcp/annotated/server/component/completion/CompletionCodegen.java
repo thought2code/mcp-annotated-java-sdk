@@ -8,17 +8,30 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
-/** Writes completion-related generated methods in a deterministic order. */
+/**
+ * Emits generated Java source for {@code @McpPromptCompletion} and {@code @McpResourceCompletion}
+ * bindings.
+ *
+ * @author codeboyzhou
+ */
 public final class CompletionCodegen {
 
   private CompletionCodegen() {}
 
+  /** Annotation-processing callbacks used while generating completion source. */
   public interface Support {
+    /** Fully qualified source-method id for diagnostics. */
     String sourceMethod(ExecutableElement method);
 
+    /** Escapes a string for inclusion in generated Java string literals. */
     String escape(String value);
   }
 
+  /**
+   * Writes all completion sections for the given annotated methods.
+   *
+   * @throws IOException when writing fails
+   */
   public static void writeSections(Writer writer, List<ExecutableElement> methods, Support support)
       throws IOException {
     for (int i = 0; i < methods.size(); i++) {
@@ -29,6 +42,7 @@ public final class CompletionCodegen {
     }
   }
 
+  /** Emits {@code completionDefinitionN()} for one annotated method. */
   private static void writeCompletionDefinitionMethod(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     String sourceMethod = support.sourceMethod(method);
@@ -59,6 +73,7 @@ public final class CompletionCodegen {
     writer.write("  }\n\n");
   }
 
+  /** Emits a private {@code CompletionInvoker} implementation for one annotated method. */
   private static void writeCompletionInvoker(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     String sourceMethod = support.sourceMethod(method);

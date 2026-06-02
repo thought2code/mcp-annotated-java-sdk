@@ -10,27 +10,50 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
-/** Writes prompt-related generated methods in a deterministic order. */
+/**
+ * Emits generated Java source for {@code @McpPrompt} bindings.
+ *
+ * @author codeboyzhou
+ */
 public final class PromptCodegen {
 
   private PromptCodegen() {}
 
+  /** Annotation-processing callbacks used while generating prompt source. */
   public interface Support {
+    /** Fully qualified source-method id for diagnostics. */
     String sourceMethod(ExecutableElement method);
 
+    /** Resolved MCP prompt name. */
     String promptName(ExecutableElement method);
 
+    /** Resolved MCP prompt title. */
     String promptTitle(ExecutableElement method);
 
+    /** Resolved MCP prompt description. */
     String promptDescription(ExecutableElement method);
 
+    /** Escapes a string for inclusion in generated Java string literals. */
     String escape(String value);
 
+    /** Java type used in generated invoker local variable declarations. */
     String parameterDeclarationType(javax.lang.model.type.TypeMirror mirror);
 
+    /**
+     * {@code Foo.class} literal for {@link
+     * com.github.thought2code.mcp.annotated.util.TypeConverter}.
+     */
     String classLiteral(javax.lang.model.type.TypeMirror mirror);
   }
 
+  /**
+   * Writes all prompt sections for the given annotated methods.
+   *
+   * @param writer generated source writer
+   * @param methods sorted {@code @McpPrompt} methods
+   * @param support annotation-model support
+   * @throws IOException when writing fails
+   */
   public static void writeSections(Writer writer, List<ExecutableElement> methods, Support support)
       throws IOException {
     for (int i = 0; i < methods.size(); i++) {
@@ -41,6 +64,7 @@ public final class PromptCodegen {
     }
   }
 
+  /** Emits {@code promptDefinitionN()} for one annotated method. */
   private static void writePromptDefinitionMethod(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     String sourceMethod = support.sourceMethod(method);
@@ -98,6 +122,7 @@ public final class PromptCodegen {
     writer.write("  }\n\n");
   }
 
+  /** Emits a private {@code PromptInvoker} implementation for one annotated method. */
   private static void writePromptInvoker(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     String sourceMethod = support.sourceMethod(method);

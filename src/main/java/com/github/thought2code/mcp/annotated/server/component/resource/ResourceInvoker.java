@@ -4,7 +4,9 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.server.component.Invocation;
 
 /**
- * Strongly-typed invocation contract generated at build time for one {@code @McpResource} method.
+ * Generated invocation contract for one {@code @McpResource} method.
+ *
+ * @author codeboyzhou
  */
 @FunctionalInterface
 public interface ResourceInvoker {

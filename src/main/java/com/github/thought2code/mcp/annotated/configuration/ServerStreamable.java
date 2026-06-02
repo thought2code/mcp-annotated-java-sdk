@@ -3,12 +3,12 @@ package com.github.thought2code.mcp.annotated.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This record represents the streamable http server configuration for an MCP (Model Context
- * Protocol) server.
+ * Streamable HTTP transport settings for an MCP server.
  *
- * <p>It contains properties such as the MCP endpoint, disallow delete flag, keep-alive interval,
- * and port.
- *
+ * @param mcpEndpoint servlet path segment for the MCP endpoint
+ * @param disallowDelete whether HTTP DELETE on the MCP session is rejected
+ * @param keepAliveInterval optional SSE keep-alive interval in milliseconds
+ * @param port Jetty listen port
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
@@ -28,7 +28,11 @@ public record ServerStreamable(
     return new Builder();
   }
 
-  /** Builder class for {@code ServerStreamable}. */
+  /**
+   * Mutable builder for {@link ServerStreamable}.
+   *
+   * <p>Holds HTTP endpoint, session, and keep-alive settings for STREAMABLE transport.
+   */
   public static class Builder {
     /** The MCP endpoint. */
     private String mcpEndpoint = ServerDefaults.STREAMABLE_MCP_ENDPOINT;

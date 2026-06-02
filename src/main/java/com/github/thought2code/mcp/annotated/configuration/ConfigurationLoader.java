@@ -14,12 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This record represents a YAML configuration loader for MCP (Model Context Protocol) server
- * configuration.
+ * Loads and merges {@link ServerConfiguration} from YAML files on the classpath or filesystem.
  *
- * <p>It loads the server configuration from a specified YAML file. If no file name is provided, the
- * default file name "mcp-server.yml" will be used.
+ * <p>When {@code profile} is set in the base file, a companion {@code mcp-server-{profile}.yml} is
+ * merged on top using Jackson merge semantics.
  *
+ * @param configFileName YAML file name (for example {@code mcp-server.yml})
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou

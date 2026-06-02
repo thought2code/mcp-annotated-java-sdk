@@ -3,8 +3,15 @@ package com.github.thought2code.mcp.annotated.server.component;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This record represents the result of invoking one generated MCP component binding.
+ * Outcome of invoking one generated MCP component method.
  *
+ * <p>Generated invokers populate {@link #result} with the Java return value (or a stand-in message
+ * for {@code void} or {@code null} returns) and set {@link #isError} when the invocation failed and
+ * should be surfaced to the MCP client as an error response.
+ *
+ * @param result invocation return value or error text; never {@code null} at the record level
+ * @param isError {@code true} when the invocation failed and MCP should treat the result as an
+ *     error
  * @author codeboyzhou
  */
 public record Invocation(@NotNull Object result, boolean isError) {
@@ -26,11 +33,7 @@ public record Invocation(@NotNull Object result, boolean isError) {
     return result.toString();
   }
 
-  /**
-   * This class implements the builder pattern for creating a new instance of {@code Invocation}.
-   *
-   * @author codeboyzhou
-   */
+  /** Mutable builder for {@link Invocation} used by generated invokers. */
   public static final class Builder {
 
     /** The result of the invocation. */

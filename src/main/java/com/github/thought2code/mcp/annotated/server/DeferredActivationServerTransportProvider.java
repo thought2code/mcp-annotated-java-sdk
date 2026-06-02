@@ -21,6 +21,9 @@ final class DeferredActivationServerTransportProvider implements McpServerTransp
 
   private volatile boolean activated;
 
+  /**
+   * @param delegate underlying transport provider whose session factory is deferred
+   */
   DeferredActivationServerTransportProvider(McpServerTransportProvider delegate) {
     this.delegate = Objects.requireNonNull(delegate, "delegate must not be null");
   }
@@ -39,6 +42,11 @@ final class DeferredActivationServerTransportProvider implements McpServerTransp
     delegate.setSessionFactory(sessionFactory);
   }
 
+  /**
+   * Stores the session factory until {@link #activate()}; forwards immediately once activated.
+   *
+   * @param sessionFactory MCP server session factory from server construction
+   */
   @Override
   public void setSessionFactory(McpServerSession.Factory sessionFactory) {
     if (activated) {
@@ -48,11 +56,17 @@ final class DeferredActivationServerTransportProvider implements McpServerTransp
     this.sessionFactory = sessionFactory;
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<String> protocolVersions() {
     return delegate.protocolVersions();
   }
 
+  /**
+   * No-ops until {@link #activate()} so clients are not notified before registration completes.
+   *
+   * <p>{@inheritDoc}
+   */
   @Override
   public Mono<Void> notifyClients(String method, Object params) {
     if (!activated) {
@@ -61,6 +75,11 @@ final class DeferredActivationServerTransportProvider implements McpServerTransp
     return delegate.notifyClients(method, params);
   }
 
+  /**
+   * No-ops until {@link #activate()} so clients are not notified before registration completes.
+   *
+   * <p>{@inheritDoc}
+   */
   @Override
   public Mono<Void> notifyClient(String sessionId, String method, Object params) {
     if (!activated) {
@@ -69,11 +88,13 @@ final class DeferredActivationServerTransportProvider implements McpServerTransp
     return delegate.notifyClient(sessionId, method, params);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Mono<Void> closeGracefully() {
     return delegate.closeGracefully();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void close() {
     delegate.close();

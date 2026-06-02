@@ -4,7 +4,11 @@ import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.server.component.Invocation;
 import io.modelcontextprotocol.spec.McpSchema;
 
-/** Strongly-typed invocation contract generated at build time for one completion method. */
+/**
+ * Generated invocation contract for one completion method.
+ *
+ * @author codeboyzhou
+ */
 @FunctionalInterface
 public interface CompletionInvoker {
   /**

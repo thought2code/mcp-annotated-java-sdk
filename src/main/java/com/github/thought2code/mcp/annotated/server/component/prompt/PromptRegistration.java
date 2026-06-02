@@ -15,17 +15,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Registers build-time component {@code @McpPrompt} definitions. */
+/**
+ * Registers build-time {@code @McpPrompt} definitions with sync or async MCP servers.
+ *
+ * @author codeboyzhou
+ */
 public final class PromptRegistration {
 
   private static final Logger log = LoggerFactory.getLogger(PromptRegistration.class);
 
   private PromptRegistration() {}
 
+  /**
+   * Registers all in-scope prompts on a sync MCP server.
+   *
+   * @param server sync MCP server
+   * @param context application context
+   * @return {@code true} when at least one prompt was registered
+   */
   public static boolean registerSync(McpSyncServer server, McpApplicationContext context) {
     return registerSync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /**
+   * Registers prompts using an explicit provider iterable (for tests).
+   *
+   * @param server sync MCP server
+   * @param context application context
+   * @param providers component providers to scan
+   * @return {@code true} when at least one prompt was registered
+   */
   static boolean registerSync(
       McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<PromptDefinition> definitions =
@@ -52,10 +71,25 @@ public final class PromptRegistration {
         PromptRegistration::logSyncRegistered);
   }
 
+  /**
+   * Registers all in-scope prompts on an async MCP server.
+   *
+   * @param server async MCP server
+   * @param context application context
+   * @return {@code true} when at least one prompt was registered
+   */
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
     return registerAsync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /**
+   * Registers prompts asynchronously using an explicit provider iterable (for tests).
+   *
+   * @param server async MCP server
+   * @param context application context
+   * @param providers component providers to scan
+   * @return {@code true} when at least one prompt was registered
+   */
   static boolean registerAsync(
       McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<PromptDefinition> definitions =
@@ -87,6 +121,7 @@ public final class PromptRegistration {
         PromptRegistration::logAsyncRegistered);
   }
 
+  /** Maps a {@link PromptInvoker} result to an MCP {@link McpSchema.GetPromptResult}. */
   private static McpSchema.GetPromptResult invoke(
       PromptInvoker invoker,
       McpApplicationContext context,
@@ -112,14 +147,17 @@ public final class PromptRegistration {
     return result;
   }
 
+  /** Returns the MCP prompt name from a definition. */
   private static String promptName(PromptDefinition definition) {
     return definition.prompt().name();
   }
 
+  /** Logs successful sync registration of one prompt. */
   private static void logSyncRegistered(PromptDefinition definition) {
     log.debug("Sync McpPrompt {} registered successfully", promptName(definition));
   }
 
+  /** Logs successful async registration of one prompt. */
   private static void logAsyncRegistered(PromptDefinition definition) {
     log.debug("Async McpPrompt {} registered successfully", promptName(definition));
   }

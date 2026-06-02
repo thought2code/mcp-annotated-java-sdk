@@ -3,8 +3,16 @@ package com.github.thought2code.mcp.annotated.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This record represents the capabilities of an MCP (Model Context Protocol) server.
+ * MCP capability flags loaded from server configuration.
  *
+ * <p>Each flag maps to whether the server advertises support for resources, prompts, tools,
+ * completions, and resource subscriptions during initialization.
+ *
+ * @param resource whether listing/reading resources is supported
+ * @param subscribeResource whether resource subscription is supported
+ * @param prompt whether prompts are supported
+ * @param tool whether tools are supported
+ * @param completion whether argument completions are supported
  * @author codeboyzhou
  */
 public record ServerCapabilities(
@@ -23,7 +31,11 @@ public record ServerCapabilities(
     return new Builder();
   }
 
-  /** Builder class for {@code ServerCapabilities}. */
+  /**
+   * Mutable builder for {@link ServerCapabilities}.
+   *
+   * <p>Each flag maps to an MCP server capability advertised during initialization.
+   */
   public static class Builder {
     /** The resource capability. */
     private Boolean resource = ServerDefaults.CAPABILITY_ENABLED;

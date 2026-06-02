@@ -3,7 +3,10 @@ package com.github.thought2code.mcp.annotated.util;
 import org.jetbrains.annotations.VisibleForTesting;
 
 /**
- * Helper class for string operations.
+ * String utilities shared by configuration loading, annotation processing, and scope resolution.
+ *
+ * <p>Provides blank checks, defaults, snake-case conversion for default MCP names, and common
+ * delimiter constants used when building source-method identifiers.
  *
  * @author codeboyzhou
  */

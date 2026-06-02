@@ -17,7 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Registers build-time component {@code @McpTool} definitions. */
+/**
+ * Registers build-time {@code @McpTool} definitions with sync or async MCP servers.
+ *
+ * <p>Loads {@link ToolDefinition} instances from {@link ComponentProvider} SPI entries, applies
+ * application scope filtering and duplicate-name validation, then wires call handlers that delegate
+ * to generated {@link ToolInvoker} implementations.
+ *
+ * @author codeboyzhou
+ */
 public final class ToolRegistration {
 
   private static final Logger log = LoggerFactory.getLogger(ToolRegistration.class);
@@ -35,6 +43,14 @@ public final class ToolRegistration {
     return registerSync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /**
+   * Registers tools using an explicit provider iterable (for tests).
+   *
+   * @param server sync MCP server
+   * @param context application context
+   * @param providers component providers to scan
+   * @return {@code true} when at least one tool was registered
+   */
   static boolean registerSync(
       McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<ToolDefinition> definitions =
@@ -70,6 +86,14 @@ public final class ToolRegistration {
     return registerAsync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /**
+   * Registers tools asynchronously using an explicit provider iterable (for tests).
+   *
+   * @param server async MCP server
+   * @param context application context
+   * @param providers component providers to scan
+   * @return {@code true} when at least one tool was registered
+   */
   static boolean registerAsync(
       McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<ToolDefinition> definitions =
@@ -102,6 +126,7 @@ public final class ToolRegistration {
         ToolRegistration::logAsyncRegistered);
   }
 
+  /** Maps a {@link ToolInvoker} result to an MCP {@link McpSchema.CallToolResult}. */
   private static McpSchema.CallToolResult invoke(
       ToolInvoker invoker,
       McpApplicationContext context,
@@ -134,14 +159,17 @@ public final class ToolRegistration {
     return callToolResult;
   }
 
+  /** Returns the MCP tool name from a definition. */
   private static String toolName(ToolDefinition definition) {
     return definition.tool().name();
   }
 
+  /** Logs successful sync registration of one tool. */
   private static void logSyncRegistered(ToolDefinition definition) {
     log.debug("Sync McpTool {} registered successfully", toolName(definition));
   }
 
+  /** Logs successful async registration of one tool. */
   private static void logAsyncRegistered(ToolDefinition definition) {
     log.debug("Async McpTool {} registered successfully", toolName(definition));
   }

@@ -1,9 +1,11 @@
 package com.github.thought2code.mcp.annotated.enums;
 
 /**
- * This enum represents the mode of MCP (Model Context Protocol) server.
+ * MCP transport mode selected in server configuration.
  *
- * <p>It can be either {@link #STDIO}, {@link #SSE}, or {@link #STREAMABLE}.
+ * <p>Determines which {@link com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer}
+ * implementation {@link com.github.thought2code.mcp.annotated.McpApplication} constructs at
+ * startup.
  *
  * @author codeboyzhou
  */

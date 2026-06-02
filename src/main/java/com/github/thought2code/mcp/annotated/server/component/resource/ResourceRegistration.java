@@ -15,17 +15,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-/** Registers build-time component {@code @McpResource} definitions. */
+/**
+ * Registers build-time {@code @McpResource} definitions with sync or async MCP servers.
+ *
+ * @author codeboyzhou
+ */
 public final class ResourceRegistration {
 
   private static final Logger log = LoggerFactory.getLogger(ResourceRegistration.class);
 
   private ResourceRegistration() {}
 
+  /**
+   * Registers all in-scope resources on a sync MCP server.
+   *
+   * @param server sync MCP server
+   * @param context application context
+   * @return {@code true} when at least one resource was registered
+   */
   public static boolean registerSync(McpSyncServer server, McpApplicationContext context) {
     return registerSync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /** Registers resources using an explicit provider iterable (for tests). */
   static boolean registerSync(
       McpSyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<ResourceDefinition> definitions =
@@ -51,10 +63,18 @@ public final class ResourceRegistration {
         ResourceRegistration::logSyncRegistered);
   }
 
+  /**
+   * Registers all in-scope resources on an async MCP server.
+   *
+   * @param server async MCP server
+   * @param context application context
+   * @return {@code true} when at least one resource was registered
+   */
   public static boolean registerAsync(McpAsyncServer server, McpApplicationContext context) {
     return registerAsync(server, context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /** Registers resources asynchronously using an explicit provider iterable (for tests). */
   static boolean registerAsync(
       McpAsyncServer server, McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<ResourceDefinition> definitions =
@@ -85,6 +105,7 @@ public final class ResourceRegistration {
         ResourceRegistration::logAsyncRegistered);
   }
 
+  /** Maps a {@link ResourceInvoker} result to an MCP {@link McpSchema.ReadResourceResult}. */
   private static McpSchema.ReadResourceResult invoke(
       ResourceInvoker invoker,
       McpApplicationContext context,
@@ -111,14 +132,17 @@ public final class ResourceRegistration {
     return result;
   }
 
+  /** Returns the MCP resource name from a definition. */
   private static String resourceName(ResourceDefinition definition) {
     return definition.resource().name();
   }
 
+  /** Logs successful sync registration of one resource. */
   private static void logSyncRegistered(ResourceDefinition definition) {
     log.debug("Sync McpResource {} registered successfully", resourceName(definition));
   }
 
+  /** Logs successful async registration of one resource. */
   private static void logAsyncRegistered(ResourceDefinition definition) {
     log.debug("Async McpResource {} registered successfully", resourceName(definition));
   }

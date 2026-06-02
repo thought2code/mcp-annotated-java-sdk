@@ -3,10 +3,14 @@ package com.github.thought2code.mcp.annotated.server.component.tool;
 import io.modelcontextprotocol.spec.McpSchema;
 
 /**
- * Build-time component MCP tool definition.
+ * Immutable tool registration bundle produced at compile time.
  *
- * @param sourceMethod source method descriptor used for diagnostics
- * @param tool MCP tool metadata
- * @param invoker generated tool invoker
+ * <p>Consumed by {@link ToolRegistration} to add {@link
+ * io.modelcontextprotocol.server.McpServerFeatures} tool specifications at runtime.
+ *
+ * @param sourceMethod fully qualified source method id for logging and errors
+ * @param tool MCP tool metadata (name, schemas, description)
+ * @param invoker generated handler that invokes the annotated Java method
+ * @author codeboyzhou
  */
 public record ToolDefinition(String sourceMethod, McpSchema.Tool tool, ToolInvoker invoker) {}

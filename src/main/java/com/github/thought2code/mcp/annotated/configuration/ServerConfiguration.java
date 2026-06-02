@@ -7,12 +7,24 @@ import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 
 /**
- * This record represents the configuration of an MCP (Model Context Protocol) server.
+ * Root YAML configuration for an annotated MCP server application.
  *
- * <p>It contains various properties such as enabled status, server mode, name, version, type,
- * instructions, request timeout, capabilities, change notification, SSE (Server-Sent Events), and
- * streamable configuration.
+ * <p>Loaded by {@link ConfigurationLoader} and merged with profile-specific overlays. Drives server
+ * mode ({@link com.github.thought2code.mcp.annotated.enums.ServerMode}), transport endpoints, MCP
+ * capability flags, and change-notification settings.
  *
+ * @param profile optional profile name; when set, {@code mcp-server-{profile}.yml} is merged
+ * @param enabled whether the MCP server should start
+ * @param mode transport mode (stdio, streamable HTTP, or deprecated SSE)
+ * @param name MCP server implementation name
+ * @param version MCP server implementation version
+ * @param type sync vs async MCP server API style
+ * @param instructions optional server instructions sent to clients
+ * @param requestTimeout default request timeout in seconds
+ * @param capabilities feature flags advertised during initialization
+ * @param changeNotification list-change notification capability flags
+ * @param sse deprecated HTTP SSE transport settings
+ * @param streamable streamable HTTP transport settings
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
@@ -40,7 +52,11 @@ public record ServerConfiguration(
     return new Builder();
   }
 
-  /** Builder class for {@code ServerConfiguration}. */
+  /**
+   * Mutable builder for {@link ServerConfiguration}.
+   *
+   * <p>Primarily used in tests; YAML files are deserialized directly into the record.
+   */
   public static class Builder {
     /** The profile. */
     private String profile = StringHelper.EMPTY;

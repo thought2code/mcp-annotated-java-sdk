@@ -3,12 +3,11 @@ package com.github.thought2code.mcp.annotated.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This record represents a change notification for MCP (Model Context Protocol) server
- * capabilities.
+ * MCP list-change notification capability flags from server configuration.
  *
- * <p>It contains boolean flags indicating whether the server supports resource, prompt, and tool
- * change notification.
- *
+ * @param resource whether the server may notify clients when the resource list changes
+ * @param prompt whether the server may notify clients when the prompt list changes
+ * @param tool whether the server may notify clients when the tool list changes
  * @author codeboyzhou
  */
 public record ServerChangeNotification(
@@ -25,7 +24,11 @@ public record ServerChangeNotification(
     return new Builder();
   }
 
-  /** Builder class for {@code ServerChangeNotification}. */
+  /**
+   * Mutable builder for {@link ServerChangeNotification}.
+   *
+   * <p>Controls whether list-change notifications are emitted per component kind.
+   */
   public static class Builder {
     /** The resource change notification flag. */
     private Boolean resource = ServerDefaults.CHANGE_NOTIFICATION_ENABLED;

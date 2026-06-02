@@ -6,8 +6,7 @@ import java.lang.reflect.Parameter;
 import java.util.Map;
 
 /**
- * This class is used to convert the value of a parameter annotated with {@link McpPromptParam} to
- * the required type.
+ * {@link ParameterConverter} for {@link McpPromptParam}-annotated prompt handler parameters.
  *
  * @author codeboyzhou
  */

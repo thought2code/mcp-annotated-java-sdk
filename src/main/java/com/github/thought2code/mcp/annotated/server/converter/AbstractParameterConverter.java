@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This abstract class is used to convert the value of a parameter annotated with {@link A} to the
- * required type, and provides a default implementation for the {@link #convertAll(Parameter[],
- * Map)} method.
+ * Base {@link ParameterConverter} that also batch-converts all parameters on a handler method.
  *
- * @param <A> the type of the annotation
+ * <p>Unannotated parameters receive type-appropriate defaults via {@link
+ * com.github.thought2code.mcp.annotated.util.TypeConverter} so reflective invocation always
+ * receives correctly typed arguments.
+ *
+ * @param <A> parameter annotation type
  * @author codeboyzhou
  */
 public abstract class AbstractParameterConverter<A extends Annotation>

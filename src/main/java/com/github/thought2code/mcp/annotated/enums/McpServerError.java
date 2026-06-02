@@ -70,6 +70,11 @@ public enum McpServerError {
     return String.format("[%s] %s Detail: %s", getCode(), getMessage(), detail);
   }
 
+  /**
+   * Returns {@code [code] message} for logging and exception text.
+   *
+   * @return formatted code and message without a detail suffix
+   */
   @Override
   public String toString() {
     return String.format("[%s] %s", getCode(), getMessage());

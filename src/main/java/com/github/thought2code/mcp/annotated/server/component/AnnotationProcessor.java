@@ -44,10 +44,23 @@ import javax.tools.Diagnostic;
 import javax.tools.StandardLocation;
 
 /**
- * Annotation processor that compiles MCP component annotations into static classes at build time.
+ * Compile-time processor that turns MCP component annotations into a generated {@link
+ * ComponentProvider}.
  *
- * <p>Handles {@code @McpTool}, {@code @McpPrompt}, {@code @McpResource},
- * {@code @McpPromptCompletion}, and {@code @McpResourceCompletion}.
+ * <p>During each compilation round the processor collects annotated methods, validates naming and
+ * signatures, and on the final round emits:
+ *
+ * <ul>
+ *   <li>A {@code GeneratedComponentProvider_*} class with tool, prompt, resource, and completion
+ *       definitions and invokers (via {@link ToolCodegen}, {@link PromptCodegen}, {@link
+ *       ResourceCodegen}, and {@link CompletionCodegen})
+ *   <li>A {@code META-INF/services/...ComponentProvider} entry for {@link java.util.ServiceLoader}
+ * </ul>
+ *
+ * <p>Duplicate MCP names and completion references are rejected at compile time using the same
+ * message templates as runtime registration ({@link DuplicateComponentMessageHelper}).
+ *
+ * @author codeboyzhou
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @SupportedAnnotationTypes({
@@ -82,6 +95,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
   private final CompletionCodegen.Support completionCodegenSupport =
       new CompletionCodegenSupport(this);
 
+  /**
+   * Captures the filer and messager used for code generation and compile-time errors.
+   *
+   * @param processingEnv annotation processing environment
+   */
   @Override
   public synchronized void init(ProcessingEnvironment processingEnv) {
     super.init(processingEnv);
@@ -89,6 +107,14 @@ public final class AnnotationProcessor extends AbstractProcessor {
     this.messager = processingEnv.getMessager();
   }
 
+  /**
+   * Collects annotated elements each round; generates the provider on the final round when at least
+   * one component method was discovered.
+   *
+   * @param annotations supported annotation types present in this round (unused)
+   * @param roundEnv current compilation round
+   * @return {@code false} so other processors may also handle the same annotations
+   */
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
     collectTools(roundEnv);
@@ -116,6 +142,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return false;
   }
 
+  /** Accumulates valid {@code @McpTool} methods from the current round. */
   private void collectTools(RoundEnvironment roundEnv) {
     for (Element element : roundEnv.getElementsAnnotatedWith(McpTool.class)) {
       if (!(element instanceof ExecutableElement method)) {
@@ -131,6 +158,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
+  /** Accumulates valid {@code @McpPrompt} methods from the current round. */
   private void collectPrompts(RoundEnvironment roundEnv) {
     for (Element element : roundEnv.getElementsAnnotatedWith(McpPrompt.class)) {
       if (!(element instanceof ExecutableElement method)) {
@@ -146,6 +174,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
+  /** Accumulates valid {@code @McpResource} methods from the current round. */
   private void collectResources(RoundEnvironment roundEnv) {
     for (Element element : roundEnv.getElementsAnnotatedWith(McpResource.class)) {
       if (!(element instanceof ExecutableElement method)) {
@@ -161,6 +190,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
+  /** Accumulates completion methods from prompt- and resource-completion annotations. */
   private void collectCompletions(RoundEnvironment roundEnv) {
     for (Element element : roundEnv.getElementsAnnotatedWith(McpPromptCompletion.class)) {
       collectCompletionElement(element);
@@ -170,6 +200,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
+  /** Validates and registers a single completion-annotated method. */
   private void collectCompletionElement(Element element) {
     if (!(element instanceof ExecutableElement method)) {
       return;
@@ -186,6 +217,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
+  /** Ensures the annotated method is public and declared on an eligible class. */
   private boolean validateComponentMethod(ExecutableElement method, String annotationName) {
     Element enclosing = method.getEnclosingElement();
     if (!(enclosing instanceof TypeElement typeElement)) {
@@ -214,10 +246,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return true;
   }
 
+  /** Validates {@code @McpTool} placement rules. */
   private boolean validateToolMethod(ExecutableElement method) {
     return validateComponentMethod(method, "@McpTool");
   }
 
+  /** Emits compile errors when two tools share the same MCP name. */
   private boolean validateNoDuplicateToolNames() {
     Map<String, String> names = new HashMap<>();
     boolean valid = true;
@@ -236,6 +270,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return valid;
   }
 
+  /** Emits compile errors when two prompts share the same MCP name. */
   private boolean validateNoDuplicatePromptNames() {
     Map<String, String> names = new HashMap<>();
     boolean valid = true;
@@ -254,6 +289,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return valid;
   }
 
+  /** Emits compile errors when two resources share the same MCP name. */
   private boolean validateNoDuplicateResourceNames() {
     Map<String, String> names = new HashMap<>();
     boolean valid = true;
@@ -272,6 +308,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return valid;
   }
 
+  /** Emits compile errors when two completions target the same prompt or resource reference. */
   private boolean validateNoDuplicateCompletionReferences() {
     Map<String, String> references = new HashMap<>();
     boolean valid = true;
@@ -292,6 +329,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return valid;
   }
 
+  /** Validates completion return type and single {@code CompleteArgument} parameter. */
   private boolean validateCompletionSignature(ExecutableElement method) {
     String returnType = erasedType(method.getReturnType());
     if (!CompletionResult.class.getName().equals(returnType)) {
@@ -318,6 +356,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return true;
   }
 
+  /**
+   * Writes the generated {@link ComponentProvider} implementation and SPI descriptor.
+   *
+   * @throws IOException when source or resource generation fails
+   */
   private void writeProvider() throws IOException {
     List<ExecutableElement> sortedTools =
         tools.stream().sorted(Comparator.comparing(this::sourceMethod)).toList();
@@ -427,6 +470,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
+  /**
+   * Emits generated code that builds one JSON Schema {@code #/definitions/...} entry.
+   *
+   * @throws IOException when writing fails
+   */
   private void writeDefinitionLiteral(
       Writer writer,
       String indent,
@@ -466,6 +514,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     writer.write(indent + "}\n");
   }
 
+  /** Collects {@code @McpJsonSchemaProperty} metadata from fields and record components. */
   private List<PropertySpec> schemaProperties(TypeElement type) {
     Map<String, PropertySpec> properties = new LinkedHashMap<>();
     for (Element element : type.getEnclosedElements()) {
@@ -499,77 +548,91 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return new ArrayList<>(properties.values());
   }
 
+  /** Returns {@code declaringType#methodName()} used in generated metadata and errors. */
   private String sourceMethod(ExecutableElement method) {
     TypeElement owner = (TypeElement) method.getEnclosingElement();
     return owner.getQualifiedName() + StringHelper.HASH + method;
   }
 
+  /** Resolves the MCP tool name from {@code @McpTool}. */
   private String toolName(ExecutableElement method) {
     McpTool annotation = Objects.requireNonNull(method.getAnnotation(McpTool.class));
     String defaultName = StringHelper.toSnakeCase(method.getSimpleName().toString());
     return StringHelper.defaultIfBlank(annotation.name(), defaultName);
   }
 
+  /** Resolves the MCP tool title from {@code @McpTool}. */
   private String toolTitle(ExecutableElement method) {
     McpTool annotation = Objects.requireNonNull(method.getAnnotation(McpTool.class));
     String name = toolName(method);
     return StringHelper.defaultIfBlank(annotation.title(), name);
   }
 
+  /** Resolves the MCP tool description from {@code @McpTool}. */
   private String toolDescription(ExecutableElement method) {
     McpTool annotation = Objects.requireNonNull(method.getAnnotation(McpTool.class));
     String name = toolName(method);
     return StringHelper.defaultIfBlank(annotation.description(), name);
   }
 
+  /** Resolves the MCP prompt name from {@code @McpPrompt}. */
   private String promptName(ExecutableElement method) {
     McpPrompt annotation = Objects.requireNonNull(method.getAnnotation(McpPrompt.class));
     String defaultName = StringHelper.toSnakeCase(method.getSimpleName().toString());
     return StringHelper.defaultIfBlank(annotation.name(), defaultName);
   }
 
+  /** Resolves the MCP prompt title from {@code @McpPrompt}. */
   private String promptTitle(ExecutableElement method) {
     McpPrompt annotation = Objects.requireNonNull(method.getAnnotation(McpPrompt.class));
     String name = promptName(method);
     return StringHelper.defaultIfBlank(annotation.title(), name);
   }
 
+  /** Resolves the MCP prompt description from {@code @McpPrompt}. */
   private String promptDescription(ExecutableElement method) {
     McpPrompt annotation = Objects.requireNonNull(method.getAnnotation(McpPrompt.class));
     String name = promptName(method);
     return StringHelper.defaultIfBlank(annotation.description(), name);
   }
 
+  /** Returns the resource URI from {@code @McpResource}. */
   private String resourceUri(ExecutableElement method) {
     return Objects.requireNonNull(method.getAnnotation(McpResource.class)).uri();
   }
 
+  /** Resolves the MCP resource name from {@code @McpResource}. */
   private String resourceName(ExecutableElement method) {
     McpResource annotation = Objects.requireNonNull(method.getAnnotation(McpResource.class));
     String defaultName = StringHelper.toSnakeCase(method.getSimpleName().toString());
     return StringHelper.defaultIfBlank(annotation.name(), defaultName);
   }
 
+  /** Resolves the MCP resource title from {@code @McpResource}. */
   private String resourceTitle(ExecutableElement method) {
     McpResource annotation = Objects.requireNonNull(method.getAnnotation(McpResource.class));
     String name = resourceName(method);
     return StringHelper.defaultIfBlank(annotation.title(), name);
   }
 
+  /** Resolves the MCP resource description from {@code @McpResource}. */
   private String resourceDescription(ExecutableElement method) {
     McpResource annotation = Objects.requireNonNull(method.getAnnotation(McpResource.class));
     String name = resourceName(method);
     return StringHelper.defaultIfBlank(annotation.description(), name);
   }
 
+  /** Returns the MIME type from {@code @McpResource}. */
   private String resourceMimeType(ExecutableElement method) {
     return Objects.requireNonNull(method.getAnnotation(McpResource.class)).mimeType();
   }
 
+  /** Returns the priority from {@code @McpResource}. */
   private double resourcePriority(ExecutableElement method) {
     return Objects.requireNonNull(method.getAnnotation(McpResource.class)).priority();
   }
 
+  /** Returns a generated {@code List.of(McpSchema.Role...)} literal for resource roles. */
   private String resourceRolesLiteral(ExecutableElement method) {
     var roles = Objects.requireNonNull(method.getAnnotation(McpResource.class)).roles();
     if (roles.length == 0) {
@@ -582,6 +645,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return "List.of(" + String.join(", ", parts) + ")";
   }
 
+  /** Stable duplicate-detection key for a completion reference. */
   private String completionReferenceKey(ExecutableElement method) {
     McpPromptCompletion prompt = method.getAnnotation(McpPromptCompletion.class);
     if (prompt != null) {
@@ -594,6 +658,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return "unknown:" + sourceMethod(method);
   }
 
+  /** Human-readable completion reference text for compile-time error messages. */
   private String completionReferenceDescription(ExecutableElement method) {
     McpPromptCompletion prompt = method.getAnnotation(McpPromptCompletion.class);
     if (prompt != null) {
@@ -606,6 +671,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return "'" + completionReferenceKey(method) + "'";
   }
 
+  /** Computes a deterministic hash for generated provider class naming. */
   private int componentHash(
       List<ExecutableElement> toolsToHash,
       List<ExecutableElement> promptsToHash,
@@ -632,6 +698,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return hash;
   }
 
+  /** Returns the erased type name used in generated code and schema mapping. */
   private String erasedType(TypeMirror mirror) {
     if (mirror.getKind().isPrimitive()) {
       return mirror.toString();
@@ -639,6 +706,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return processingEnv.getTypeUtils().erasure(mirror).toString();
   }
 
+  /** Maps primitive mirrors to boxed types for generated invoker parameter casts. */
   private String parameterDeclarationType(TypeMirror mirror) {
     return switch (mirror.getKind()) {
       case BYTE -> "java.lang.Byte";
@@ -653,6 +721,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     };
   }
 
+  /** Returns a {@code SomeType.class} literal for generated invokers. */
   private String classLiteral(TypeMirror mirror) {
     if (mirror.getKind().isPrimitive()) {
       return mirror + ".class";
@@ -660,6 +729,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return erasedType(mirror) + ".class";
   }
 
+  /** Resolves a reference type mirror to its {@link TypeElement}, if any. */
   private TypeElement asTypeElement(TypeMirror mirror) {
     if (mirror.getKind().isPrimitive()) {
       return null;
@@ -668,6 +738,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     return element instanceof TypeElement typeElement ? typeElement : null;
   }
 
+  /** Maps erased Java type names to JSON Schema {@code type} strings. */
   private String toJsonSchemaType(String javaType) {
     return switch (javaType) {
       case "java.lang.String" -> "string";
@@ -688,52 +759,63 @@ public final class AnnotationProcessor extends AbstractProcessor {
     };
   }
 
+  /** Escapes backslashes and quotes for embedding in generated Java string literals. */
   private String escape(String value) {
     return value.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
+  /** Delegates {@link ToolCodegen.Support} callbacks to the enclosing processor instance. */
   private record ToolCodegenSupport(AnnotationProcessor processor) implements ToolCodegen.Support {
 
+    /** {@inheritDoc} */
     @Override
     public String sourceMethod(ExecutableElement method) {
       return processor.sourceMethod(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toolName(ExecutableElement method) {
       return processor.toolName(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toolTitle(ExecutableElement method) {
       return processor.toolTitle(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toolDescription(ExecutableElement method) {
       return processor.toolDescription(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String escape(String value) {
       return processor.escape(value);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String erasedType(TypeMirror mirror) {
       return processor.erasedType(mirror);
     }
 
+    /** {@inheritDoc} */
     @Override
     public TypeElement asTypeElement(TypeMirror mirror) {
       return processor.asTypeElement(mirror);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toJsonSchemaType(String javaType) {
       return processor.toJsonSchemaType(javaType);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeDefinitionLiteral(
         Writer writer,
@@ -745,6 +827,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
       processor.writeDefinitionLiteral(writer, indent, targetMap, definitionName, definitionType);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ToolCodegen.PropertySpec> schemaProperties(TypeElement type) {
       List<PropertySpec> properties = processor.schemaProperties(type);
@@ -757,118 +840,149 @@ public final class AnnotationProcessor extends AbstractProcessor {
       return specs;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String parameterDeclarationType(TypeMirror mirror) {
       return processor.parameterDeclarationType(mirror);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String classLiteral(TypeMirror mirror) {
       return processor.classLiteral(mirror);
     }
   }
 
+  /** Delegates {@link PromptCodegen.Support} callbacks to the enclosing processor instance. */
   private record PromptCodegenSupport(AnnotationProcessor processor)
       implements PromptCodegen.Support {
 
+    /** {@inheritDoc} */
     @Override
     public String sourceMethod(ExecutableElement method) {
       return processor.sourceMethod(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String promptName(ExecutableElement method) {
       return processor.promptName(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String promptTitle(ExecutableElement method) {
       return processor.promptTitle(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String promptDescription(ExecutableElement method) {
       return processor.promptDescription(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String escape(String value) {
       return processor.escape(value);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String parameterDeclarationType(TypeMirror mirror) {
       return processor.parameterDeclarationType(mirror);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String classLiteral(TypeMirror mirror) {
       return processor.classLiteral(mirror);
     }
   }
 
+  /** Delegates {@link ResourceCodegen.Support} callbacks to the enclosing processor instance. */
   private record ResourceCodegenSupport(AnnotationProcessor processor)
       implements ResourceCodegen.Support {
 
+    /** {@inheritDoc} */
     @Override
     public String sourceMethod(ExecutableElement method) {
       return processor.sourceMethod(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resourceUri(ExecutableElement method) {
       return processor.resourceUri(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resourceName(ExecutableElement method) {
       return processor.resourceName(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resourceTitle(ExecutableElement method) {
       return processor.resourceTitle(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resourceDescription(ExecutableElement method) {
       return processor.resourceDescription(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resourceMimeType(ExecutableElement method) {
       return processor.resourceMimeType(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resourceRolesLiteral(ExecutableElement method) {
       return processor.resourceRolesLiteral(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double resourcePriority(ExecutableElement method) {
       return processor.resourcePriority(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String escape(String value) {
       return processor.escape(value);
     }
   }
 
+  /** Delegates {@link CompletionCodegen.Support} callbacks to the enclosing processor instance. */
   private record CompletionCodegenSupport(AnnotationProcessor processor)
       implements CompletionCodegen.Support {
 
+    /** {@inheritDoc} */
     @Override
     public String sourceMethod(ExecutableElement method) {
       return processor.sourceMethod(method);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String escape(String value) {
       return processor.escape(value);
     }
   }
 
+  /**
+   * JSON Schema property metadata collected while scanning {@code @McpJsonSchemaProperty} types.
+   *
+   * @param name property name
+   * @param type JSON Schema type
+   * @param description property description
+   * @param required whether the property is required
+   */
   private record PropertySpec(String name, String type, String description, boolean required) {}
 }

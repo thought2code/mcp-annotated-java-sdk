@@ -5,10 +5,11 @@ import java.lang.reflect.Parameter;
 import java.util.Map;
 
 /**
- * This interface is used to convert the value of a parameter annotated with {@link A} to the
- * required type.
+ * Converts MCP request argument maps into typed method parameters for annotated handlers.
  *
- * @param <A> the type of the annotation
+ * @param <A> parameter annotation type ({@link
+ *     com.github.thought2code.mcp.annotated.annotation.McpToolParam} or {@link
+ *     com.github.thought2code.mcp.annotated.annotation.McpPromptParam})
  * @author codeboyzhou
  */
 public interface ParameterConverter<A extends Annotation> {

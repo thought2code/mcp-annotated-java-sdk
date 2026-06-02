@@ -11,30 +11,63 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
-/** Writes tool-related generated methods in a deterministic order. */
+/**
+ * Emits generated Java source for {@code @McpTool} bindings.
+ *
+ * <p>Methods are written in a stable order (definitions, input schemas, output schemas, invokers)
+ * so regenerated providers produce deterministic diffs. {@link Support} abstracts annotation-model
+ * details implemented by {@link
+ * com.github.thought2code.mcp.annotated.server.component.AnnotationProcessor}.
+ *
+ * @author codeboyzhou
+ */
 public final class ToolCodegen {
 
   private ToolCodegen() {}
 
+  /**
+   * One JSON Schema property on a tool output type.
+   *
+   * @param name property name in the output schema
+   * @param type JSON Schema type string
+   * @param description property description
+   * @param required whether the property is required
+   */
   public record PropertySpec(String name, String type, String description, boolean required) {}
 
+  /** Annotation-processing callbacks used while generating tool source. */
   public interface Support {
+    /** Fully qualified source-method id for diagnostics. */
     String sourceMethod(ExecutableElement method);
 
+    /** Resolved MCP tool name. */
     String toolName(ExecutableElement method);
 
+    /** Resolved MCP tool title. */
     String toolTitle(ExecutableElement method);
 
+    /** Resolved MCP tool description. */
     String toolDescription(ExecutableElement method);
 
+    /** Escapes a string for inclusion in generated Java string literals. */
     String escape(String value);
 
+    /** Erased Java type name for a mirror. */
     String erasedType(javax.lang.model.type.TypeMirror mirror);
 
+    /**
+     * Resolves a reference type mirror to a {@link TypeElement}, or {@code null} for primitives.
+     */
     TypeElement asTypeElement(javax.lang.model.type.TypeMirror mirror);
 
+    /** Maps an erased Java type name to a JSON Schema type string. */
     String toJsonSchemaType(String javaType);
 
+    /**
+     * Writes a nested {@code #/definitions/...} entry into a schema map in generated code.
+     *
+     * @throws IOException when writing fails
+     */
     void writeDefinitionLiteral(
         Writer writer,
         String indent,
@@ -43,13 +76,27 @@ public final class ToolCodegen {
         TypeElement definitionType)
         throws IOException;
 
+    /** Collects output-schema properties from a {@code @McpJsonSchemaProperty}-annotated type. */
     List<PropertySpec> schemaProperties(TypeElement type);
 
+    /** Java type used in generated invoker local variable declarations. */
     String parameterDeclarationType(javax.lang.model.type.TypeMirror mirror);
 
+    /**
+     * {@code Foo.class} literal for {@link
+     * com.github.thought2code.mcp.annotated.util.TypeConverter}.
+     */
     String classLiteral(javax.lang.model.type.TypeMirror mirror);
   }
 
+  /**
+   * Writes all tool sections for the given annotated methods.
+   *
+   * @param writer generated source writer
+   * @param methods sorted {@code @McpTool} methods
+   * @param support annotation-model support
+   * @throws IOException when writing fails
+   */
   public static void writeSections(Writer writer, List<ExecutableElement> methods, Support support)
       throws IOException {
     for (int i = 0; i < methods.size(); i++) {
@@ -66,6 +113,7 @@ public final class ToolCodegen {
     }
   }
 
+  /** Emits {@code toolDefinitionN()} for one annotated method. */
   private static void writeToolDefinitionMethod(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     String sourceMethod = support.sourceMethod(method);
@@ -93,6 +141,7 @@ public final class ToolCodegen {
     writer.write("  }\n\n");
   }
 
+  /** Emits {@code inputSchemaN()} from {@code @McpToolParam} parameters. */
   private static void writeInputSchemaMethod(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     writer.write("  private static Map<String, Object> inputSchema" + index + "() {\n");
@@ -146,6 +195,7 @@ public final class ToolCodegen {
     writer.write("  }\n\n");
   }
 
+  /** Emits {@code outputSchemaN()} from the method return type schema properties. */
   private static void writeOutputSchemaMethod(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     writer.write("  private static Map<String, Object> outputSchema" + index + "() {\n");
@@ -182,6 +232,7 @@ public final class ToolCodegen {
     writer.write("  }\n\n");
   }
 
+  /** Emits a private {@code ToolInvoker} implementation for one annotated method. */
   private static void writeInvoker(
       Writer writer, ExecutableElement method, int index, Support support) throws IOException {
     String sourceMethod = support.sourceMethod(method);

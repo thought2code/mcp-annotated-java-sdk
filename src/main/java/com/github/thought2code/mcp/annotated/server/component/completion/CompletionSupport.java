@@ -12,16 +12,30 @@ import java.util.List;
 import java.util.ServiceLoader;
 import reactor.core.publisher.Mono;
 
-/** Builds completion specifications from build-time component completion models. */
+/**
+ * Builds MCP completion specifications from build-time completion definitions.
+ *
+ * <p>Unlike tools, prompts, and resources, completions are returned as specification lists consumed
+ * when constructing the MCP server rather than registered incrementally after startup.
+ *
+ * @author codeboyzhou
+ */
 public final class CompletionSupport {
 
   private CompletionSupport() {}
 
+  /**
+   * Returns sync completion specifications for all in-scope completion definitions.
+   *
+   * @param context application context
+   * @return sync completion specifications; may be empty
+   */
   public static List<McpServerFeatures.SyncCompletionSpecification> allSync(
       McpApplicationContext context) {
     return allSync(context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /** Returns sync completions using an explicit provider iterable (for tests). */
   static List<McpServerFeatures.SyncCompletionSpecification> allSync(
       McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<CompletionDefinition> definitions =
@@ -37,11 +51,18 @@ public final class CompletionSupport {
     return completions;
   }
 
+  /**
+   * Returns async completion specifications for all in-scope completion definitions.
+   *
+   * @param context application context
+   * @return async completion specifications; may be empty
+   */
   public static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
       McpApplicationContext context) {
     return allAsync(context, ServiceLoader.load(ComponentProvider.class));
   }
 
+  /** Returns async completions using an explicit provider iterable (for tests). */
   static List<McpServerFeatures.AsyncCompletionSpecification> allAsync(
       McpApplicationContext context, Iterable<ComponentProvider> providers) {
     List<CompletionDefinition> definitions =
@@ -59,6 +80,7 @@ public final class CompletionSupport {
     return completions;
   }
 
+  /** Rejects completion definitions that target the same prompt or resource reference. */
   private static void rejectDuplicateReferences(List<CompletionDefinition> definitions) {
     ComponentRegistrationSupport.rejectDuplicateDefinitions(
         definitions,
@@ -72,6 +94,7 @@ public final class CompletionSupport {
                 currentMethod));
   }
 
+  /** Stable deduplication key for a completion reference. */
   private static String completionReferenceKey(McpSchema.CompleteReference reference) {
     if (reference instanceof McpSchema.ResourceReference resourceReference) {
       return "resource:" + resourceReference.uri();
@@ -82,6 +105,11 @@ public final class CompletionSupport {
     return reference == null ? "unknown:null" : "unknown:" + reference;
   }
 
+  /**
+   * Invokes a completion handler and maps a {@link CompletionResult} to MCP wire format.
+   *
+   * @throws McpServerComponentRegistrationException when invocation fails or return type is invalid
+   */
   private static McpSchema.CompleteResult invoke(
       CompletionDefinition definition,
       McpApplicationContext context,
