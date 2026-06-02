@@ -24,7 +24,7 @@
 
 本 SDK 是一个轻量级的注解框架，用于简化 Java 中的 MCP 服务端开发。你可以用极少的代码定义、开发并集成 MCP 资源（Resources）、提示词（Prompts）与工具（Tools），且**无需 Spring 框架**。
 
-> **工作流：** 添加依赖 → 配置 `mcp-server.yml` → 注解 Resources / Tools / Prompts → 通过 `McpApplication` 启动
+> **工作流：** 添加依赖 → 配置 `mcp-server.yml` → 注解 Resources / Tools / Prompts / Completions → 通过 `McpApplication` 启动
 
 [📖 文档](https://thought2code.github.io/mcp-annotated-java-sdk-docs) · [💡 示例](https://github.com/thought2code/mcp-java-sdk-examples/tree/main/mcp-server-filesystem/mcp-server-filesystem-annotated-sdk-implementation) · [🐛 提交 Issue](https://github.com/thought2code/mcp-annotated-java-sdk/issues)
 
@@ -76,6 +76,8 @@
 ```gradle
 implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
 ```
+
+依赖版本请以 [Maven Central](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk) 徽章为准；本仓库当前开发版本为 `0.18.0-SNAPSHOT`。
 
 #### 第 2 步：创建配置文件
 
@@ -291,7 +293,9 @@ SDK 为每个组件类创建 **唯一实例**（无参构造），该类上所�
 - 不要在实例字段中存放未同步的 per-request 数据。
 - 需要共享可变状态时，请委托给线程安全的服务层。
 
-当前 `McpApplicationContext.from(...)` 使用默认的单例-per-class 工厂；公开 API 尚未内置 Spring/CDI 集成。
+当前 `McpApplicationContext.from(...)` 使用默认的单例-per-class 工厂；组件类需提供 **public 无参构造器**。公开 API 尚未内置 Spring/CDI 集成。
+
+`McpApplication.run(mainClass, args)` 默认加载 `mcp-server.yml`；可通过第三个参数指定 classpath 中的其他配置文件名。
 
 #### MCP Java SDK 2.x（里程碑版本）
 
@@ -328,13 +332,17 @@ your-mcp-project/
 
 ## 🧪 测试
 
-运行测试：
+运行单元测试（请使用 Maven Wrapper 构建，勿使用系统安装的 `mvn`）：
 
 ```bash
 ./mvnw clean test
 ```
 
-Windows 下可使用 `mvnw.cmd clean test`。
+Windows：
+
+```bash
+mvnw.cmd clean test
+```
 
 ## ❓ 常见问题
 
@@ -392,7 +400,7 @@ Windows 下可使用 `mvnw.cmd clean test`。
 git clone https://github.com/thought2code/mcp-annotated-java-sdk.git
 cd mcp-annotated-java-sdk
 
-# 构建项目
+# 构建项目（validate 阶段会执行 Spotless 格式检查）
 ./mvnw clean install
 
 # 运行测试

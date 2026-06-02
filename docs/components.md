@@ -38,6 +38,8 @@ public class MyResources {
 | `name`        | Resource name (defaults to method name)        | No                                        |
 | `title`       | Resource title (defaults to `name`)            | No                                        |
 | `mimeType`    | MIME type of the resource content              | No (default `text/plain`)                 |
+| `roles`       | Roles allowed to access the resource           | No (default `ASSISTANT`, `USER`)          |
+| `priority`    | Resource priority                              | No (default `1.0`)                        |
 
 ## Tools
 
@@ -150,7 +152,12 @@ Handlers must **return** `CompletionResult` and take **exactly one** parameter o
 
 ### Resource Completions
 
+`@McpResourceCompletion.uri` must match the **`uri` on `@McpResource` exactly** (including URI templates such as `file://{path}`).
+
+Pair the completion handler with a resource that uses the same URI pattern:
+
 ```java
+import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -161,8 +168,13 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MyCompletions {
-    @McpResourceCompletion(uri = "file://")
+public class MyFileResources {
+    @McpResource(uri = "file://{path}", description = "Read a file by path")
+    public String readFile() {
+        return "file content";
+    }
+
+    @McpResourceCompletion(uri = "file://{path}")
     public CompletionResult completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
         String prefix = argument.value() != null ? argument.value() : "";
         try {
@@ -185,7 +197,7 @@ public class MyCompletions {
 
 ### Prompt Completions
 
-`@McpPromptCompletion.name` must match the **registered prompt name** (by default, the Java method name of the `@McpPrompt` method). Filter by `argument.name()` when one prompt has multiple parameters.
+`@McpPromptCompletion.name` must match the **registered prompt name** — the `@McpPrompt.name` attribute when set, otherwise the `@McpPrompt` method name. Filter by `argument.name()` when one prompt has multiple parameters (the name must match the `@McpPromptParam.name` being completed).
 
 ```java
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
@@ -215,8 +227,9 @@ After defining MCP components, they will be automatically registered to the serv
 
 ### One instance per component class
 
-The SDK creates a single object per component class (via its no-arg constructor) and invokes all annotated methods on that class through the same instance. **Concurrent requests share one object**, so:
+The SDK creates a single object per component class (via its **public no-arg constructor**) and invokes all annotated methods on that class through the same instance. **Concurrent requests share one object**, so:
 
+- Component classes must expose an accessible no-arg constructor.
 - Keep component classes stateless when possible.
 - Any mutable instance fields must be thread-safe, or you must synchronize access.
 - Do not treat instance fields as per-request storage.
@@ -235,7 +248,13 @@ If you need to specify a specific package path, you can use the following method
 @McpServerApplication(basePackage = "com.example.mcp.components")
 ```
 
-If no package path is specified, the package of the class passed to `McpApplication.run()` is used as the default registration scope.
+Resolution order when both are available on the main class:
+
+1. `basePackageClass` (when not `Object.class`) — package of that class
+2. non-blank `basePackage`
+3. package of the class passed to `McpApplication.run()`
+
+Subpackages under the resolved base package are included; classes in other packages are ignored.
 
 ## Structured Content
 

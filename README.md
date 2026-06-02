@@ -24,7 +24,7 @@ English · [简体中文](README.zh-CN.md)
 
 This SDK is a lightweight, annotation-based framework that simplifies MCP server development in Java. Define, develop, and integrate your MCP Resources / Prompts / Tools with minimal code — **no Spring Framework required**.
 
-> **Workflow:** Add dependency → Configure `mcp-server.yml` → Annotate Resources / Tools / Prompts → Run with `McpApplication`
+> **Workflow:** Add dependency → Configure `mcp-server.yml` → Annotate Resources / Tools / Prompts / Completions → Run with `McpApplication`
 
 [📖 Documentation](https://thought2code.github.io/mcp-annotated-java-sdk-docs) · [💡 Examples](https://github.com/thought2code/mcp-java-sdk-examples/tree/main/mcp-server-filesystem/mcp-server-filesystem-annotated-sdk-implementation) · [🐛 Report Issues](https://github.com/thought2code/mcp-annotated-java-sdk/issues)
 
@@ -74,6 +74,8 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 ```gradle
 implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
 ```
+
+Use the [Maven Central](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk) badge above for the latest release. This repository’s development version is `0.18.0-SNAPSHOT`.
 
 #### Step 2: Create Configuration File
 
@@ -289,7 +291,9 @@ The SDK creates **one instance per component class** (no-arg constructor) and re
 - Do not store per-request data in instance fields without proper synchronization.
 - Delegate shared mutable state to thread-safe services when needed.
 
-`McpApplicationContext.from(...)` currently uses this default singleton-per-class factory. There is no built-in Spring/CDI wiring in the public API today.
+`McpApplicationContext.from(...)` currently uses this default singleton-per-class factory. Component classes must provide a **public no-arg constructor**. There is no built-in Spring/CDI wiring in the public API today.
+
+`McpApplication.run(mainClass, args)` loads `mcp-server.yml` by default; pass a third argument to use another classpath config file name.
 
 #### MCP Java SDK 2.x (milestone)
 
@@ -328,10 +332,16 @@ your-mcp-project/
 
 ## 🧪 Testing
 
-Run the test suite:
+Run the unit test suite (this project requires the Maven Wrapper — do not use a system `mvn` install):
 
 ```bash
 ./mvnw clean test
+```
+
+On Windows:
+
+```bash
+mvnw.cmd clean test
 ```
 
 ## ❓ FAQ
@@ -389,7 +399,7 @@ We welcome and appreciate contributions! Please follow these steps to contribute
 git clone https://github.com/thought2code/mcp-annotated-java-sdk.git
 cd mcp-annotated-java-sdk
 
-# Build the project
+# Build the project (Spotless formatting is checked at the validate phase)
 ./mvnw clean install
 
 # Run tests

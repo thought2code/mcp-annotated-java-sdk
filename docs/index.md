@@ -67,6 +67,6 @@ Want to get started quickly? Check out the [Getting Started Guide](./getting-sta
 ## 🔗 Quick Links
 
 - [Getting Started Guide](./getting-started.md) - Build your first MCP server
-- [Core Components](./components.md) - Learn about Resources, Tools, and Prompts
+- [Core Components](./components.md) - Resources, Tools, Prompts, and Completions
 - [GitHub Repository](https://github.com/thought2code/mcp-annotated-java-sdk) - Source code and examples
 - [Examples](https://github.com/thought2code/mcp-java-sdk-examples) - Real-world examples

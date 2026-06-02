@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
  *
  * <p>The parameter's name must be specified explicitly. Parameter metadata such as description and
  * required status can be specified via the corresponding attributes. If omitted, these metadata
- * fields will default to the value of the {@code name} attribute and {@code false}.
+ * fields will default to the value of the {@code name} attribute and {@code true} for {@code
+ * required}.
  *
  * <p>Example usage:
  *

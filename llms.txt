@@ -34,6 +34,8 @@ A lightweight, annotation-based Java framework that simplifies MCP (Model Contex
 implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
 ```
 
+Latest release: https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk (repo development version: 0.18.0-SNAPSHOT).
+
 ### Create MCP Server
 
 ```java
@@ -95,6 +97,13 @@ public String generateCode(
 | `@McpJsonSchemaDefinition` | Marks a type as a custom JSON Schema definition |
 | `@McpJsonSchemaProperty` | Describes a field in a JSON Schema definition |
 
+## Completions
+
+When `capabilities.completion: true`, handlers return `CompletionResult` and accept one `McpSchema.CompleteRequest.CompleteArgument` parameter.
+
+- `@McpResourceCompletion.uri` must match the paired `@McpResource.uri` exactly (including templates like `file://{path}`).
+- `@McpPromptCompletion.name` must match the registered prompt name (`@McpPrompt.name`, or else the `@McpPrompt` method name). Filter with `argument.name()` for multi-parameter prompts.
+
 ## Server Modes
 
 If `mode` is omitted in `mcp-server.yml`, the server defaults to **STREAMABLE**.
@@ -129,7 +138,8 @@ change-notification:
 
 ## Important Notes
 
-- Use `McpApplication.run()` as the server entry point; component registration scope is resolved through `@McpServerApplication`
+- Use `McpApplication.run()` as the server entry point; optional third argument overrides the config file name (default `mcp-server.yml`)
+- Component registration scope: `basePackageClass` → `basePackage` → main class package; one instance per component class (public no-arg constructor)
 - `instructions` must be a non-blank string in `mcp-server.yml` (validated at startup)
 - SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0; use STREAMABLE for new HTTP deployments
 - Built on MCP Java SDK **2.0.0-M3** (milestone) — pin versions and retest when upgrading

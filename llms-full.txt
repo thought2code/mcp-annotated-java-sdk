@@ -51,6 +51,8 @@ The Model Context Protocol (MCP) is a standardized protocol for building servers
 implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
 ```
 
+Latest release: https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk (repo development version: 0.18.0-SNAPSHOT).
+
 ## Quick Start Tutorial
 
 ### Step 1: Create Configuration File
@@ -159,6 +161,8 @@ public class MyPrompts {
 
 Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled classes and dependencies on the classpath. Use an executable JAR setup in your own project if you need `java -jar` with a single file.
 
+Optional: `McpApplication.run(MyFirstMcpServer.class, args, "custom-mcp-server.yml")` to load a different config file (default `mcp-server.yml`).
+
 ## Core Components
 
 ### Resources
@@ -174,6 +178,8 @@ Resource components are used to expose data to LLMs, similar to GET requests in 
 | `name` | Resource name (defaults to method name) | No |
 | `title` | Resource title (defaults to `name`) | No |
 | `mimeType` | MIME type of the resource content | No (default `text/plain`) |
+| `roles` | Roles allowed to access the resource | No (default `ASSISTANT`, `USER`) |
+| `priority` | Resource priority | No (default `1.0`) |
 
 ### Tools
 
@@ -223,39 +229,35 @@ Handlers must **return** `CompletionResult` and take **exactly one** parameter o
 
 #### Resource Completions
 
+`@McpResourceCompletion.uri` must match the paired `@McpResource.uri` exactly (including URI templates).
+
 ```java
+import com.github.thought2code.mcp.annotated.annotation.McpResource;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
 import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
 import io.modelcontextprotocol.spec.McpSchema;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@McpResourceCompletion(uri = "file://")
-public CompletionResult completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
-  String prefix = argument.value() != null ? argument.value() : "";
-  try {
-    List<String> paths =
-        Files.list(Paths.get(prefix.isEmpty() ? "." : prefix))
-            .map(Path::toString)
-            .limit(50)
-            .collect(Collectors.toList());
+public class MyFileResources {
+  @McpResource(uri = "file://{path}", description = "Read a file by path")
+  public String readFile() {
+    return "file content";
+  }
+
+  @McpResourceCompletion(uri = "file://{path}")
+  public CompletionResult completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
     return CompletionResult.builder()
-        .values(paths)
-        .total(paths.size())
+        .values(List.of("file://a", "file://b"))
+        .total(2)
         .hasMore(false)
         .build();
-  } catch (Exception e) {
-    return CompletionResult.empty();
   }
 }
 ```
 
 #### Prompt Completions
 
-`@McpPromptCompletion.name` must match the **registered prompt name** (by default, the Java method name of the `@McpPrompt` method). Filter by `argument.name()` when one prompt has multiple parameters.
+`@McpPromptCompletion.name` must match the registered prompt name (`@McpPrompt.name` when set, otherwise the `@McpPrompt` method name). Filter by `argument.name()` when one prompt has multiple parameters (must match `@McpPromptParam.name`).
 
 ```java
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
@@ -414,6 +416,14 @@ public String divide(
 
 After defining MCP components, they will be automatically registered to the server. You just need to ensure that the component classes are within the registration scope of the server application.
 
+### One instance per component class
+
+The SDK creates one object per component class (public no-arg constructor) and reuses it for all requests. Concurrent MCP calls share that object — keep components stateless or thread-safe.
+
+### SYNC vs ASYNC server type
+
+`type: ASYNC` uses the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
+
 ### Specify Package Path
 
 ```java
@@ -422,7 +432,7 @@ After defining MCP components, they will be automatically registered to the serv
 @McpServerApplication(basePackage = "com.example.mcp.components")
 ```
 
-If no package path is specified, the package of the class passed to `McpApplication.run()` is used as the default registration scope.
+Resolution order: `basePackageClass` (when not `Object.class`) → non-blank `basePackage` → package of `McpApplication.run()` main class. Subpackages under the resolved base package are included.
 
 ## Project Structure
 

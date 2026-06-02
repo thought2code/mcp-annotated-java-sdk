@@ -29,6 +29,8 @@ This guide will help you build your first MCP server in 5 minutes.
 implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
 ```
 
+Use the [Maven Central artifact page](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk) for the latest release version. This repository’s development version is `0.18.0-SNAPSHOT`.
+
 ## 5-Minutes Tutorial
 
 ### Step 1: Create Configuration File
@@ -118,6 +120,8 @@ public class MyPrompts {
 
 Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled classes and dependencies on the classpath. Use an executable JAR setup in your own project if you need `java -jar` with a single file.
 
+To load a non-default configuration file name, use `McpApplication.run(MyFirstMcpServer.class, args, "custom-mcp-server.yml")`.
+
 ## Server Modes
 
 This SDK supports three MCP server modes. If you omit `mode` in `mcp-server.yml`, the server defaults to **STREAMABLE** (see the configuration table below).
@@ -203,7 +207,7 @@ Use **SYNC** by default. Choose **ASYNC** only when your deployment requires the
 
 ### Component instances and concurrency
 
-The SDK creates **one instance per component class** and reuses it for all requests. Concurrent MCP calls share that object. Keep components **stateless** or **thread-safe**; avoid unsynchronized per-request instance fields.
+The SDK creates **one instance per component class** (via a **public no-arg constructor**) and reuses it for all requests. Concurrent MCP calls share that object. Keep components **stateless** or **thread-safe**; avoid unsynchronized per-request instance fields.
 
 ### MCP Java SDK 2.x (milestone)
 
