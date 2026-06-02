@@ -62,6 +62,8 @@
         <logback.version>1.5.33</logback.version>
         <mcp-sdk.version>2.0.0-M3</mcp-sdk.version>
         <mockito.version>5.23.0</mockito.version>
+        <!-- Skip artifact signing by default; enable with -Dgpg.skip=false for Maven Central deploy -->
+        <gpg.skip>true</gpg.skip>
     </properties>
 
     <dependencyManagement>
@@ -224,6 +226,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>${maven-gpg-plugin.version}</version>
+                <configuration>
+                    <skip>${gpg.skip}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
