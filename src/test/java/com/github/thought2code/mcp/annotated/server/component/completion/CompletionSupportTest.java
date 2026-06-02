@@ -147,4 +147,69 @@ class CompletionSupportTest {
             () -> CompletionSupport.allAsync(context, List.of(provider)));
     assertTrue(exception.getMessage().contains("resource uri 'resource://duplicate'"));
   }
+
+  @Test
+  void allSync_shouldThrowWhenInvocationReturnsError() {
+    McpApplicationContext context = mock(McpApplicationContext.class);
+    when(context.isInScope(anyString())).thenReturn(true);
+    ComponentProvider provider =
+        new ComponentProvider() {
+          @Override
+          public List<CompletionDefinition> completions() {
+            return List.of(
+                new CompletionDefinition(
+                    "test.Source#error()",
+                    McpSchema.PromptReference.builder("prompt_name").build(),
+                    (ctx, argument) ->
+                        Invocation.builder().result("failed").isError(true).build()));
+          }
+        };
+
+    List<McpServerFeatures.SyncCompletionSpecification> specs =
+        CompletionSupport.allSync(context, List.of(provider));
+    McpSchema.CompleteRequest request =
+        new McpSchema.CompleteRequest(
+            McpSchema.PromptReference.builder("prompt_name").build(),
+            new McpSchema.CompleteRequest.CompleteArgument("arg", "v"));
+
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> specs.get(0).completionHandler().apply(null, request));
+    assertTrue(
+        exception.getMessage().contains("Completion invocation failed for test.Source#error()"));
+  }
+
+  @Test
+  void allSync_shouldThrowWhenInvocationReturnsNonCompletionResult() {
+    McpApplicationContext context = mock(McpApplicationContext.class);
+    when(context.isInScope(anyString())).thenReturn(true);
+    ComponentProvider provider =
+        new ComponentProvider() {
+          @Override
+          public List<CompletionDefinition> completions() {
+            return List.of(
+                new CompletionDefinition(
+                    "test.Source#wrongReturn()",
+                    McpSchema.PromptReference.builder("prompt_name").build(),
+                    (ctx, argument) -> Invocation.builder().result("not-a-completion").build()));
+          }
+        };
+
+    List<McpServerFeatures.SyncCompletionSpecification> specs =
+        CompletionSupport.allSync(context, List.of(provider));
+    McpSchema.CompleteRequest request =
+        new McpSchema.CompleteRequest(
+            McpSchema.PromptReference.builder("prompt_name").build(),
+            new McpSchema.CompleteRequest.CompleteArgument("arg", "v"));
+
+    McpServerComponentRegistrationException exception =
+        assertThrows(
+            McpServerComponentRegistrationException.class,
+            () -> specs.get(0).completionHandler().apply(null, request));
+    assertTrue(
+        exception
+            .getMessage()
+            .contains("Completion method must return CompletionResult: test.Source#wrongReturn()"));
+  }
 }

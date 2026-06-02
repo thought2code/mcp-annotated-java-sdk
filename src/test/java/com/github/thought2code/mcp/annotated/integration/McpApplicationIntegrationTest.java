@@ -126,6 +126,34 @@ class McpApplicationIntegrationTest {
   }
 
   @Test
+  void streamableAsyncTransport_shouldCallToolViaMcpClient() {
+    int port = new Random().nextInt(8000, 9000);
+    AnnotatedMcpServer server =
+        TestMcpServerLifecycle.start(context, TestMcpConfigurations.streamableAsync(port));
+    try {
+      HttpClientStreamableHttpTransport transport =
+          HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+              .endpoint("/mcp/message")
+              .build();
+
+      try (McpSyncClient client =
+          McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
+        client.initialize();
+        McpSchema.CallToolRequest request =
+            McpSchema.CallToolRequest.builder("tool_with_default_name").arguments(Map.of()).build();
+        McpSchema.CallToolResult result = client.callTool(request);
+        McpSchema.TextContent content = (McpSchema.TextContent) result.content().get(0);
+
+        assertFalse(result.isError());
+        assertEquals("toolWithDefaultName is called", content.text());
+      }
+    } finally {
+      assert server != null;
+      server.stop();
+    }
+  }
+
+  @Test
   void streamableTransport_shouldServeAllFixtureComponents() {
     int port = new Random().nextInt(8000, 9000);
     AnnotatedMcpServer server =

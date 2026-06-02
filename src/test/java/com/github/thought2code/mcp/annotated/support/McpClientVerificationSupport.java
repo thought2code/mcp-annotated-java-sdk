@@ -28,6 +28,27 @@ public final class McpClientVerificationSupport {
     verifyPromptsCalled(client);
     verifyToolsRegistered(client);
     verifyToolsCalled(client);
+    verifyCompletions(client);
+  }
+
+  public static void verifyCompletions(McpSyncClient client) {
+    McpSchema.CompleteRequest promptRequest =
+        new McpSchema.CompleteRequest(
+            McpSchema.PromptReference.builder("generateCode").build(),
+            new McpSchema.CompleteRequest.CompleteArgument("language", ""));
+    McpSchema.CompleteResult promptResult = client.completeCompletion(promptRequest);
+    assertEquals(List.of("Java", "Python"), promptResult.completion().values());
+    assertEquals(2, promptResult.completion().total());
+    assertFalse(promptResult.completion().hasMore());
+
+    McpSchema.CompleteRequest resourceRequest =
+        new McpSchema.CompleteRequest(
+            new McpSchema.ResourceReference("file://{path}"),
+            new McpSchema.CompleteRequest.CompleteArgument("path", "file"));
+    McpSchema.CompleteResult resourceResult = client.completeCompletion(resourceRequest);
+    assertEquals(List.of("file://a", "file://b"), resourceResult.completion().values());
+    assertEquals(2, resourceResult.completion().total());
+    assertTrue(resourceResult.completion().hasMore());
   }
 
   public static void verifyServerInfo(McpSyncClient client) {
@@ -39,7 +60,7 @@ public final class McpClientVerificationSupport {
 
   public static void verifyResourcesRegistered(McpSyncClient client) {
     List<McpSchema.Resource> resources = client.listResources().resources();
-    assertEquals(2, resources.size());
+    assertEquals(3, resources.size());
     verifyResourceRegistered(
         resources,
         "test://resource1",
@@ -52,6 +73,12 @@ public final class McpClientVerificationSupport {
         "resource2_name",
         "resource2_title",
         "resource2_description");
+    verifyResourceRegistered(
+        resources,
+        "file://{path}",
+        "file_resource",
+        "file_resource",
+        "File resource for completion integration fixture");
   }
 
   private static void verifyResourceRegistered(
@@ -89,7 +116,7 @@ public final class McpClientVerificationSupport {
 
   public static void verifyPromptsRegistered(McpSyncClient client) {
     List<McpSchema.Prompt> prompts = client.listPrompts().prompts();
-    assertEquals(11, prompts.size());
+    assertEquals(12, prompts.size());
     verifyPromptRegistered(prompts, "prompt_with_default_name", "title", "description", 0);
     verifyPromptRegistered(
         prompts, "promptWithDefaultTitle", "promptWithDefaultTitle", "description", 0);
@@ -137,6 +164,12 @@ public final class McpClientVerificationSupport {
         "prompt_with_return_null",
         "prompt_with_return_null",
         0);
+    verifyPromptRegistered(
+        prompts,
+        "generateCode",
+        "generateCode",
+        "Prompt used by completion integration fixture",
+        1);
     verifyPromptRegistered(
         prompts, "prompt_with_exception", "prompt_with_exception", "prompt_with_exception", 0);
   }
@@ -195,6 +228,11 @@ public final class McpClientVerificationSupport {
         "prompt_with_return_null",
         Map.of(),
         "The method call succeeded but the return value is null");
+    verifyPromptCalled(
+        client,
+        "generateCode",
+        Map.of("language", "Java"),
+        "generateCode is called with language: Java");
     verifyPromptCalled(
         client,
         "prompt_with_exception",

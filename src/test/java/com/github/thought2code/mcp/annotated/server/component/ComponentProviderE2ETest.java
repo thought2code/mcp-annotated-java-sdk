@@ -10,7 +10,6 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.github.thought2code.mcp.annotated.McpApplication;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.integration.IntegrationMcpApplication;
 import com.github.thought2code.mcp.annotated.server.component.completion.CompletionSupport;
@@ -82,7 +81,7 @@ class ComponentProviderE2ETest {
 
   @Test
   void completionSupport_shouldBuildAndInvokeGeneratedCompletionViaServiceLoader() {
-    McpApplicationContext context = McpApplicationContext.from(McpApplication.class);
+    McpApplicationContext context = McpApplicationContext.from(IntegrationMcpApplication.class);
     List<McpServerFeatures.SyncCompletionSpecification> completions =
         CompletionSupport.allSync(context);
 

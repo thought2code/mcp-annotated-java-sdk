@@ -68,6 +68,13 @@ public class TestMcpPrompts {
         "promptWithMixedParams is called with params: %s, %s", mcpParam, nonMcpParam);
   }
 
+  @McpPrompt(name = "generateCode", description = "Prompt used by completion integration fixture")
+  public String generateCode(
+      @McpPromptParam(name = "language", description = "Programming language") String language) {
+    log.debug("calling generateCode with language: {}", language);
+    return "generateCode is called with language: " + language;
+  }
+
   @McpPrompt
   public String promptWithException() {
     throw new IllegalStateException("sensitive prompt failure detail");

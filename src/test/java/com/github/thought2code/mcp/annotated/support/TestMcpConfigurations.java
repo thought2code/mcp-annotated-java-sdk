@@ -38,8 +38,17 @@ public final class TestMcpConfigurations {
   }
 
   public static ServerConfiguration streamable(int port) {
+    return streamable(port, ServerType.SYNC);
+  }
+
+  public static ServerConfiguration streamableAsync(int port) {
+    return streamable(port, ServerType.ASYNC);
+  }
+
+  public static ServerConfiguration streamable(int port, ServerType type) {
     return baseBuilder()
         .mode(ServerMode.STREAMABLE)
+        .type(type)
         .streamable(
             ServerStreamable.builder()
                 .mcpEndpoint("/mcp/message")

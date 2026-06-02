@@ -1,4 +1,4 @@
-package com.github.thought2code.mcp.annotated.support;
+package com.github.thought2code.mcp.annotated.test;
 
 import com.github.thought2code.mcp.annotated.annotation.McpPromptCompletion;
 import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
@@ -6,7 +6,7 @@ import com.github.thought2code.mcp.annotated.server.component.completion.Complet
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.List;
 
-/** Fixture used to verify MCP completion specification creation and invocation. */
+/** Fixture completions registered within the integration test base package scope. */
 public class TestMcpCompletions {
 
   @McpPromptCompletion(name = "generateCode", title = "Code languages")
@@ -19,7 +19,7 @@ public class TestMcpCompletions {
         .build();
   }
 
-  @McpResourceCompletion(uri = "file://")
+  @McpResourceCompletion(uri = "file://{path}")
   public CompletionResult completeFileUri(McpSchema.CompleteRequest.CompleteArgument argument) {
     return CompletionResult.builder()
         .values(List.of("file://a", "file://b"))

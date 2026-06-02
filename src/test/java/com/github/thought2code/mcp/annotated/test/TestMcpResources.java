@@ -17,4 +17,14 @@ public class TestMcpResources {
     log.debug("calling resource1");
     return "resource1_content";
   }
+
+  @McpResource(
+      uri = "file://{path}",
+      name = "file_resource",
+      title = "file_resource",
+      description = "File resource for completion integration fixture")
+  public String fileResource() {
+    log.debug("calling fileResource");
+    return "file_resource_content";
+  }
 }
