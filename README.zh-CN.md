@@ -67,17 +67,15 @@
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.0</version>
 </dependency>
 ```
 
 **Gradle：**
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.18.0'
 ```
-
-依赖版本请以 [Maven Central](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk) 徽章为准；本仓库当前开发版本为 `0.18.0-SNAPSHOT`。
 
 #### 第 2 步：创建配置文件
 

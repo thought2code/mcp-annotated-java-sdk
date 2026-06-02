@@ -24,17 +24,15 @@ A lightweight, annotation-based Java framework that simplifies MCP (Model Contex
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.0</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.17.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.18.0'
 ```
-
-Latest release: https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk (repo development version: 0.18.0-SNAPSHOT).
 
 ### Create MCP Server
 
