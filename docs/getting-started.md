@@ -19,14 +19,14 @@ This guide will help you build your first MCP server in 5 minutes.
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.18.0</version>
+    <version>0.19.0-SNAPSHOT</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.18.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
 ```
 
 ## 5-Minutes Tutorial
@@ -186,9 +186,9 @@ Use **SYNC** by default. Choose **ASYNC** only when your deployment requires the
 
 The SDK creates **one instance per component class** (via a **public no-arg constructor**) and reuses it for all requests. Concurrent MCP calls share that object. Keep components **stateless** or **thread-safe**; avoid unsynchronized per-request instance fields.
 
-### MCP Java SDK 2.x (milestone)
+### MCP Java SDK 2.x (release candidate)
 
-This SDK depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
+This SDK depends on MCP Java SDK **2.0.0-RC1** (pre-release candidate). Pin versions and retest when upgrading.
 
 - **STREAMABLE** is the supported HTTP transport.
 

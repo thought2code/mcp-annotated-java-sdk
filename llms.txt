@@ -24,14 +24,14 @@ A lightweight, annotation-based Java framework that simplifies MCP (Model Contex
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.18.0</version>
+    <version>0.19.0-SNAPSHOT</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.18.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
 ```
 
 ### Create MCP Server
@@ -138,7 +138,7 @@ change-notification:
 - Use `McpApplication.run()` as the server entry point; optional third argument overrides the config file name (default `mcp-server.yml`)
 - Component registration scope: `basePackageClass` → `basePackage` → main class package; one instance per component class (public no-arg constructor)
 - `instructions` must be a non-blank string in `mcp-server.yml` (validated at startup)
-- Built on MCP Java SDK **2.0.0-M3** (milestone) — pin versions and retest when upgrading
+- Built on MCP Java SDK **2.0.0-RC1** (pre-release candidate) — pin versions and retest when upgrading
 - `type: ASYNC` uses the async MCP server API; annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)` — not Project Reactor
 - One instance per component class is created and shared across concurrent requests — keep components stateless or thread-safe
 - Components are auto-registered when they are within the resolved registration scope

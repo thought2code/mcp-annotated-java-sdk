@@ -66,13 +66,13 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.18.0</version>
+    <version>0.19.0-SNAPSHOT</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.18.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
 ```
 
 #### Step 2: Create Configuration File
@@ -288,9 +288,9 @@ The SDK creates **one instance per component class** (no-arg constructor) and re
 
 `McpApplication.run(mainClass, args)` loads `mcp-server.yml` by default; pass a third argument to use another classpath config file name.
 
-#### MCP Java SDK 2.x (milestone)
+#### MCP Java SDK 2.x (release candidate)
 
-This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**, a **pre-release milestone**. APIs may change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
+This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-RC1**, a **pre-release candidate**. APIs may still change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
 
 - **STREAMABLE** is the supported HTTP transport.
 
@@ -344,7 +344,7 @@ mvnw.cmd clean test
 
 ### Q: Can I use this in production?
 
-**A:** The annotated layer is stable for development and testing, but it depends on the official MCP Java SDK **2.0.0-M3** (a milestone release). Pin versions, run your own integration tests, and expect possible SDK API changes before 2.0 GA before relying on it in production.
+**A:** The annotated layer is stable for development and testing, but it depends on the official MCP Java SDK **2.0.0-RC1** (a release candidate). Pin versions, run your own integration tests, and expect possible SDK API changes before 2.0 GA before relying on it in production.
 
 ### Q: What does `type: ASYNC` mean?
 

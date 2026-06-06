@@ -67,14 +67,14 @@
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.18.0</version>
+    <version>0.19.0-SNAPSHOT</version>
 </dependency>
 ```
 
 **Gradle：**
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.18.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
 ```
 
 #### 第 2 步：创建配置文件
@@ -290,9 +290,9 @@ SDK 为每个组件类创建 **唯一实例**（无参构造），该类上所�
 
 `McpApplication.run(mainClass, args)` 默认加载 `mcp-server.yml`；可通过第三个参数指定 classpath 中的其他配置文件名。
 
-#### MCP Java SDK 2.x（里程碑版本）
+#### MCP Java SDK 2.x（候选版本）
 
-本项目基于官方 [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**，属于 **预发布里程碑**。2.0 正式版发布前 API 可能变更 — 请锁定依赖版本，升级后重新跑集成测试。
+本项目基于官方 [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-RC1**，属于 **预发布候选版本**。2.0 正式版发布前 API 仍可能变更 — 请锁定依赖版本，升级后重新跑集成测试。
 
 - 当前支持的 HTTP 传输为 **STREAMABLE**。
 
@@ -344,7 +344,7 @@ mvnw.cmd clean test
 
 ### 问：可以用于生产环境吗？
 
-**答：** 注解层用于开发与测试已较稳定，但依赖官方 MCP Java SDK **2.0.0-M3**（里程碑版本）。生产使用前请锁定依赖版本、跑完自己的集成测试，并关注 2.0 正式版发布前可能的 SDK API 变更。
+**答：** 注解层用于开发与测试已较稳定，但依赖官方 MCP Java SDK **2.0.0-RC1**（候选版本）。生产使用前请锁定依赖版本、跑完自己的集成测试，并关注 2.0 正式版发布前可能的 SDK API 变更。
 
 ### 问：`type: ASYNC` 是什么意思？
 
