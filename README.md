@@ -180,12 +180,11 @@ The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is a standar
 
 ### Supported Server Modes
 
-This SDK supports three MCP server modes:
+This SDK supports two MCP server modes:
 
 | Mode           | Description                         | Use Case                                               |
 |----------------|-------------------------------------|--------------------------------------------------------|
 | **STDIO**      | Standard input/output communication | CLI tools, local development                           |
-| **SSE**        | Server-Sent Events (HTTP-based)     | Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE |
 | **STREAMABLE** | HTTP streaming                      | Web applications, recommended for production           |
 
 ## 🔧 Advanced Usage
@@ -224,7 +223,7 @@ streamable:
 | Property                          | Description                                                     | Default                      |
 |-----------------------------------|-----------------------------------------------------------------|------------------------------|
 | `enabled`                         | Enable/disable MCP server                                       | `true`                       |
-| `mode`                            | Server mode: `STDIO`, `SSE` (deprecated), `STREAMABLE`          | `STREAMABLE`                 |
+| `mode`                            | Server mode: `STDIO`, `STREAMABLE`                              | `STREAMABLE`                 |
 | `name`                            | Server name                                                     | `mcp-server`                 |
 | `version`                         | Server version                                                  | `1.0.0`                      |
 | `type`                            | Server type: `SYNC`, `ASYNC`                                    | `SYNC`                       |
@@ -238,10 +237,6 @@ streamable:
 | `change-notification.resource`    | Notify clients on resource change                               | `true`                       |
 | `change-notification.prompt`      | Notify clients on prompt change                                 | `true`                       |
 | `change-notification.tool`        | Notify clients on tool change                                   | `true`                       |
-| `sse.message-endpoint`            | SSE POST message path *(deprecated, for removal since 0.16.0)*  | `/mcp/message`               |
-| `sse.endpoint`                    | SSE stream path *(deprecated, for removal since 0.16.0)*        | `/sse`                       |
-| `sse.base-url`                    | Public base URL for the SSE server *(deprecated)*               | Required when `mode: SSE`    |
-| `sse.port`                        | HTTP port for SSE mode *(deprecated, for removal since 0.16.0)* | `8080`                       |
 | `streamable.mcp-endpoint`         | Streamable HTTP MCP path                                        | `/mcp/message`               |
 | `streamable.disallow-delete`      | Reject HTTP DELETE on session                                   | `false`                      |
 | `streamable.keep-alive-interval`  | Keep-alive interval (ms)                                        | `20000`                      |
@@ -297,8 +292,7 @@ The SDK creates **one instance per component class** (no-arg constructor) and re
 
 This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**, a **pre-release milestone**. APIs may change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
 
-- **STREAMABLE** is the recommended HTTP transport for new projects.
-- **SSE** (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
+- **STREAMABLE** is the supported HTTP transport.
 
 ## 🏗️ Project Structure
 
@@ -377,7 +371,6 @@ mvnw.cmd clean test
 **A:** 
 - **STDIO**: For CLI tools and local development
 - **STREAMABLE**: For web applications and production deployments (recommended)
-- **SSE**: Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE and `streamable.*` instead of `sse.*`
 
 ## 🤝 Contributing
 

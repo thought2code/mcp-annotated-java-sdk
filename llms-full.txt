@@ -283,26 +283,12 @@ If `mode` is omitted in `mcp-server.yml`, the server defaults to **STREAMABLE**.
 | Mode | Description | Use Case |
 |------|-------------|----------|
 | **STDIO** | Standard input/output communication | CLI tools, local development |
-| **SSE** | Server-Sent Events (HTTP-based) | Deprecated since 0.16.0 (`forRemoval`); use STREAMABLE |
 | **STREAMABLE** | HTTP streaming | Web applications, recommended for production |
 
 ### STDIO Mode
 
 ```yaml
 mode: STDIO
-```
-
-### SSE Mode (Deprecated since 0.16.0, for removal)
-
-HTTP SSE transport (`mode: SSE`, `sse.*`, `McpSseServer`, `ServerMode.SSE`) is deprecated with **`forRemoval = true`** since **0.16.0** and scheduled for removal in a future release. Migrate to **STREAMABLE** for new projects.
-
-```yaml
-mode: SSE
-sse:
-  port: 8080
-  endpoint: /sse
-  message-endpoint: /mcp/message
-  base-url: http://localhost:8080
 ```
 
 ### STREAMABLE Mode
@@ -321,7 +307,7 @@ streamable:
 | Property | Description | Default |
 |----------|-------------|---------|
 | `enabled` | Enable/disable MCP server | `true` |
-| `mode` | Server mode: `STDIO`, `SSE` (deprecated), `STREAMABLE` | `STREAMABLE` |
+| `mode` | Server mode: `STDIO`, `STREAMABLE` | `STREAMABLE` |
 | `name` | Server name | `mcp-server` |
 | `version` | Server version | `1.0.0` |
 | `type` | Server type: `SYNC`, `ASYNC` | `SYNC` |
@@ -335,10 +321,6 @@ streamable:
 | `change-notification.resource` | Notify clients on resource change | `true` |
 | `change-notification.prompt` | Notify clients on prompt change | `true` |
 | `change-notification.tool` | Notify clients on tool change | `true` |
-| `sse.message-endpoint` | SSE POST message path *(deprecated, for removal since 0.16.0)* | `/mcp/message` |
-| `sse.endpoint` | SSE stream path *(deprecated, for removal since 0.16.0)* | `/sse` |
-| `sse.base-url` | Public base URL for the SSE server *(deprecated)* | Required when `mode: SSE` |
-| `sse.port` | HTTP port for SSE mode *(deprecated, for removal since 0.16.0)* | `8080` |
 | `streamable.mcp-endpoint` | Streamable HTTP MCP path | `/mcp/message` |
 | `streamable.disallow-delete` | Reject HTTP DELETE on session | `false` |
 | `streamable.keep-alive-interval` | Keep-alive interval (ms) | `20000` |
@@ -486,12 +468,11 @@ public String createUser(
 ## Important Notes
 
 1. **Entry point**: Use `McpApplication.run()`; component classes are registered when they match the `@McpServerApplication` registration scope.
-2. **Deprecated SSE (for removal since 0.16.0)**: HTTP SSE mode and related APIs (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` config) are deprecated with `forRemoval = true` since 0.16.0. Use STREAMABLE mode (`McpStreamableServer`, `streamable.*`) for new HTTP projects.
-3. **MCP SDK milestone**: This project depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
-4. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
-5. **Singleton components**: One instance per component class is shared across concurrent requests. Keep components stateless or thread-safe.
-6. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
-7. **Required YAML fields**: `instructions` must be non-blank. When `mode` is `STREAMABLE` or `SSE`, the matching transport section must be present and complete.
+2. **MCP SDK milestone**: This project depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
+3. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
+4. **Singleton components**: One instance per component class is shared across concurrent requests. Keep components stateless or thread-safe.
+5. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
+6. **Required YAML fields**: `instructions` must be non-blank. When `mode` is `STREAMABLE`, the `streamable` transport section must be present and complete.
 
 ## Links
 

@@ -28,7 +28,6 @@ import java.util.function.Function;
  *
  * @author codeboyzhou
  * @see McpServerBase
- * @see McpSseServer
  * @see McpStreamableServer
  * @see StdioServerTransportProvider
  */

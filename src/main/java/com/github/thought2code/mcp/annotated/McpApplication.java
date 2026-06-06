@@ -6,7 +6,6 @@ import com.github.thought2code.mcp.annotated.configuration.ServerDefaults;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
-import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
@@ -20,10 +19,9 @@ import org.slf4j.LoggerFactory;
  * Main application class for the MCP (Model Context Protocol) annotated server.
  *
  * <p>This class provides the entry point for running MCP servers with annotation-based
- * configuration. It supports STDIO and STREAMABLE modes. {@link ServerMode#SSE} is deprecated but
- * still supported for backward compatibility. The application automatically loads configuration,
- * resolves component registration scope, and starts the appropriate server based on the
- * configuration settings.
+ * configuration. It supports STDIO and STREAMABLE modes. The application automatically loads
+ * configuration, resolves component registration scope, and starts the appropriate server based on
+ * the configuration settings.
  *
  * @author codeboyzhou
  */
@@ -81,11 +79,10 @@ public final class McpApplication {
    *   <li>Creates the appropriate server instance based on the configured mode:
    *       <ul>
    *         <li>{@link ServerMode#STDIO} - Standard input/output based server
-   *         <li>{@link ServerMode#SSE} - Deprecated HTTP Server-Sent Events based server
    *         <li>{@link ServerMode#STREAMABLE} - Streamable HTTP server
    *       </ul>
    *   <li>Initializes the synchronous MCP server and registers all annotated components
-   *   <li>Starts the HTTP server for SSE or STREAMABLE modes
+   *   <li>Starts the HTTP server for STREAMABLE mode
    * </ol>
    *
    * <p>If the MCP server is disabled in the configuration, a warning message will be logged and no
@@ -112,7 +109,6 @@ public final class McpApplication {
     AnnotatedMcpServer mcpServer = null;
     switch (configuration.mode()) {
       case STDIO -> mcpServer = new McpStdioServer(configuration, context);
-      case SSE -> mcpServer = createSseServer(configuration, context);
       case STREAMABLE -> mcpServer = new McpStreamableServer(configuration, context);
     }
 
@@ -132,20 +128,5 @@ public final class McpApplication {
 
     mcpServer.start();
     mcpServer.awaitShutdown();
-  }
-
-  /**
-   * Creates an HTTP SSE server instance.
-   *
-   * @param configuration the server configuration
-   * @param context the application context
-   * @return a deprecated SSE server instance
-   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} and {@link
-   *     McpStreamableServer} instead.
-   */
-  @Deprecated(since = "0.16.0", forRemoval = true)
-  private static AnnotatedMcpServer createSseServer(
-      ServerConfiguration configuration, McpApplicationContext context) {
-    return new McpSseServer(configuration, context);
   }
 }

@@ -33,18 +33,20 @@ public final class McpClientVerificationSupport {
 
   public static void verifyCompletions(McpSyncClient client) {
     McpSchema.CompleteRequest promptRequest =
-        new McpSchema.CompleteRequest(
-            McpSchema.PromptReference.builder("generateCode").build(),
-            new McpSchema.CompleteRequest.CompleteArgument("language", ""));
+        McpSchema.CompleteRequest.builder(
+                McpSchema.PromptReference.builder("generateCode").build(),
+                new McpSchema.CompleteRequest.CompleteArgument("language", ""))
+            .build();
     McpSchema.CompleteResult promptResult = client.completeCompletion(promptRequest);
     assertEquals(List.of("Java", "Python"), promptResult.completion().values());
     assertEquals(2, promptResult.completion().total());
     assertFalse(promptResult.completion().hasMore());
 
     McpSchema.CompleteRequest resourceRequest =
-        new McpSchema.CompleteRequest(
-            new McpSchema.ResourceReference("file://{path}"),
-            new McpSchema.CompleteRequest.CompleteArgument("path", "file"));
+        McpSchema.CompleteRequest.builder(
+                new McpSchema.ResourceReference("file://{path}"),
+                new McpSchema.CompleteRequest.CompleteArgument("path", "file"))
+            .build();
     McpSchema.CompleteResult resourceResult = client.completeCompletion(resourceRequest);
     assertEquals(List.of("file://a", "file://b"), resourceResult.completion().values());
     assertEquals(2, resourceResult.completion().total());

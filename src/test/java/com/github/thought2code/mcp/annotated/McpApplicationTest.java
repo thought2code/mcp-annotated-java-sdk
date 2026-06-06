@@ -84,17 +84,6 @@ class McpApplicationTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  void run_shouldStartSseServer() {
-    AnnotatedMcpServer server =
-        assertDoesNotThrow(
-            () ->
-                TestMcpServerLifecycle.start(context, "test-mcp-server-enable-http-sse-mode.yml"));
-    assertNotNull(server);
-    server.stop();
-  }
-
-  @Test
   void runWithDefaultConfigFile_shouldStartServerFromClasspathConfig() {
     AnnotatedMcpServer server =
         assertDoesNotThrow(() -> TestMcpServerLifecycle.start(context, "mcp-server.yml"));

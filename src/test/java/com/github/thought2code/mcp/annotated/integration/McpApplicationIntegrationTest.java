@@ -23,7 +23,6 @@ import com.github.thought2code.mcp.annotated.support.TestMcpServerLifecycle;
 import com.github.thought2code.mcp.annotated.test.TestMcpStdioServer;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
-import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
@@ -48,7 +47,6 @@ import reactor.core.publisher.Hooks;
 
 @Tag("integration")
 @Execution(ExecutionMode.SAME_THREAD)
-@SuppressWarnings("deprecation")
 class McpApplicationIntegrationTest {
 
   private static final Logger log = LoggerFactory.getLogger(McpApplicationIntegrationTest.class);
@@ -101,27 +99,6 @@ class McpApplicationIntegrationTest {
 
     try (McpSyncClient client = McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
       McpClientVerificationSupport.verifyAll(client);
-    }
-  }
-
-  @Test
-  void sseTransport_shouldServeAllFixtureComponents() {
-    int port = new Random().nextInt(8000, 9000);
-    AnnotatedMcpServer server =
-        TestMcpServerLifecycle.start(context, TestMcpConfigurations.sse(port));
-    try {
-      HttpClientSseClientTransport transport =
-          HttpClientSseClientTransport.builder("http://localhost:" + port)
-              .sseEndpoint("/sse")
-              .build();
-
-      try (McpSyncClient client =
-          McpClient.sync(transport).requestTimeout(requestTimeout).build()) {
-        McpClientVerificationSupport.verifyAll(client);
-      }
-    } finally {
-      assert server != null;
-      server.stop();
     }
   }
 
@@ -233,13 +210,6 @@ class McpApplicationIntegrationTest {
     ServerConfiguration configuration =
         new ConfigurationLoader("test-mcp-server-enable-stdio-mode.yml").loadConfig();
     assertEquals(ServerMode.STDIO, configuration.mode());
-  }
-
-  @Test
-  void sseModeConfig_shouldLoadWithoutStartingInProcessServer() {
-    ServerConfiguration configuration =
-        new ConfigurationLoader("test-mcp-server-enable-http-sse-mode.yml").loadConfig();
-    assertEquals(ServerMode.SSE, configuration.mode());
   }
 
   @Test

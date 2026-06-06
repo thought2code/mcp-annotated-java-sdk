@@ -15,7 +15,7 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  *
  * @param profile optional profile name; when set, {@code mcp-server-{profile}.yml} is merged
  * @param enabled whether the MCP server should start
- * @param mode transport mode (stdio, streamable HTTP, or deprecated SSE)
+ * @param mode transport mode (stdio or streamable HTTP)
  * @param name MCP server implementation name
  * @param version MCP server implementation version
  * @param type sync vs async MCP server API style
@@ -23,7 +23,6 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  * @param requestTimeout default request timeout in seconds
  * @param capabilities feature flags advertised during initialization
  * @param changeNotification list-change notification capability flags
- * @param sse deprecated HTTP SSE transport settings
  * @param streamable streamable HTTP transport settings
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>
@@ -40,7 +39,6 @@ public record ServerConfiguration(
     @JsonProperty("request-timeout") Long requestTimeout,
     @JsonMerge @JsonProperty("capabilities") ServerCapabilities capabilities,
     @JsonMerge @JsonProperty("change-notification") ServerChangeNotification changeNotification,
-    @Deprecated(since = "0.16.0", forRemoval = true) @JsonMerge @JsonProperty("sse") ServerSse sse,
     @JsonMerge @JsonProperty("streamable") ServerStreamable streamable) {
 
   /**
@@ -88,10 +86,6 @@ public record ServerConfiguration(
     /** The change notification configuration. */
     private ServerChangeNotification changeNotification =
         ServerChangeNotification.builder().build();
-
-    /** The SSE configuration. */
-    @Deprecated(since = "0.16.0", forRemoval = true)
-    private ServerSse sse = ServerSse.builder().build();
 
     /** The streamable configuration. */
     private ServerStreamable streamable = ServerStreamable.builder().build();
@@ -207,19 +201,6 @@ public record ServerConfiguration(
     }
 
     /**
-     * Sets the SSE configuration.
-     *
-     * @param sse The SSE configuration.
-     * @return This builder instance.
-     * @deprecated HTTP SSE mode is deprecated; use {@link #streamable(ServerStreamable)} instead.
-     */
-    @Deprecated(since = "0.16.0", forRemoval = true)
-    public Builder sse(ServerSse sse) {
-      this.sse = sse;
-      return this;
-    }
-
-    /**
      * Sets the streamable configuration.
      *
      * @param streamable The streamable configuration.
@@ -247,7 +228,6 @@ public record ServerConfiguration(
           requestTimeout,
           capabilities,
           changeNotification,
-          sse,
           streamable);
     }
   }

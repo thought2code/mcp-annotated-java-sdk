@@ -88,9 +88,10 @@ class ComponentProviderE2ETest {
     assertFalse(completions.isEmpty(), "Expected at least one generated completion");
 
     McpSchema.CompleteRequest request =
-        new McpSchema.CompleteRequest(
-            McpSchema.PromptReference.builder("generateCode").build(),
-            new McpSchema.CompleteRequest.CompleteArgument("language", "J"));
+        McpSchema.CompleteRequest.builder(
+                McpSchema.PromptReference.builder("generateCode").build(),
+                new McpSchema.CompleteRequest.CompleteArgument("language", "J"))
+            .build();
 
     McpSchema.CompleteResult generateCodeResult = null;
     for (McpServerFeatures.SyncCompletionSpecification completion : completions) {

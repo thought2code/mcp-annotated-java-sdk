@@ -11,14 +11,13 @@ import io.modelcontextprotocol.spec.McpSchema;
  * SDK-level contract for an MCP server runtime (transport + lifecycle), distinct from {@link
  * McpServer} which builds sync/async specifications from the MCP Java SDK.
  *
- * <p>Implementations cover server modes such as {@link ServerMode#STDIO}, {@link ServerMode#SSE},
- * and {@link ServerMode#STREAMABLE}. Typical usage is through {@link McpServerBase} subclasses
- * together with {@link McpApplication}.
+ * <p>Implementations cover server modes such as {@link ServerMode#STDIO} and {@link
+ * ServerMode#STREAMABLE}. Typical usage is through {@link McpServerBase} subclasses together with
+ * {@link McpApplication}.
  *
  * @author codeboyzhou
  * @see McpServerBase
  * @see McpStdioServer
- * @see McpSseServer
  * @see McpStreamableServer
  */
 public interface AnnotatedMcpServer {
@@ -102,9 +101,9 @@ public interface AnnotatedMcpServer {
   /**
    * Starts the MCP server.
    *
-   * <p>For HTTP-based server modes (SSE, STREAMABLE), this method starts the underlying HTTP server
-   * to accept incoming connections. For STDIO mode, this method is a no-op since the transport is
-   * tied to standard input/output and starts automatically when the sync server is created.
+   * <p>For HTTP-based server modes, this method starts the underlying HTTP server to accept
+   * incoming connections. For STDIO mode, this method is a no-op since the transport is tied to
+   * standard input/output and starts automatically when the sync server is created.
    *
    * <p>Implementations that require explicit startup (e.g., HTTP servers) should override this
    * method to start their transport layer. The default implementation does nothing.
@@ -114,8 +113,8 @@ public interface AnnotatedMcpServer {
   /**
    * Stops the MCP server and releases transport resources.
    *
-   * <p>For HTTP-based server modes (SSE, STREAMABLE), this method stops the underlying Jetty
-   * server. For STDIO mode, this method is a no-op.
+   * <p>For HTTP-based server modes, this method stops the underlying Jetty server. For STDIO mode,
+   * this method is a no-op.
    */
   default void stop() {}
 

@@ -3,7 +3,6 @@ package com.github.thought2code.mcp.annotated.support;
 import com.github.thought2code.mcp.annotated.configuration.ServerCapabilities;
 import com.github.thought2code.mcp.annotated.configuration.ServerChangeNotification;
 import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
-import com.github.thought2code.mcp.annotated.configuration.ServerSse;
 import com.github.thought2code.mcp.annotated.configuration.ServerStreamable;
 import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
@@ -54,26 +53,6 @@ public final class TestMcpConfigurations {
                 .mcpEndpoint("/mcp/message")
                 .disallowDelete(false)
                 .keepAliveInterval(20_000L)
-                .port(port)
-                .build())
-        .build();
-  }
-
-  /**
-   * Builds a deprecated HTTP SSE configuration for integration tests.
-   *
-   * @deprecated HTTP SSE mode is deprecated; use {@link #streamable(int)} instead.
-   */
-  @Deprecated(since = "0.16.0", forRemoval = true)
-  @SuppressWarnings("deprecation")
-  public static ServerConfiguration sse(int port) {
-    return baseBuilder()
-        .mode(ServerMode.SSE)
-        .sse(
-            ServerSse.builder()
-                .messageEndpoint("/mcp/message")
-                .endpoint("/sse")
-                .baseUrl("http://localhost:" + port)
                 .port(port)
                 .build())
         .build();

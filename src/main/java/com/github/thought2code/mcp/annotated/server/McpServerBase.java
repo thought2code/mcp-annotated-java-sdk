@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * <p>This class implements the core functionality shared across different MCP server
  * implementations, including capability definition, component registration, and server creation. It
  * serves as a foundation for concrete server implementations that handle different transport
- * mechanisms (STDIO, SSE, STREAMABLE).
+ * mechanisms (STDIO, STREAMABLE).
  *
  * <p>The class manages server configuration and provides default implementations for:
  *
@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
  * @author codeboyzhou
  * @see AnnotatedMcpServer
  * @see McpStdioServer
- * @see McpSseServer
  * @see McpStreamableServer
  * @see ServerConfiguration
  */
@@ -263,19 +262,18 @@ public abstract class McpServerBase implements AnnotatedMcpServer {
   /**
    * Starts a Jetty HTTP server with a transport provider.
    *
-   * <p>This helper centralizes the shared HTTP startup lifecycle for SSE and Streamable modes so
-   * concrete servers only provide transport-specific configuration.
+   * <p>This helper centralizes the shared HTTP startup lifecycle so concrete servers only provide
+   * transport-specific configuration.
    *
-   * @param serverMode server mode used in startup logs
    * @param endpointPath endpoint path used in startup logs
    * @param transportProvider transport servlet to register
    * @param port server port
    */
   protected final void startHttpServer(
-      ServerMode serverMode, String endpointPath, HttpServlet transportProvider, int port) {
+      String endpointPath, HttpServlet transportProvider, int port) {
     log.info(
         "Starting Jetty-based MCP {} server on http://{}:{}{}",
-        serverMode.description(),
+        ServerMode.STREAMABLE.description(),
         InetHelper.findFirstNonLoopbackAddress().getHostAddress(),
         port,
         endpointPath);

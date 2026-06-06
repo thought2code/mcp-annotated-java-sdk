@@ -44,7 +44,6 @@ public final class ConfigurationSupport {
         configuration.requestTimeout(),
         configuration.capabilities(),
         configuration.changeNotification(),
-        mode == ServerMode.SSE ? configuration.sse() : null,
         mode == ServerMode.STREAMABLE ? configuration.streamable() : null);
   }
 }

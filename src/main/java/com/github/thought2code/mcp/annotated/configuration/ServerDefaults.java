@@ -24,7 +24,6 @@ import java.time.Duration;
  * @see ServerConfiguration
  * @see ServerCapabilities
  * @see ServerChangeNotification
- * @see ServerSse
  * @see ServerStreamable
  */
 public final class ServerDefaults {
@@ -62,18 +61,6 @@ public final class ServerDefaults {
 
   /** Default change notification enabled status. */
   public static final boolean CHANGE_NOTIFICATION_ENABLED = true;
-
-  /** Default SSE message endpoint path. */
-  @Deprecated(since = "0.16.0", forRemoval = true)
-  public static final String SSE_MESSAGE_ENDPOINT = "/mcp/message";
-
-  /** Default SSE endpoint path. */
-  @Deprecated(since = "0.16.0", forRemoval = true)
-  public static final String SSE_ENDPOINT = "/sse";
-
-  /** Default SSE base URL (empty). */
-  @Deprecated(since = "0.16.0", forRemoval = true)
-  public static final String SSE_BASE_URL = StringHelper.EMPTY;
 
   /** Default HTTP server port. */
   public static final int PORT = 8080;

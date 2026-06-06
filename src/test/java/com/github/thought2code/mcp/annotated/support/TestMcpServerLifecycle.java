@@ -5,7 +5,6 @@ import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.ServerType;
 import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
-import com.github.thought2code.mcp.annotated.server.McpSseServer;
 import com.github.thought2code.mcp.annotated.server.McpStdioServer;
 import com.github.thought2code.mcp.annotated.server.McpStreamableServer;
 import io.modelcontextprotocol.server.McpAsyncServer;
@@ -42,7 +41,6 @@ public final class TestMcpServerLifecycle {
    * @param configuration server configuration
    * @return started server, or {@code null} when the configuration is disabled
    */
-  @SuppressWarnings("deprecation")
   public static AnnotatedMcpServer start(
       McpApplicationContext context, ServerConfiguration configuration) {
     if (!configuration.enabled()) {
@@ -52,7 +50,6 @@ public final class TestMcpServerLifecycle {
     AnnotatedMcpServer mcpServer =
         switch (configuration.mode()) {
           case STDIO -> new McpStdioServer(configuration, context);
-          case SSE -> new McpSseServer(configuration, context);
           case STREAMABLE -> new McpStreamableServer(configuration, context);
         };
 

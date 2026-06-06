@@ -17,12 +17,6 @@ class ConfigurationCheckerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  void check_shouldAcceptValidSseConfiguration() {
-    assertDoesNotThrow(() -> ConfigurationChecker.check(TestMcpConfigurations.sse(8081)));
-  }
-
-  @Test
   void check_shouldAcceptValidStreamableConfiguration() {
     assertDoesNotThrow(() -> ConfigurationChecker.check(TestMcpConfigurations.streamable(9000)));
   }
@@ -55,17 +49,6 @@ class ConfigurationCheckerTest {
         assertThrows(
             McpServerConfigurationException.class, () -> ConfigurationChecker.check(configuration));
     assertTrue(exception.getMessage().contains("capabilities.subscribe-resource"));
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  void check_shouldRejectMissingSseSettingsWhenModeIsSse() {
-    ServerConfiguration configuration =
-        TestMcpConfigurations.baseBuilder().mode(ServerMode.SSE).sse(null).build();
-    McpServerConfigurationException exception =
-        assertThrows(
-            McpServerConfigurationException.class, () -> ConfigurationChecker.check(configuration));
-    assertTrue(exception.getMessage().contains("sse"));
   }
 
   @Test

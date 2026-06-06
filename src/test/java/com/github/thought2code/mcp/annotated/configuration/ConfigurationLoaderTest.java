@@ -63,7 +63,6 @@ class ConfigurationLoaderTest {
     ServerConfiguration configuration = new ConfigurationLoader("mcp-server.yml").loadConfig();
     assertEquals(ServerMode.STREAMABLE, configuration.mode());
     assertTrue(configuration.enabled());
-    assertNull(configuration.sse());
   }
 
   @Test
@@ -73,21 +72,6 @@ class ConfigurationLoaderTest {
 
     assertEquals(ServerMode.STDIO, configuration.mode());
     assertEquals("mcp-server-dev", configuration.name());
-    assertNull(configuration.sse());
-    assertNull(configuration.streamable());
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  void loadConfig_shouldMergePartialSseOverridesFromProfile() {
-    ServerConfiguration configuration =
-        new ConfigurationLoader("test-mcp-server-sse-with-profile.yml").loadConfig();
-
-    assertEquals(ServerMode.SSE, configuration.mode());
-    assertEquals(8081, configuration.sse().port());
-    assertEquals("http://localhost:8081", configuration.sse().baseUrl());
-    assertEquals("/mcp/message", configuration.sse().messageEndpoint());
-    assertEquals("/sse", configuration.sse().endpoint());
     assertNull(configuration.streamable());
   }
 }

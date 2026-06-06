@@ -182,12 +182,11 @@ public class MyPrompts {
 
 ### 支持的服务端模式
 
-本 SDK 支持三种 MCP 服务端传输模式：
+本 SDK 支持两种 MCP 服务端传输模式：
 
 | 模式             | 说明             | 适用场景                                       |
 |----------------|----------------|--------------------------------------------|
 | **STDIO**      | 标准输入/输出通信      | CLI 工具、本地开发                                |
-| **SSE**        | 基于 HTTP 的服务端推送 | 自 0.16.0 起已弃用（`forRemoval`）；请改用 STREAMABLE |
 | **STREAMABLE** | HTTP 流式传输      | Web 应用、生产环境（推荐）                            |
 
 ## 🔧 进阶用法
@@ -226,7 +225,7 @@ streamable:
 | 配置项                               | 说明                                    | 默认值             |
 |-----------------------------------|---------------------------------------|-----------------|
 | `enabled`                         | 是否启用 MCP 服务端                          | `true`          |
-| `mode`                            | 服务端模式：`STDIO`、`SSE`（已弃用）、`STREAMABLE` | `STREAMABLE`    |
+| `mode`                            | 服务端模式：`STDIO`、`STREAMABLE`            | `STREAMABLE`    |
 | `name`                            | 服务端名称                                 | `mcp-server`    |
 | `version`                         | 服务端版本                                 | `1.0.0`         |
 | `type`                            | 服务端类型：`SYNC`、`ASYNC`                  | `SYNC`          |
@@ -240,10 +239,6 @@ streamable:
 | `change-notification.resource`    | 资源变更时通知客户端                            | `true`          |
 | `change-notification.prompt`      | 提示词变更时通知客户端                           | `true`          |
 | `change-notification.tool`        | 工具变更时通知客户端                            | `true`          |
-| `sse.message-endpoint`            | SSE POST 消息路径 *(自 0.16.0 起已弃用，计划移除)*  | `/mcp/message`  |
-| `sse.endpoint`                    | SSE 流路径 *(自 0.16.0 起已弃用，计划移除)*        | `/sse`          |
-| `sse.base-url`                    | SSE 服务对外 base URL *(已弃用)*             | `mode: SSE` 时必填 |
-| `sse.port`                        | SSE 模式 HTTP 端口 *(自 0.16.0 起已弃用，计划移除)* | `8080`          |
 | `streamable.mcp-endpoint`         | Streamable HTTP MCP 路径                | `/mcp/message`  |
 | `streamable.disallow-delete`      | 是否拒绝会话 HTTP DELETE                    | `false`         |
 | `streamable.keep-alive-interval`  | 保活间隔（毫秒）                              | `20000`         |
@@ -299,8 +294,7 @@ SDK 为每个组件类创建 **唯一实例**（无参构造），该类上所�
 
 本项目基于官方 [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-M3**，属于 **预发布里程碑**。2.0 正式版发布前 API 可能变更 — 请锁定依赖版本，升级后重新跑集成测试。
 
-- 新项目 HTTP 传输推荐 **STREAMABLE**。
-- **SSE**（`ServerMode.SSE`、`McpSseServer`、`ServerSse`、YAML 中的 `sse.*`）自 **0.16.0** 起已标记为 **`@Deprecated(forRemoval = true)`**，将在后续版本中移除。现有部署仍可兼容使用；请迁移至 **STREAMABLE**（`McpStreamableServer`、`streamable.*`）。
+- 当前支持的 HTTP 传输为 **STREAMABLE**。
 
 ## 🏗️ 推荐项目结构
 
@@ -378,7 +372,6 @@ mvnw.cmd clean test
 
 - **STDIO**：CLI 工具与本地开发
 - **STREAMABLE**：Web 应用与生产部署（推荐）
-- **SSE**：自 0.16.0 起已弃用（`forRemoval`）；请改用 STREAMABLE，以 `streamable.*` 替代 `sse.*`
 
 ## 🤝 参与贡献
 

@@ -3,7 +3,6 @@ package com.github.thought2code.mcp.annotated.server;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.configuration.ServerStreamable;
-import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.HttpServletStreamableServerTransportProvider;
@@ -124,6 +123,6 @@ public class McpStreamableServer extends McpServerBase {
   @Override
   public void start() {
     final String mcpEndpoint = configuration.streamable().mcpEndpoint();
-    startHttpServer(ServerMode.STREAMABLE, mcpEndpoint, transportProvider, port);
+    startHttpServer(mcpEndpoint, transportProvider, port);
   }
 }

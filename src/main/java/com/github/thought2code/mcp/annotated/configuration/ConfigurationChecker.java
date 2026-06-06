@@ -1,6 +1,5 @@
 package com.github.thought2code.mcp.annotated.configuration;
 
-import com.github.thought2code.mcp.annotated.enums.ServerMode;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 
@@ -9,8 +8,8 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  *
  * <p>This class provides static methods to perform comprehensive validation of MCP server
  * configuration objects, ensuring that all required fields are present and properly configured. It
- * validates both base configuration properties and mode-specific settings for SSE and STREAMABLE
- * server modes.
+ * validates both base configuration properties and mode-specific settings for STREAMABLE server
+ * mode.
  *
  * @see ServerConfiguration
  * @author codeboyzhou
@@ -32,7 +31,6 @@ public final class ConfigurationChecker {
     checkCapabilities(configuration.capabilities());
     checkChangeNotification(configuration.changeNotification());
     switch (configuration.mode()) {
-      case SSE -> checkSse(configuration.sse());
       case STREAMABLE -> checkStreamable(configuration.streamable());
       case STDIO -> {}
     }
@@ -64,21 +62,6 @@ public final class ConfigurationChecker {
     checkNull("change-notification.resource", changeNotification.resource());
     checkNull("change-notification.prompt", changeNotification.prompt());
     checkNull("change-notification.tool", changeNotification.tool());
-  }
-
-  /**
-   * Validates SSE-specific configuration properties.
-   *
-   * @param sse SSE configuration to validate
-   * @deprecated HTTP SSE mode is deprecated; use {@link ServerMode#STREAMABLE} instead.
-   */
-  @Deprecated(since = "0.16.0", forRemoval = true)
-  private static void checkSse(ServerSse sse) {
-    checkNull("sse", sse);
-    checkBlank("sse.message-endpoint", sse.messageEndpoint());
-    checkBlank("sse.endpoint", sse.endpoint());
-    checkBlank("sse.base-url", sse.baseUrl());
-    checkNull("sse.port", sse.port());
   }
 
   private static void checkStreamable(ServerStreamable streamable) {

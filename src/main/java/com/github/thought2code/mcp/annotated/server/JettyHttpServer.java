@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Embedded Jetty server that hosts MCP HTTP transport servlets.
  *
- * <p>Used by SSE and streamable HTTP server implementations to bind a configurable port, register
- * the MCP transport servlet, and block on {@link #awaitShutdown()} until the process exits. Startup
- * and shutdown failures are surfaced as {@link
+ * <p>Used by streamable HTTP server implementations to bind a configurable port, register the MCP
+ * transport servlet, and block on {@link #awaitShutdown()} until the process exits. Startup and
+ * shutdown failures are surfaced as {@link
  * com.github.thought2code.mcp.annotated.enums.McpServerError} where appropriate.
  *
  * @author codeboyzhou

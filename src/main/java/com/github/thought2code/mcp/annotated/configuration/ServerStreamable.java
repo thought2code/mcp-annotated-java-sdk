@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @param mcpEndpoint servlet path segment for the MCP endpoint
  * @param disallowDelete whether HTTP DELETE on the MCP session is rejected
- * @param keepAliveInterval optional SSE keep-alive interval in milliseconds
+ * @param keepAliveInterval optional stream keep-alive interval in milliseconds
  * @param port Jetty listen port
  * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
  *     Annotated Java SDK Documentation</a>

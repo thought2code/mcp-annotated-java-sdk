@@ -133,24 +133,7 @@ Based on standard input/output communication, suitable for CLI tools and local d
 mode: STDIO
 ```
 
-### 2. SSE (Server-Sent Events) Mode
-
-!!! warning "Deprecated (for removal since 0.16.0)"
-    HTTP SSE mode (`mode: SSE`, `sse.*` config, `McpSseServer`, `ServerMode.SSE`) is deprecated with **`forRemoval = true`** since **0.16.0** and scheduled for removal in a future release. Use **STREAMABLE** mode for new projects (`McpStreamableServer`, `streamable.*`).
-
-HTTP-based real-time communication (legacy).
-
-```yaml
-# mcp-server.yml
-mode: SSE
-sse:
-  port: 8080
-  endpoint: /sse
-  message-endpoint: /mcp/message
-  base-url: http://localhost:8080
-```
-
-### 3. STREAMABLE Mode
+### 2. STREAMABLE Mode
 
 HTTP streaming for web applications, recommended for production.
 
@@ -169,7 +152,7 @@ streamable:
 | Property                          | Description                                                     | Default                      |
 |-----------------------------------|-----------------------------------------------------------------|------------------------------|
 | `enabled`                         | Enable/disable MCP server                                       | `true`                       |
-| `mode`                            | Server mode: `STDIO`, `SSE` (deprecated), `STREAMABLE`          | `STREAMABLE`                 |
+| `mode`                            | Server mode: `STDIO`, `STREAMABLE`                              | `STREAMABLE`                 |
 | `name`                            | Server name                                                     | `mcp-server`                 |
 | `version`                         | Server version                                                  | `1.0.0`                      |
 | `type`                            | Server type: `SYNC`, `ASYNC`                                    | `SYNC`                       |
@@ -183,10 +166,6 @@ streamable:
 | `change-notification.resource`    | Notify clients on resource change                               | `true`                       |
 | `change-notification.prompt`      | Notify clients on prompt change                                 | `true`                       |
 | `change-notification.tool`        | Notify clients on tool change                                   | `true`                       |
-| `sse.message-endpoint`            | SSE POST message path *(deprecated, for removal since 0.16.0)*  | `/mcp/message`               |
-| `sse.endpoint`                    | SSE stream path *(deprecated, for removal since 0.16.0)*        | `/sse`                       |
-| `sse.base-url`                    | Public base URL for the SSE server *(deprecated)*               | Required when `mode: SSE`    |
-| `sse.port`                        | HTTP port for SSE mode *(deprecated, for removal since 0.16.0)* | `8080`                       |
 | `streamable.mcp-endpoint`         | Streamable HTTP MCP path                                        | `/mcp/message`               |
 | `streamable.disallow-delete`      | Reject HTTP DELETE on session                                   | `false`                      |
 | `streamable.keep-alive-interval`  | Keep-alive interval (ms)                                        | `20000`                      |
@@ -211,8 +190,7 @@ The SDK creates **one instance per component class** (via a **public no-arg cons
 
 This SDK depends on MCP Java SDK **2.0.0-M3** (pre-release). Pin versions and retest when upgrading.
 
-- **STREAMABLE** is the recommended HTTP transport for new projects.
-- **SSE** (`ServerMode.SSE`, `McpSseServer`, `ServerSse`, `sse.*` in YAML) is **deprecated with `forRemoval = true` since 0.16.0** and scheduled for removal in a future release. Existing deployments may still use it for compatibility; migrate to **STREAMABLE** (`McpStreamableServer`, `streamable.*`).
+- **STREAMABLE** is the supported HTTP transport.
 
 ## Profile-based Configuration
 

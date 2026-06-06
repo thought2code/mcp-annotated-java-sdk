@@ -52,9 +52,10 @@ class CompletionSupportTest {
 
     assertEquals(1, specs.size());
     McpSchema.CompleteRequest request =
-        new McpSchema.CompleteRequest(
-            McpSchema.PromptReference.builder("prompt_name").build(),
-            new McpSchema.CompleteRequest.CompleteArgument("arg", "v"));
+        McpSchema.CompleteRequest.builder(
+                McpSchema.PromptReference.builder("prompt_name").build(),
+                new McpSchema.CompleteRequest.CompleteArgument("arg", "v"))
+            .build();
     McpSchema.CompleteResult result = specs.get(0).completionHandler().apply(null, request);
     assertNotNull(result);
     assertEquals(List.of("a", "b"), result.completion().values());
@@ -168,9 +169,10 @@ class CompletionSupportTest {
     List<McpServerFeatures.SyncCompletionSpecification> specs =
         CompletionSupport.allSync(context, List.of(provider));
     McpSchema.CompleteRequest request =
-        new McpSchema.CompleteRequest(
-            McpSchema.PromptReference.builder("prompt_name").build(),
-            new McpSchema.CompleteRequest.CompleteArgument("arg", "v"));
+        McpSchema.CompleteRequest.builder(
+                McpSchema.PromptReference.builder("prompt_name").build(),
+                new McpSchema.CompleteRequest.CompleteArgument("arg", "v"))
+            .build();
 
     McpServerComponentRegistrationException exception =
         assertThrows(
@@ -199,9 +201,10 @@ class CompletionSupportTest {
     List<McpServerFeatures.SyncCompletionSpecification> specs =
         CompletionSupport.allSync(context, List.of(provider));
     McpSchema.CompleteRequest request =
-        new McpSchema.CompleteRequest(
-            McpSchema.PromptReference.builder("prompt_name").build(),
-            new McpSchema.CompleteRequest.CompleteArgument("arg", "v"));
+        McpSchema.CompleteRequest.builder(
+                McpSchema.PromptReference.builder("prompt_name").build(),
+                new McpSchema.CompleteRequest.CompleteArgument("arg", "v"))
+            .build();
 
     McpServerComponentRegistrationException exception =
         assertThrows(
