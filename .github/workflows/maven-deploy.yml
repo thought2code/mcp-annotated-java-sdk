@@ -5,33 +5,19 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: maven-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  verify:
-    name: maven verify
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v6
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          cache: maven
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Verify with Maven
-        run: |
-          chmod +x ./mvnw
-          ./mvnw -B clean verify --file pom.xml
-
   deploy:
     name: maven deploy
-    needs: verify
     runs-on: ubuntu-latest
 
     steps:
@@ -49,6 +35,21 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Validate release tag
+        run: |
+          version="$(grep -m1 '<version>' pom.xml | sed -E 's/.*<version>([^<]+)<\/version>.*/\1/')"
+          tag_version="${GITHUB_REF_NAME#v}"
+
+          if [[ "$version" == *-SNAPSHOT ]]; then
+            echo "Refusing to deploy snapshot version: $version"
+            exit 1
+          fi
+
+          if [[ "$version" != "$tag_version" ]]; then
+            echo "Tag version ($tag_version) does not match pom.xml version ($version)"
+            exit 1
+          fi
 
       - name: Deploy to Maven Central
         run: |

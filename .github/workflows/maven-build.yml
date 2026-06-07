@@ -2,12 +2,19 @@ name: Maven Build
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maven-build-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -34,6 +41,8 @@ jobs:
           ./mvnw -B package --file pom.xml
 
       - name: Upload coverage reports to Codecov
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
