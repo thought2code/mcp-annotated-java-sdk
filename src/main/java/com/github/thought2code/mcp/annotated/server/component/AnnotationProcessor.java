@@ -47,8 +47,8 @@ import javax.tools.StandardLocation;
  * Compile-time processor that turns MCP component annotations into a generated {@link
  * ComponentProvider}.
  *
- * <p>During each compilation round the processor collects annotated methods, validates naming and
- * signatures, and on the final round emits:
+ * <p>During annotation processing the processor collects annotated methods, validates naming and
+ * signatures, and emits:
  *
  * <ul>
  *   <li>A {@code GeneratedComponentProvider_*} class with tool, prompt, resource, and completion
@@ -108,7 +108,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
   }
 
   /**
-   * Collects annotated elements each round; generates the provider on the final round when at least
+   * Collects annotated elements and generates the provider during a non-final round when at least
    * one component method was discovered.
    *
    * @param annotations supported annotation types present in this round (unused)
@@ -117,12 +117,14 @@ public final class AnnotationProcessor extends AbstractProcessor {
    */
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    if (roundEnv.processingOver()) {
+      return false;
+    }
     collectTools(roundEnv);
     collectPrompts(roundEnv);
     collectResources(roundEnv);
     collectCompletions(roundEnv);
-    if (!roundEnv.processingOver()
-        || generated
+    if (generated
         || (tools.isEmpty() && prompts.isEmpty() && resources.isEmpty() && completions.isEmpty())) {
       return false;
     }
