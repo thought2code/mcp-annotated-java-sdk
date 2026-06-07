@@ -41,15 +41,17 @@ The Model Context Protocol (MCP) is a standardized protocol for building servers
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.19.0-SNAPSHOT</version>
+    <version>latest-release-version</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:latest-release-version'
 ```
+
+Use the latest non-SNAPSHOT release from Maven Central for normal consumption. Current development branch version: `0.19.0-SNAPSHOT`.
 
 ## Quick Start Tutorial
 

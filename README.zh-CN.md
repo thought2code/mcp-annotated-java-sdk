@@ -12,7 +12,6 @@
 
 ![Java](https://img.shields.io/badge/Java-17+-blue)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.thought2code/mcp-annotated-java-sdk?color=blue)](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk)
-[![Commit Activity](https://img.shields.io/github/commit-activity/w/thought2code/mcp-annotated-java-sdk)](https://github.com/thought2code/mcp-annotated-java-sdk/graphs/commit-activity)
 [![Coverage](https://img.shields.io/codecov/c/github/thought2code/mcp-annotated-java-sdk?logo=codecov&color=brightgreen)](https://app.codecov.io/github/thought2code/mcp-annotated-java-sdk)
 [![GitHub Action](https://github.com/thought2code/mcp-annotated-java-sdk/actions/workflows/maven-build.yml/badge.svg)](https://github.com/thought2code/mcp-annotated-java-sdk/actions/workflows/maven-build.yml)
 
@@ -67,15 +66,17 @@
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.19.0-SNAPSHOT</version>
+    <version>latest-release-version</version>
 </dependency>
 ```
 
 **Gradle：**
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:latest-release-version'
 ```
+
+常规使用请填写 Maven Central 上最新的非 SNAPSHOT 版本。当前开发分支版本是 `0.19.0-SNAPSHOT`；仅在你已自行发布或安装快照，或从源码构建时使用该版本。
 
 #### 第 2 步：创建配置文件
 

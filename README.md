@@ -12,7 +12,6 @@ English · [简体中文](README.zh-CN.md)
 
 ![Java](https://img.shields.io/badge/Java-17+-blue)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.thought2code/mcp-annotated-java-sdk?color=blue)](https://central.sonatype.com/artifact/io.github.thought2code/mcp-annotated-java-sdk)
-[![Commit Activity](https://img.shields.io/github/commit-activity/w/thought2code/mcp-annotated-java-sdk)](https://github.com/thought2code/mcp-annotated-java-sdk/graphs/commit-activity)
 [![Coverage](https://img.shields.io/codecov/c/github/thought2code/mcp-annotated-java-sdk?logo=codecov&color=brightgreen)](https://app.codecov.io/github/thought2code/mcp-annotated-java-sdk)
 [![GitHub Action](https://github.com/thought2code/mcp-annotated-java-sdk/actions/workflows/maven-build.yml/badge.svg)](https://github.com/thought2code/mcp-annotated-java-sdk/actions/workflows/maven-build.yml)
 
@@ -66,14 +65,16 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.19.0-SNAPSHOT</version>
+    <version>latest-release-version</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0-SNAPSHOT'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:latest-release-version'
 ```
+
+Use the latest non-SNAPSHOT release from Maven Central for normal consumption. The current development branch is `0.19.0-SNAPSHOT`; use that version only when you publish or install snapshots yourself, or build from source.
 
 #### Step 2: Create Configuration File
 
