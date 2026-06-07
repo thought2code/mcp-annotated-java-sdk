@@ -18,37 +18,85 @@ public final class ResourceCodegen {
 
   /** Annotation-processing callbacks used while generating resource source. */
   public interface Support {
-    /** Fully qualified source-method id for diagnostics. */
+    /**
+     * Fully qualified source-method id for diagnostics.
+     *
+     * @param method annotated resource method
+     * @return diagnostic source-method id
+     */
     String sourceMethod(ExecutableElement method);
 
-    /** Resolved resource URI from {@code @McpResource#uri()}. */
+    /**
+     * Resolved resource URI from {@code @McpResource#uri()}.
+     *
+     * @param method annotated resource method
+     * @return resource URI
+     */
     String resourceUri(ExecutableElement method);
 
-    /** Resolved MCP resource name. */
+    /**
+     * Resolved MCP resource name.
+     *
+     * @param method annotated resource method
+     * @return resource name
+     */
     String resourceName(ExecutableElement method);
 
-    /** Resolved MCP resource title. */
+    /**
+     * Resolved MCP resource title.
+     *
+     * @param method annotated resource method
+     * @return resource title
+     */
     String resourceTitle(ExecutableElement method);
 
-    /** Resolved MCP resource description. */
+    /**
+     * Resolved MCP resource description.
+     *
+     * @param method annotated resource method
+     * @return resource description
+     */
     String resourceDescription(ExecutableElement method);
 
-    /** Resolved MIME type. */
+    /**
+     * Resolved MIME type.
+     *
+     * @param method annotated resource method
+     * @return resource MIME type
+     */
     String resourceMimeType(ExecutableElement method);
 
-    /** Generated {@code List.of(McpSchema.Role...)} literal for annotations. */
+    /**
+     * Generated {@code List.of(McpSchema.Role...)} literal for annotations.
+     *
+     * @param method annotated resource method
+     * @return generated audience roles literal
+     */
     String resourceRolesLiteral(ExecutableElement method);
 
-    /** Resolved annotation priority. */
+    /**
+     * Resolved annotation priority.
+     *
+     * @param method annotated resource method
+     * @return resource annotation priority
+     */
     double resourcePriority(ExecutableElement method);
 
-    /** Escapes a string for inclusion in generated Java string literals. */
+    /**
+     * Escapes a string for inclusion in generated Java string literals.
+     *
+     * @param value raw string value
+     * @return escaped Java string-literal content
+     */
     String escape(String value);
   }
 
   /**
    * Writes all resource sections for the given annotated methods.
    *
+   * @param writer generated source writer
+   * @param methods sorted {@code @McpResource} methods
+   * @param support annotation-model support
    * @throws IOException when writing fails
    */
   public static void writeSections(Writer writer, List<ExecutableElement> methods, Support support)

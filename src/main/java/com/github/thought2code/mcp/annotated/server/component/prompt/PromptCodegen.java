@@ -21,27 +21,60 @@ public final class PromptCodegen {
 
   /** Annotation-processing callbacks used while generating prompt source. */
   public interface Support {
-    /** Fully qualified source-method id for diagnostics. */
+    /**
+     * Fully qualified source-method id for diagnostics.
+     *
+     * @param method annotated prompt method
+     * @return diagnostic source-method id
+     */
     String sourceMethod(ExecutableElement method);
 
-    /** Resolved MCP prompt name. */
+    /**
+     * Resolved MCP prompt name.
+     *
+     * @param method annotated prompt method
+     * @return prompt name
+     */
     String promptName(ExecutableElement method);
 
-    /** Resolved MCP prompt title. */
+    /**
+     * Resolved MCP prompt title.
+     *
+     * @param method annotated prompt method
+     * @return prompt title
+     */
     String promptTitle(ExecutableElement method);
 
-    /** Resolved MCP prompt description. */
+    /**
+     * Resolved MCP prompt description.
+     *
+     * @param method annotated prompt method
+     * @return prompt description
+     */
     String promptDescription(ExecutableElement method);
 
-    /** Escapes a string for inclusion in generated Java string literals. */
+    /**
+     * Escapes a string for inclusion in generated Java string literals.
+     *
+     * @param value raw string value
+     * @return escaped Java string-literal content
+     */
     String escape(String value);
 
-    /** Java type used in generated invoker local variable declarations. */
+    /**
+     * Java type used in generated invoker local variable declarations.
+     *
+     * @param mirror parameter type mirror
+     * @return generated local-variable declaration type
+     */
     String parameterDeclarationType(javax.lang.model.type.TypeMirror mirror);
 
     /**
      * {@code Foo.class} literal for {@link
      * com.github.thought2code.mcp.annotated.util.TypeConverter}.
+     *
+     * @param mirror parameter type mirror
+     * @return generated class literal
      */
     String classLiteral(javax.lang.model.type.TypeMirror mirror);
   }

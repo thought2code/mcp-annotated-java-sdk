@@ -37,35 +37,78 @@ public final class ToolCodegen {
 
   /** Annotation-processing callbacks used while generating tool source. */
   public interface Support {
-    /** Fully qualified source-method id for diagnostics. */
+    /**
+     * Fully qualified source-method id for diagnostics.
+     *
+     * @param method annotated tool method
+     * @return diagnostic source-method id
+     */
     String sourceMethod(ExecutableElement method);
 
-    /** Resolved MCP tool name. */
+    /**
+     * Resolved MCP tool name.
+     *
+     * @param method annotated tool method
+     * @return tool name
+     */
     String toolName(ExecutableElement method);
 
-    /** Resolved MCP tool title. */
+    /**
+     * Resolved MCP tool title.
+     *
+     * @param method annotated tool method
+     * @return tool title
+     */
     String toolTitle(ExecutableElement method);
 
-    /** Resolved MCP tool description. */
+    /**
+     * Resolved MCP tool description.
+     *
+     * @param method annotated tool method
+     * @return tool description
+     */
     String toolDescription(ExecutableElement method);
 
-    /** Escapes a string for inclusion in generated Java string literals. */
+    /**
+     * Escapes a string for inclusion in generated Java string literals.
+     *
+     * @param value raw string value
+     * @return escaped Java string-literal content
+     */
     String escape(String value);
 
-    /** Erased Java type name for a mirror. */
+    /**
+     * Erased Java type name for a mirror.
+     *
+     * @param mirror Java type mirror
+     * @return erased Java type name
+     */
     String erasedType(javax.lang.model.type.TypeMirror mirror);
 
     /**
      * Resolves a reference type mirror to a {@link TypeElement}, or {@code null} for primitives.
+     *
+     * @param mirror Java type mirror
+     * @return resolved type element, or {@code null} for primitive types
      */
     TypeElement asTypeElement(javax.lang.model.type.TypeMirror mirror);
 
-    /** Maps an erased Java type name to a JSON Schema type string. */
+    /**
+     * Maps an erased Java type name to a JSON Schema type string.
+     *
+     * @param javaType erased Java type name
+     * @return JSON Schema type string
+     */
     String toJsonSchemaType(String javaType);
 
     /**
      * Writes a nested {@code #/definitions/...} entry into a schema map in generated code.
      *
+     * @param writer generated source writer
+     * @param indent indentation to use for emitted code
+     * @param targetMap generated variable name for the definitions map
+     * @param definitionName schema definition name
+     * @param definitionType type that supplies schema properties
      * @throws IOException when writing fails
      */
     void writeDefinitionLiteral(
@@ -76,15 +119,28 @@ public final class ToolCodegen {
         TypeElement definitionType)
         throws IOException;
 
-    /** Collects output-schema properties from a {@code @McpJsonSchemaProperty}-annotated type. */
+    /**
+     * Collects output-schema properties from a {@code @McpJsonSchemaProperty}-annotated type.
+     *
+     * @param type output type element
+     * @return schema properties for the output type
+     */
     List<PropertySpec> schemaProperties(TypeElement type);
 
-    /** Java type used in generated invoker local variable declarations. */
+    /**
+     * Java type used in generated invoker local variable declarations.
+     *
+     * @param mirror parameter type mirror
+     * @return generated local-variable declaration type
+     */
     String parameterDeclarationType(javax.lang.model.type.TypeMirror mirror);
 
     /**
      * {@code Foo.class} literal for {@link
      * com.github.thought2code.mcp.annotated.util.TypeConverter}.
+     *
+     * @param mirror parameter type mirror
+     * @return generated class literal
      */
     String classLiteral(javax.lang.model.type.TypeMirror mirror);
   }

@@ -20,16 +20,29 @@ public final class CompletionCodegen {
 
   /** Annotation-processing callbacks used while generating completion source. */
   public interface Support {
-    /** Fully qualified source-method id for diagnostics. */
+    /**
+     * Fully qualified source-method id for diagnostics.
+     *
+     * @param method annotated completion method
+     * @return diagnostic source-method id
+     */
     String sourceMethod(ExecutableElement method);
 
-    /** Escapes a string for inclusion in generated Java string literals. */
+    /**
+     * Escapes a string for inclusion in generated Java string literals.
+     *
+     * @param value raw string value
+     * @return escaped Java string-literal content
+     */
     String escape(String value);
   }
 
   /**
    * Writes all completion sections for the given annotated methods.
    *
+   * @param writer generated source writer
+   * @param methods sorted completion methods
+   * @param support annotation-model support
    * @throws IOException when writing fails
    */
   public static void writeSections(Writer writer, List<ExecutableElement> methods, Support support)
