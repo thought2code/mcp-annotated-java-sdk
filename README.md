@@ -65,16 +65,14 @@ This SDK is a lightweight, annotation-based framework that simplifies MCP server
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>latest-release-version</version>
+    <version>0.19.0</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:latest-release-version'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0'
 ```
-
-Use the latest non-SNAPSHOT release from Maven Central for normal consumption. The current development branch is `0.19.0-SNAPSHOT`; use that version only when you publish or install snapshots yourself, or build from source.
 
 #### Step 2: Create Configuration File
 
