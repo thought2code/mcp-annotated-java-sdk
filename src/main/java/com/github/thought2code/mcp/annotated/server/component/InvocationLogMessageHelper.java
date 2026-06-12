@@ -1,11 +1,12 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.enums.McpServerError;
+
 /**
  * SLF4J message templates for generated component invoker failures.
  *
  * <p>Each template includes a {@code sourceMethod={}} placeholder filled by generated invokers when
- * logging {@link
- * com.github.thought2code.mcp.annotated.enums.McpServerError#METHOD_INVOCATION_ERROR} scenarios.
+ * logging {@link McpServerError#METHOD_INVOCATION_ERROR} scenarios.
  *
  * @author codeboyzhou
  */

@@ -1,12 +1,13 @@
 package com.github.thought2code.mcp.annotated.server.component.tool;
 
+import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 
 /**
  * Immutable tool registration bundle produced at compile time.
  *
- * <p>Consumed by {@link ToolRegistration} to add {@link
- * io.modelcontextprotocol.server.McpServerFeatures} tool specifications at runtime.
+ * <p>Consumed by {@link ToolRegistration} to add {@link McpServerFeatures} tool specifications at
+ * runtime.
  *
  * @param sourceMethod fully qualified source method id for logging and errors
  * @param tool MCP tool metadata (name, schemas, description)

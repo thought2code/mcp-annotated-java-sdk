@@ -10,8 +10,8 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  * Root YAML configuration for an annotated MCP server application.
  *
  * <p>Loaded by {@link ConfigurationLoader} and merged with profile-specific overlays. Drives server
- * mode ({@link com.github.thought2code.mcp.annotated.enums.ServerMode}), transport endpoints, MCP
- * capability flags, and change-notification settings.
+ * mode ({@link ServerMode}), transport endpoints, MCP capability flags, and change-notification
+ * settings.
  *
  * @param profile optional profile name; when set, {@code mcp-server-{profile}.yml} is merged
  * @param enabled whether the MCP server should start

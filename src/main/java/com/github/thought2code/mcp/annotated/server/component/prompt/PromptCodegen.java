@@ -1,6 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component.prompt;
 
 import com.github.thought2code.mcp.annotated.annotation.McpPromptParam;
+import com.github.thought2code.mcp.annotated.util.TypeConverter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -70,8 +71,7 @@ public final class PromptCodegen {
     String parameterDeclarationType(javax.lang.model.type.TypeMirror mirror);
 
     /**
-     * {@code Foo.class} literal for {@link
-     * com.github.thought2code.mcp.annotated.util.TypeConverter}.
+     * {@code Foo.class} literal for {@link TypeConverter}.
      *
      * @param mirror parameter type mirror
      * @return generated class literal

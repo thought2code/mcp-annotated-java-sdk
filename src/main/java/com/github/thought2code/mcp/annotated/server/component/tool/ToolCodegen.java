@@ -2,6 +2,8 @@ package com.github.thought2code.mcp.annotated.server.component.tool;
 
 import com.github.thought2code.mcp.annotated.annotation.McpJsonSchemaDefinition;
 import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
+import com.github.thought2code.mcp.annotated.server.component.AnnotationProcessor;
+import com.github.thought2code.mcp.annotated.util.TypeConverter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -16,8 +18,7 @@ import javax.lang.model.type.TypeKind;
  *
  * <p>Methods are written in a stable order (definitions, input schemas, output schemas, invokers)
  * so regenerated providers produce deterministic diffs. {@link Support} abstracts annotation-model
- * details implemented by {@link
- * com.github.thought2code.mcp.annotated.server.component.AnnotationProcessor}.
+ * details implemented by {@link AnnotationProcessor}.
  *
  * @author codeboyzhou
  */
@@ -136,8 +137,7 @@ public final class ToolCodegen {
     String parameterDeclarationType(javax.lang.model.type.TypeMirror mirror);
 
     /**
-     * {@code Foo.class} literal for {@link
-     * com.github.thought2code.mcp.annotated.util.TypeConverter}.
+     * {@code Foo.class} literal for {@link TypeConverter}.
      *
      * @param mirror parameter type mirror
      * @return generated class literal

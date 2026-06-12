@@ -1,11 +1,13 @@
 package com.github.thought2code.mcp.annotated.enums;
 
+import com.github.thought2code.mcp.annotated.McpApplication;
+import com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer;
+
 /**
  * MCP transport mode selected in server configuration.
  *
- * <p>Determines which {@link com.github.thought2code.mcp.annotated.server.AnnotatedMcpServer}
- * implementation {@link com.github.thought2code.mcp.annotated.McpApplication} constructs at
- * startup.
+ * <p>Determines which {@link AnnotatedMcpServer} implementation {@link McpApplication} constructs
+ * at startup.
  *
  * @author codeboyzhou
  */

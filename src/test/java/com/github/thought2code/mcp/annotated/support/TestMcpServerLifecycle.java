@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.support;
 
+import com.github.thought2code.mcp.annotated.McpApplication;
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
 import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
@@ -12,9 +13,8 @@ import io.modelcontextprotocol.server.McpSyncServer;
 import java.util.Objects;
 
 /**
- * Test helper that mirrors {@link com.github.thought2code.mcp.annotated.McpApplication} startup
- * while returning the started {@link AnnotatedMcpServer} so tests can call {@link
- * AnnotatedMcpServer#stop()}.
+ * Test helper that mirrors {@link McpApplication} startup while returning the started {@link
+ * AnnotatedMcpServer} so tests can call {@link AnnotatedMcpServer#stop()}.
  */
 public final class TestMcpServerLifecycle {
 

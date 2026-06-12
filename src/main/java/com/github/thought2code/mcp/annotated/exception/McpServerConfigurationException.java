@@ -1,10 +1,12 @@
 package com.github.thought2code.mcp.annotated.exception;
 
+import com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader;
+
 /**
  * Unchecked exception for invalid or unloadable MCP server configuration.
  *
- * <p>Thrown by {@link com.github.thought2code.mcp.annotated.configuration.ConfigurationLoader} and
- * configuration validation helpers when YAML cannot be read or required settings are missing.
+ * <p>Thrown by {@link ConfigurationLoader} and configuration validation helpers when YAML cannot be
+ * read or required settings are missing.
  *
  * @author codeboyzhou
  */

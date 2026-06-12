@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server;
 
+import com.github.thought2code.mcp.annotated.McpApplication;
 import com.github.thought2code.mcp.annotated.configuration.ServerDefaults;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import jakarta.servlet.http.HttpServlet;
@@ -18,8 +19,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Used by streamable HTTP server implementations to bind a configurable port, register the MCP
  * transport servlet, and block on {@link #awaitShutdown()} until the process exits. Startup and
- * shutdown failures are surfaced as {@link
- * com.github.thought2code.mcp.annotated.enums.McpServerError} where appropriate.
+ * shutdown failures are surfaced as {@link McpServerError} where appropriate.
  *
  * @author codeboyzhou
  */
@@ -92,9 +92,8 @@ public class JettyHttpServer {
   /**
    * Blocks until the Jetty server stops.
    *
-   * <p>Callers that need a long-running process (for example {@link
-   * com.github.thought2code.mcp.annotated.McpApplication}) invoke this after {@link #start()}.
-   * Tests typically call only {@link #start()} and {@link #stop()}.
+   * <p>Callers that need a long-running process (for example {@link McpApplication}) invoke this
+   * after {@link #start()}. Tests typically call only {@link #start()} and {@link #stop()}.
    */
   public void awaitShutdown() {
     if (server == null) {

@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -54,7 +55,7 @@ import javax.tools.StandardLocation;
  *   <li>A {@code GeneratedComponentProvider_*} class with tool, prompt, resource, and completion
  *       definitions and invokers (via {@link ToolCodegen}, {@link PromptCodegen}, {@link
  *       ResourceCodegen}, and {@link CompletionCodegen})
- *   <li>A {@code META-INF/services/...ComponentProvider} entry for {@link java.util.ServiceLoader}
+ *   <li>A {@code META-INF/services/...ComponentProvider} entry for {@link ServiceLoader}
  * </ul>
  *
  * <p>Duplicate MCP names and completion references are rejected at compile time using the same

@@ -2,6 +2,8 @@ package com.github.thought2code.mcp.annotated.server.component;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
 import com.github.thought2code.mcp.annotated.exception.McpServerComponentRegistrationException;
+import com.github.thought2code.mcp.annotated.server.component.prompt.PromptRegistration;
+import com.github.thought2code.mcp.annotated.server.component.tool.ToolRegistration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,11 +16,9 @@ import reactor.core.publisher.Mono;
 /**
  * Shared helpers for loading, validating, and registering build-time MCP component definitions.
  *
- * <p>Registration classes ({@link
- * com.github.thought2code.mcp.annotated.server.component.tool.ToolRegistration}, {@link
- * com.github.thought2code.mcp.annotated.server.component.prompt.PromptRegistration}, and related
- * types) delegate scope filtering, duplicate detection, and sync/async registration loops to this
- * utility so behavior stays consistent across component kinds.
+ * <p>Registration classes ({@link ToolRegistration}, {@link PromptRegistration}, and related types)
+ * delegate scope filtering, duplicate detection, and sync/async registration loops to this utility
+ * so behavior stays consistent across component kinds.
  *
  * @author codeboyzhou
  */
