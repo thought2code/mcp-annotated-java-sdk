@@ -287,10 +287,6 @@ The SDK creates **one instance per component class** (no-arg constructor) and re
 
 `McpApplication.run(mainClass, args)` loads `mcp-server.yml` by default; pass a third argument to use another classpath config file name.
 
-#### MCP Java SDK 2.x (release candidate)
-
-This project builds on the official [MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk) **2.0.0-RC1**, a **pre-release candidate**. APIs may still change before 2.0 GA — pin dependency versions and re-run tests when upgrading.
-
 - **STREAMABLE** is the supported HTTP transport.
 
 ## 🏗️ Project Structure
@@ -343,7 +339,7 @@ mvnw.cmd clean test
 
 ### Q: Can I use this in production?
 
-**A:** The annotated layer is stable for development and testing, but it depends on the official MCP Java SDK **2.0.0-RC1** (a release candidate). Pin versions, run your own integration tests, and expect possible SDK API changes before 2.0 GA before relying on it in production.
+**A:** Yes. Pin dependency versions and run your own integration tests before deploying to production.
 
 ### Q: What does `type: ASYNC` mean?
 

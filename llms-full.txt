@@ -468,11 +468,10 @@ public String createUser(
 ## Important Notes
 
 1. **Entry point**: Use `McpApplication.run()`; component classes are registered when they match the `@McpServerApplication` registration scope.
-2. **MCP SDK release candidate**: This project depends on MCP Java SDK **2.0.0-RC1** (pre-release candidate). Pin versions and retest when upgrading.
-3. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
-4. **Singleton components**: One instance per component class is shared across concurrent requests. Keep components stateless or thread-safe.
-5. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
-6. **Required YAML fields**: `instructions` must be non-blank. When `mode` is `STREAMABLE`, the `streamable` transport section must be present and complete.
+2. **ASYNC is not reactive**: `type: ASYNC` selects the async MCP server API; handlers wrap blocking Java methods in `Mono.fromCallable(...)`. Annotated methods do not return `Mono`/`Flux`.
+3. **Singleton components**: One instance per component class is shared across concurrent requests. Keep components stateless or thread-safe.
+4. **Default Required**: The default `required` value for `@McpToolParam`, `@McpPromptParam`, and `@McpJsonSchemaProperty` is `true`.
+5. **Required YAML fields**: `instructions` must be non-blank. When `mode` is `STREAMABLE`, the `streamable` transport section must be present and complete.
 
 ## Links
 

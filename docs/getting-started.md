@@ -186,10 +186,6 @@ Use **SYNC** by default. Choose **ASYNC** only when your deployment requires the
 
 The SDK creates **one instance per component class** (via a **public no-arg constructor**) and reuses it for all requests. Concurrent MCP calls share that object. Keep components **stateless** or **thread-safe**; avoid unsynchronized per-request instance fields.
 
-### MCP Java SDK 2.x (release candidate)
-
-This SDK depends on MCP Java SDK **2.0.0-RC1** (pre-release candidate). Pin versions and retest when upgrading.
-
 - **STREAMABLE** is the supported HTTP transport.
 
 ## Profile-based Configuration
