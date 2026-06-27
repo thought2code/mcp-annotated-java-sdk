@@ -391,7 +391,7 @@ mvnw.cmd clean test
 
 ### Q: Which server mode should I use?
 
-**A:** 
+**A:**
 - **STDIO**: For CLI tools and local development
 - **STREAMABLE**: For web applications and production deployments (recommended)
 
