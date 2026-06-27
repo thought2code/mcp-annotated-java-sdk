@@ -1,16 +1,34 @@
-> mcp-annotated-java-sdk: Annotation-driven MCP Java SDK for building Model Context Protocol servers with minimal code.
+> mcp-annotated-java-sdk: Spring-free annotation layer for building lightweight Model Context Protocol servers in plain Java.
 
 ## What is this?
 
-A lightweight, annotation-based Java framework that simplifies MCP (Model Context Protocol) server development. No Spring Framework required - pure Java with zero boilerplate.
+A lightweight, annotation-based Java framework for building MCP (Model Context Protocol) servers without Spring. It sits on top of the official MCP Java SDK, generates low-level component bindings from annotated Java methods, and targets CLI tools, embedded servers, local automation, and small service processes.
+
+Spring AI MCP is the standard choice for Spring applications. This SDK is for lightweight Java MCP servers where a Spring runtime is unnecessary or undesirable.
+
+## Positioning
+
+| Project | Best fit | Role |
+|---------|----------|------|
+| Official MCP Java SDK | Library authors and low-level protocol integration | Foundation |
+| Spring AI MCP | Spring Boot / Spring Framework applications | Spring ecosystem standard |
+| mcp-annotated-java-sdk | Plain Java, CLI, embedded, and lightweight MCP servers | Spring-free annotation layer |
 
 ## Key Features
 
 - No Spring Framework Required - Pure Java, lightweight and fast
 - Instant MCP Server - Start server with just 1 line of code
-- Zero Boilerplate - No need to write low-level MCP SDK code
-- No JSON Schema - Forget about complex JSON definitions
-- Type-Safe - Leverage Java's type system for compile-time safety
+- Low Boilerplate - No need to write repetitive low-level MCP SDK registration code
+- Generated JSON Schema - Derive schemas from annotated Java signatures and metadata
+- Compile-Time Binding Generation - Annotation processing creates deterministic MCP component providers
+- Type-Aware - Leverage Java signatures and compile-time checks for safer MCP components
+
+## Roadmap Focus
+
+- Stay compatible with the official MCP Java SDK.
+- Make plain Java MCP servers faster to write, test, and ship.
+- Improve compile-time validation, generated bindings, schema support, and examples.
+- Avoid competing with Spring AI on Boot auto-configuration, WebMVC/WebFlux integration, enterprise security, or observability.
 
 ## Requirements
 

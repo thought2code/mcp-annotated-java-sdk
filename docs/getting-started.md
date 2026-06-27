@@ -7,6 +7,8 @@ hide:
 
 This guide will help you build your first MCP server in 5 minutes.
 
+Use this SDK when you want an annotation-driven MCP server in plain Java without a Spring runtime. If you are already building a Spring Boot application, Spring AI MCP is usually the better default; this guide focuses on the lightweight Java path for CLI tools, embedded servers, local automation, and small service processes.
+
 ## Requirements
 
 - **Java 17 or later** (required by official MCP Java SDK)

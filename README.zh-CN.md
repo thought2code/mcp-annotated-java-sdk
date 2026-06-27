@@ -4,9 +4,9 @@
 
 # [MCP Annotated Java SDK](https://github.com/thought2code/mcp-annotated-java-sdk)
 
-*注解驱动 MCP 开发 — 无需 Spring、零样板代码、纯 Java。*
+*面向轻量 Java 应用的注解驱动 MCP 服务端。*
 
-**用注解代替样板代码，在 Java 中构建 MCP 服务端。**
+**构建在官方 MCP Java SDK 之上的无 Spring 轻量注解层。**
 
 [快速开始](#-快速开始) · [为什么选择本 SDK](#-为什么选择本-sdk) · [文档](#-相关链接) · [许可证](#-许可证)
 
@@ -21,7 +21,9 @@
 
 ## 概述
 
-本 SDK 是一个轻量级的注解框架，用于简化 Java 中的 MCP 服务端开发。你可以用极少的代码定义、开发并集成 MCP 资源（Resources）、提示词（Prompts）与工具（Tools），且**无需 Spring 框架**。
+本 SDK 是一个轻量级的注解框架，用于在纯 Java 中构建 MCP 服务端。你可以用普通 Java 方法定义 MCP 资源（Resources）、提示词（Prompts）、工具（Tools）与补全（Completions），由 SDK 生成底层 MCP 绑定代码，并在不引入 Spring 的情况下启动服务。
+
+它并不是 Spring AI 的替代品。Spring AI 已经是 Spring 应用接入 MCP 的标准入口；本项目专注于 Java 服务端的另一类场景：CLI 工具、嵌入式服务、本地自动化、小型服务进程，以及希望使用注解驱动但不想引入 Spring 运行时的团队。
 
 > **工作流：** 添加依赖 → 配置 `mcp-server.yml` → 注解 Resources / Tools / Prompts / Completions → 通过 `McpApplication` 启动
 
@@ -31,24 +33,46 @@
 
 ## ✨ 为什么选择本 SDK？
 
+### 项目定位
+
+| 项目                                                                                    | 最适合的场景                            | 角色            |
+|---------------------------------------------------------------------------------------|-----------------------------------|---------------|
+| [官方 MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk)                   | 底层协议集成与框架开发者                      | 基础层           |
+| [Spring AI MCP](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html) | Spring Boot / Spring Framework 应用 | Spring 生态标准入口 |
+| **MCP Annotated Java SDK**                                                            | 纯 Java、CLI、嵌入式、轻量 MCP 服务端         | 无 Spring 注解层  |
+
+**一句话定位：** Spring AI for Spring apps; MCP Annotated Java SDK for lightweight Java MCP servers without Spring.
+
 ### 核心优势
 
 - 🚫 **无需 Spring 框架** — 纯 Java 实现，轻量、快速
 - ⚡ **一行启动 MCP 服务** — 最少只需一行代码即可运行服务端
-- 🎉 **零样板代码** — 无需编写底层 MCP SDK 胶水代码
-- 👏 **无需手写 JSON Schema** — 告别复杂冗长的 JSON 定义
+- 🎉 **低样板代码** — 无需反复编写底层 MCP SDK 注册代码
+- 👏 **生成 JSON Schema** — 基于 Java 方法签名与注解元数据生成工具 schema
 - 🎯 **专注业务逻辑** — 把精力放在核心功能上
-- 🔌 **兼容 Spring AI 配置** — 配置文件格式与 Spring AI 框架兼容
-- 📦 **类型安全** — 充分利用 Java 类型系统在编译期保障正确性
+- 🧩 **编译期生成绑定代码** — 通过 annotation processor 生成稳定的 MCP 组件 Provider
+- 🔌 **Spring AI 友好的配置风格** — 对同时使用 Spring AI 的团队保持熟悉的配置形态
+- 📦 **类型感知** — 利用 Java 签名与编译期检查提升 MCP 组件可靠性
 
-### 与[官方 MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk)对比
+### 对比
 
-| 特性       | 官方 MCP SDK | 本 SDK      |
-|------------|--------------|-------------|
-| 所需代码量 | 约 50–100 行 | 约 5–10 行  |
-| JSON Schema | 手写 JSON   | 无需关心    |
-| 类型安全   | 有限         | 完整        |
-| 学习曲线   | 较陡         | 平缓        |
+| 特性          | 官方 MCP Java SDK | Spring AI MCP    | 本 SDK                     |
+|-------------|-----------------|------------------|---------------------------|
+| 主要用户        | 底层 Java 集成      | Spring 应用        | 纯 Java MCP 服务端            |
+| 是否需要 Spring | 不需要             | 需要 Spring 集成     | 不需要                       |
+| 组件模型        | 手动注册            | Spring Bean 与注解  | 普通类与注解                    |
+| JSON Schema | 手写或应用侧提供        | Spring AI 生成     | annotation processor 生成   |
+| 启动方式        | 自行组装 server     | Spring Boot 自动配置 | `McpApplication.run(...)` |
+| 最适合场景       | 最大控制力           | 企业级 Spring 应用    | CLI、嵌入式、本地工具、小服务          |
+
+### Roadmap 聚焦
+
+本项目会刻意保持聚焦：
+
+- 持续跟进官方 MCP Java SDK 的兼容性。
+- 让纯 Java MCP 服务端更容易编写、测试与发布。
+- 改进编译期校验、生成绑定、schema 支持与示例。
+- 不与 Spring AI 在 Boot 自动配置、WebMVC/WebFlux 集成、企业安全与可观测性上正面竞争。
 
 ## 🎯 快速开始
 
@@ -335,7 +359,11 @@ mvnw.cmd clean test
 
 ### 问：必须使用 Spring 框架吗？
 
-**答：** 不需要。本 SDK 完全独立于 Spring。若你后续希望迁移到 Spring AI，配置文件格式是兼容的。
+**答：** 不需要。本 SDK 完全独立于 Spring。如果你已经在构建 Spring Boot 应用，Spring AI MCP 通常是更合适的默认选择；如果你想在纯 Java 中使用注解驱动 MCP 开发，并且不想引入 Spring 运行时，本 SDK 更合适。
+
+### 问：它和 Spring AI MCP 有什么区别？
+
+**答：** Spring AI MCP 是 Spring 应用接入 MCP 的标准入口。本 SDK 是面向非 Spring Java 服务端的轻量注解层，尤其适合 CLI 工具、嵌入式服务、本地自动化和小型服务进程。目标不是替代 Spring AI，而是让纯 Java 路径足够顺手。
 
 ### 问：可以用于生产环境吗？
 
