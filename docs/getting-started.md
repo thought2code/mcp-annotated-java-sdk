@@ -122,6 +122,52 @@ Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled c
 
 To load a non-default configuration file name, use `McpApplication.run(MyFirstMcpServer.class, args, "custom-mcp-server.yml")`.
 
+### Packaging an Executable Fat JAR
+
+For deployment, package your application as an executable fat JAR so the MCP Java SDK, this SDK, and all transitive dependencies are available at runtime. Keep `mcp-server.yml` under `src/main/resources` so it is included on the runtime classpath.
+
+With Maven Shade, configure the JAR manifest main class:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>3.6.2</version>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <createDependencyReducedPom>false</createDependencyReducedPom>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <mainClass>com.example.MyFirstMcpServer</mainClass>
+                    </transformer>
+                </transformers>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+Then run:
+
+```bash
+java -jar target/your-app.jar
+```
+
+If you use Gradle Shadow, configure the main class in the manifest:
+
+```gradle
+tasks.shadowJar {
+    manifest {
+        attributes 'Main-Class': 'com.example.MyFirstMcpServer'
+    }
+}
+```
+
 ## Server Modes
 
 This SDK supports three MCP server modes. If you omit `mode` in `mcp-server.yml`, the server defaults to **STREAMABLE** (see the configuration table below).

@@ -34,6 +34,10 @@ Spring AI MCP is the standard choice for Spring applications. This SDK is for li
 
 - Java 17 or later
 
+## Packaging
+
+For deployment with `java -jar`, build an executable fat JAR and configure the JAR manifest main class. `mcp-server.yml` should be packaged from `src/main/resources`.
+
 ## Quick Start
 
 ### Maven Dependency

@@ -185,6 +185,34 @@ public class MyPrompts {
 
 Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled classes and dependencies on the classpath. Your own project needs an executable JAR setup (for example Spring Boot or the Maven Shade plugin) if you want `java -jar` with a single file.
 
+For deployment, build an executable fat JAR so runtime dependencies are included. If you use Maven Shade, configure the JAR manifest main class:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>3.6.2</version>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <createDependencyReducedPom>false</createDependencyReducedPom>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <mainClass>com.example.MyFirstMcpServer</mainClass>
+                    </transformer>
+                </transformers>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+Keep `mcp-server.yml` in `src/main/resources` so it is packaged on the classpath.
+
 That's it! Your MCP server is now ready to serve resources, tools, and prompts!
 
 ## 📚 Core Concepts

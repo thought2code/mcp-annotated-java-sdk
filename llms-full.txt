@@ -181,6 +181,8 @@ public class MyPrompts {
 
 Run `MyFirstMcpServer` from your IDE, or use `java -cp ...` with your compiled classes and dependencies on the classpath. Use an executable JAR setup in your own project if you need `java -jar` with a single file.
 
+For deployment, package the application as an executable fat JAR so runtime dependencies are included. If you use Maven Shade or Gradle Shadow, configure the JAR manifest main class. Keep `mcp-server.yml` under `src/main/resources` so it is packaged on the runtime classpath.
+
 Optional: `McpApplication.run(MyFirstMcpServer.class, args, "custom-mcp-server.yml")` to load a different config file (default `mcp-server.yml`).
 
 ## Core Components

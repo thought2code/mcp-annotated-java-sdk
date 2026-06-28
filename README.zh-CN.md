@@ -187,6 +187,34 @@ public class MyPrompts {
 
 在 IDE 中运行 `MyFirstMcpServer`，或使用 `java -cp ...` 指定编译产物与依赖 classpath。若希望用 `java -jar` 单文件启动，需在你的项目中自行配置可执行 JAR（例如 Spring Boot 或 Maven Shade 插件）。
 
+生产部署时，建议打包为可执行 fat JAR，确保官方 MCP Java SDK、本 SDK 以及所有传递依赖都在运行时 classpath 中。如果使用 Maven Shade，需要配置 JAR manifest 的 main class：
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>3.6.2</version>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <createDependencyReducedPom>false</createDependencyReducedPom>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <mainClass>com.example.MyFirstMcpServer</mainClass>
+                    </transformer>
+                </transformers>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+请将 `mcp-server.yml` 放在 `src/main/resources`，这样它会被一起打进运行时 classpath。
+
 完成！你的 MCP 服务端已可提供资源、工具与提示词。
 
 ## 📚 核心概念
