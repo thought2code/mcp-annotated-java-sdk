@@ -1,6 +1,7 @@
 package com.github.thought2code.mcp.annotated.server.component.resource;
 
 import com.github.thought2code.mcp.annotated.McpApplicationContext;
+import com.github.thought2code.mcp.annotated.enums.MimeType;
 import com.github.thought2code.mcp.annotated.server.component.ComponentProvider;
 import com.github.thought2code.mcp.annotated.server.component.ComponentRegistrationSupport;
 import com.github.thought2code.mcp.annotated.server.component.DuplicateComponentMessageHelper;
@@ -119,7 +120,10 @@ public final class ResourceRegistration {
     var invocation = invoker.invoke(context);
     final String uri = resource.uri();
     final String mimeType = resource.mimeType();
-    final String text = invocation.asText();
+    final String text =
+        MimeType.APPLICATION_JSON.getValue().equals(mimeType)
+            ? invocation.asJson()
+            : invocation.asText();
     McpSchema.ResourceContents contents =
         McpSchema.TextResourceContents.builder(uri, text).mimeType(mimeType).build();
     McpSchema.ReadResourceResult result =

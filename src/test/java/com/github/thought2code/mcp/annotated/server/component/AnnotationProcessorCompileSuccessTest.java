@@ -168,6 +168,7 @@ class AnnotationProcessorCompileSuccessTest {
         import com.github.thought2code.mcp.annotated.annotation.McpResourceCompletion;
         import com.github.thought2code.mcp.annotated.annotation.McpTool;
         import com.github.thought2code.mcp.annotated.annotation.McpToolParam;
+        import com.github.thought2code.mcp.annotated.enums.MimeType;
         import com.github.thought2code.mcp.annotated.server.component.completion.CompletionResult;
         import io.modelcontextprotocol.spec.McpSchema;
         import java.util.List;
@@ -193,7 +194,7 @@ class AnnotationProcessorCompileSuccessTest {
               name = "fixture_resource",
               title = "Fixture Resource",
               description = "Fixture resource",
-              mimeType = "application/json",
+              mimeType = MimeType.APPLICATION_JSON,
               roles = {McpSchema.Role.USER},
               priority = 0.75)
           public String resource() {

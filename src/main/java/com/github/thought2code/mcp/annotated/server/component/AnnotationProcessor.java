@@ -627,7 +627,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
   /** Returns the MIME type from {@code @McpResource}. */
   private String resourceMimeType(ExecutableElement method) {
-    return Objects.requireNonNull(method.getAnnotation(McpResource.class)).mimeType();
+    return Objects.requireNonNull(method.getAnnotation(McpResource.class)).mimeType().getValue();
   }
 
   /** Returns the priority from {@code @McpResource}. */

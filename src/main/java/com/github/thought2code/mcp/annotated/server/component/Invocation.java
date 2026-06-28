@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.server.component;
 
+import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -31,6 +32,15 @@ public record Invocation(@NotNull Object result, boolean isError) {
    */
   public String asText() {
     return result.toString();
+  }
+
+  /**
+   * Returns the invocation result serialized as JSON.
+   *
+   * @return the JSON representation of the invocation result
+   */
+  public String asJson() {
+    return JacksonHelper.toJsonString(result);
   }
 
   /** Mutable builder for {@link Invocation} used by generated invokers. */

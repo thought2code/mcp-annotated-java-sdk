@@ -1,5 +1,6 @@
 package com.github.thought2code.mcp.annotated.annotation;
 
+import com.github.thought2code.mcp.annotated.enums.MimeType;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.lang.annotation.ElementType;
@@ -12,7 +13,8 @@ import java.lang.annotation.Target;
  *
  * <p>The resource's URI must be specified explicitly. Resource metadata such as name, title,
  * description, and MIME type can be specified via the corresponding attributes. If omitted, these
- * metadata fields will default to the value of the {@code name} attribute and "text/plain".
+ * metadata fields will default to the value of the {@code name} attribute and {@link
+ * MimeType#TEXT_PLAIN}.
  *
  * <p>Example usage:
  *
@@ -60,11 +62,11 @@ public @interface McpResource {
   String description() default StringHelper.EMPTY;
 
   /**
-   * The MIME type of the resource. Defaults to "text/plain".
+   * The MIME type of the resource. Defaults to {@link MimeType#TEXT_PLAIN}.
    *
    * @return the MIME type of the resource
    */
-  String mimeType() default "text/plain";
+  MimeType mimeType() default MimeType.TEXT_PLAIN;
 
   /**
    * The roles required to access the resource. Defaults to {@link McpSchema.Role#ASSISTANT} and
