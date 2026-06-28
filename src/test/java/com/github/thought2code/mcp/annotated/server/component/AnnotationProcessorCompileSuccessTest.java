@@ -55,6 +55,9 @@ class AnnotationProcessorCompileSuccessTest {
             .contains("private static ResourceDefinition resourceDefinition0()"),
         "Expected generated resource definition");
     assertTrue(
+        result.generatedProviderSource().contains(".mimeType(\"application/json\")"),
+        "Expected generated resource MIME type");
+    assertTrue(
         result
             .generatedProviderSource()
             .contains("private static CompletionDefinition completionDefinition0()"),
