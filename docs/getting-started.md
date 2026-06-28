@@ -21,14 +21,14 @@ Use this SDK when you want an annotation-driven MCP server in plain Java without
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.19.0</version>
+    <version>0.20.0</version>
 </dependency>
 ```
 
 ### Gradle Dependency
 
 ```gradle
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.19.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.20.0'
 ```
 
 ## 5-Minutes Tutorial
