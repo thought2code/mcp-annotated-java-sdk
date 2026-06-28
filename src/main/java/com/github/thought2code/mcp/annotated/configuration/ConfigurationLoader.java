@@ -4,17 +4,14 @@ import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.util.JacksonHelper;
 import com.github.thought2code.mcp.annotated.util.StringHelper;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Loads and merges {@link ServerConfiguration} from YAML files on the classpath or filesystem.
+ * Loads and merges {@link ServerConfiguration} from YAML files on the classpath.
  *
  * <p>When {@code profile} is set in the base file, a companion {@code mcp-server-{profile}.yml} is
  * merged on top using Jackson merge semantics.
@@ -36,8 +33,7 @@ public record ConfigurationLoader(String configFileName) {
    * @throws McpServerConfigurationException if the configuration file cannot be loaded
    */
   public ServerConfiguration loadConfig() {
-    File file = getConfigFilePath(configFileName).toFile();
-    ServerConfiguration configuration = JacksonHelper.fromYaml(file, ServerConfiguration.class);
+    ServerConfiguration configuration = loadYaml(configFileName);
     log.info("Configuration loaded successfully from file: {}", configFileName);
 
     final String profile = configuration.profile();
@@ -45,9 +41,7 @@ public record ConfigurationLoader(String configFileName) {
       log.info("No profile specified in configuration file: {}", configFileName);
     } else {
       final String profileConfigFileName = configFileName.replace(".yml", "-" + profile + ".yml");
-      File profileConfigFile = getConfigFilePath(profileConfigFileName).toFile();
-      configuration =
-          JacksonHelper.mergeYaml(configuration, profileConfigFile, ServerConfiguration.class);
+      configuration = mergeYaml(configuration, profileConfigFileName);
       log.info("Profile configuration merged successfully from file: {}", profileConfigFileName);
     }
 
@@ -58,25 +52,55 @@ public record ConfigurationLoader(String configFileName) {
   }
 
   /**
-   * Returns the file path of the configuration file.
+   * Loads the configuration file from the classpath.
    *
    * @param fileName the name of the configuration file
-   * @return the file path of the configuration file
+   * @return the loaded server configuration
+   * @throws McpServerConfigurationException if the configuration file cannot be found or read
+   */
+  private ServerConfiguration loadYaml(String fileName) {
+    try (InputStream inputStream = getConfigInputStream(fileName)) {
+      return JacksonHelper.fromYaml(inputStream, fileName, ServerConfiguration.class);
+    } catch (IOException e) {
+      throw new McpServerConfigurationException(
+          McpServerError.YAML_READ_ERROR.withDetail(fileName), e);
+    }
+  }
+
+  /**
+   * Merges the profile configuration file from the classpath.
+   *
+   * @param configuration the base configuration
+   * @param profileConfigFileName the name of the profile configuration file
+   * @return the merged server configuration
+   * @throws McpServerConfigurationException if the profile configuration file cannot be found or
+   *     read
+   */
+  private ServerConfiguration mergeYaml(
+      ServerConfiguration configuration, String profileConfigFileName) {
+    try (InputStream inputStream = getConfigInputStream(profileConfigFileName)) {
+      return JacksonHelper.mergeYaml(
+          configuration, inputStream, profileConfigFileName, ServerConfiguration.class);
+    } catch (IOException e) {
+      throw new McpServerConfigurationException(
+          McpServerError.YAML_READ_ERROR.withDetail(profileConfigFileName), e);
+    }
+  }
+
+  /**
+   * Returns the classpath input stream of the configuration file.
+   *
+   * @param fileName the name of the configuration file
+   * @return the input stream of the configuration file
    * @throws McpServerConfigurationException if the configuration file cannot be found
    */
-  private Path getConfigFilePath(String fileName) {
-    try {
-      ClassLoader classLoader = ConfigurationLoader.class.getClassLoader();
-      URL configFileUrl = classLoader.getResource(fileName);
-      if (configFileUrl == null) {
-        throw new McpServerConfigurationException(
-            McpServerError.CONFIG_FILE_NOT_FOUND.withDetail(fileName));
-      }
-      return Paths.get(configFileUrl.toURI());
-    } catch (URISyntaxException e) {
-      // should never happen
+  private InputStream getConfigInputStream(String fileName) {
+    ClassLoader classLoader = ConfigurationLoader.class.getClassLoader();
+    InputStream inputStream = classLoader.getResourceAsStream(fileName);
+    if (inputStream == null) {
       throw new McpServerConfigurationException(
-          McpServerError.INVALID_CONFIG_FILE.withDetail(fileName), e);
+          McpServerError.CONFIG_FILE_NOT_FOUND.withDetail(fileName));
     }
+    return inputStream;
   }
 }

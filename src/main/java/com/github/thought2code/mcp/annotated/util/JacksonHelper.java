@@ -3,7 +3,7 @@ package com.github.thought2code.mcp.annotated.util;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
 import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
-import java.io.File;
+import java.io.InputStream;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,45 +86,48 @@ public final class JacksonHelper {
   }
 
   /**
-   * Deserialize a YAML file to an object of the specified type.
+   * Deserialize a YAML stream to an object of the specified type.
    *
-   * @param yamlFile the YAML file to deserialize
+   * @param yamlStream the YAML stream to deserialize
+   * @param sourceName source name used in error details
    * @param valueType the class of the object to deserialize to
    * @param <T> the type of the object to deserialize to
    * @return the deserialized object
    */
-  public static <T> T fromYaml(File yamlFile, Class<T> valueType) {
+  public static <T> T fromYaml(InputStream yamlStream, String sourceName, Class<T> valueType) {
     try {
-      return YAML.readValue(yamlFile, valueType);
+      return YAML.readValue(yamlStream, valueType);
     } catch (JacksonException e) {
-      final String path = yamlFile.getAbsolutePath();
-      throw new McpServerConfigurationException(McpServerError.YAML_READ_ERROR.withDetail(path), e);
+      throw new McpServerConfigurationException(
+          McpServerError.YAML_READ_ERROR.withDetail(sourceName), e);
     }
   }
 
   /**
-   * Merges profile YAML values into a base configuration object.
+   * Merges profile YAML stream values into a base configuration object.
    *
    * <p>Profile values override base values recursively for nested objects, matching the behavior of
    * Jackson {@code @JsonMerge}. Java records are merged via {@code JsonNode} because {@code
    * readerForUpdating} does not support immutable creator types.
    *
    * @param base the base configuration object
-   * @param profileYamlFile the profile YAML file whose values override {@code base}
+   * @param profileYamlStream the profile YAML stream whose values override {@code base}
+   * @param sourceName source name used in error details
    * @param valueType configuration type
    * @param <T> configuration type
    * @return a new merged configuration instance
    * @throws McpServerConfigurationException if the profile YAML cannot be read
    */
-  public static <T> T mergeYaml(T base, File profileYamlFile, Class<T> valueType) {
+  public static <T> T mergeYaml(
+      T base, InputStream profileYamlStream, String sourceName, Class<T> valueType) {
     try {
       JsonNode baseNode = YAML.valueToTree(base);
-      JsonNode profileNode = YAML.readTree(profileYamlFile);
+      JsonNode profileNode = YAML.readTree(profileYamlStream);
       JsonNode mergedNode = deepMerge(baseNode, profileNode);
       return YAML.treeToValue(mergedNode, valueType);
     } catch (JacksonException e) {
-      final String path = profileYamlFile.getAbsolutePath();
-      throw new McpServerConfigurationException(McpServerError.YAML_READ_ERROR.withDetail(path), e);
+      throw new McpServerConfigurationException(
+          McpServerError.YAML_READ_ERROR.withDetail(sourceName), e);
     }
   }
 

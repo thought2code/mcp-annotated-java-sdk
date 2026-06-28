@@ -8,14 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.thought2code.mcp.annotated.configuration.ServerConfiguration;
 import com.github.thought2code.mcp.annotated.enums.McpServerError;
-import com.github.thought2code.mcp.annotated.exception.McpServerConfigurationException;
 import com.github.thought2code.mcp.annotated.exception.McpServerException;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -51,12 +48,12 @@ class JacksonHelperTest {
   }
 
   @Test
-  void fromYaml_shouldDeserializeValidFile() throws IOException {
-    File tempYaml = File.createTempFile("jackson-helper", ".yaml");
-    try (FileWriter writer = new FileWriter(tempYaml)) {
-      writer.write("name: test\nage: 25");
-    }
-    Person person = JacksonHelper.fromYaml(tempYaml, Person.class);
+  void fromYaml_shouldDeserializeValidStream() {
+    InputStream yaml =
+        new ByteArrayInputStream("name: test\nage: 25".getBytes(StandardCharsets.UTF_8));
+
+    Person person = JacksonHelper.fromYaml(yaml, "test-stream.yaml", Person.class);
+
     assertEquals("test", person.name());
     assertEquals(25, person.age);
   }
@@ -78,22 +75,32 @@ class JacksonHelperTest {
   }
 
   @Test
-  void fromYaml_shouldThrowConfigurationExceptionWhenFileMissing() {
-    File missing = new File("non-existent-jackson-helper.yaml");
-    McpServerConfigurationException exception =
+  void fromYaml_shouldThrowConfigurationExceptionWhenStreamIsInvalid() {
+    InputStream yaml = new ByteArrayInputStream("name: [".getBytes(StandardCharsets.UTF_8));
+
+    McpServerException exception =
         assertThrows(
-            McpServerConfigurationException.class,
-            () -> JacksonHelper.fromYaml(missing, Map.class));
+            McpServerException.class,
+            () -> JacksonHelper.fromYaml(yaml, "invalid-stream.yaml", Map.class));
+
     assertTrue(exception.getMessage().contains(McpServerError.YAML_READ_ERROR.getCode()));
+    assertTrue(exception.getMessage().contains("invalid-stream.yaml"));
   }
 
   @Test
   void mergeYaml_shouldMergeNestedProfileOverridesIntoBaseConfiguration() throws Exception {
-    File baseFile = classpathResource("test-mcp-server-with-profile.yml");
-    File profileFile = classpathResource("test-mcp-server-with-profile-dev.yml");
+    InputStream baseStream = classpathResourceStream("test-mcp-server-with-profile.yml");
+    InputStream profileStream = classpathResourceStream("test-mcp-server-with-profile-dev.yml");
 
-    ServerConfiguration configuration = JacksonHelper.fromYaml(baseFile, ServerConfiguration.class);
-    configuration = JacksonHelper.mergeYaml(configuration, profileFile, ServerConfiguration.class);
+    ServerConfiguration configuration =
+        JacksonHelper.fromYaml(
+            baseStream, "test-mcp-server-with-profile.yml", ServerConfiguration.class);
+    configuration =
+        JacksonHelper.mergeYaml(
+            configuration,
+            profileStream,
+            "test-mcp-server-with-profile-dev.yml",
+            ServerConfiguration.class);
 
     assertEquals("mcp-server-dev", configuration.name());
     assertFalse(configuration.capabilities().resource());
@@ -102,11 +109,11 @@ class JacksonHelperTest {
     assertEquals(9004, configuration.streamable().port());
   }
 
-  private static File classpathResource(String fileName) throws URISyntaxException {
-    URL resource = JacksonHelperTest.class.getClassLoader().getResource(fileName);
+  private static InputStream classpathResourceStream(String fileName) throws IOException {
+    InputStream resource = JacksonHelperTest.class.getClassLoader().getResourceAsStream(fileName);
     if (resource == null) {
       throw new IllegalArgumentException("Missing classpath resource: " + fileName);
     }
-    return Paths.get(resource.toURI()).toFile();
+    return resource;
   }
 }
