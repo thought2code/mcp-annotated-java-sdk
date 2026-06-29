@@ -27,7 +27,7 @@
 
 > **工作流：** 添加依赖 → 配置 `mcp-server.yml` → 注解 Resources / Tools / Prompts / Completions → 通过 `McpApplication` 启动
 
-[📖 文档](https://thought2code.github.io/mcp-annotated-java-sdk-docs) · [💡 示例](https://github.com/thought2code/mcp-java-sdk-examples/tree/main/mcp-server-filesystem/mcp-server-filesystem-annotated-sdk-implementation) · [🐛 提交 Issue](https://github.com/thought2code/mcp-annotated-java-sdk/issues)
+[📖 文档](https://thought2code.github.io/mcp-annotated-java-sdk-docs) · [💡 示例](https://github.com/thought2code/mcp-java-sdk-examples)
 
 ---
 
@@ -452,7 +452,7 @@ cd mcp-annotated-java-sdk
 ## 📖 相关链接
 
 - [官方文档](https://thought2code.github.io/mcp-annotated-java-sdk-docs)
-- [示例仓库](https://github.com/thought2code/mcp-java-sdk-examples/tree/main/mcp-server-filesystem/mcp-server-filesystem-annotated-sdk-implementation)
+- [示例仓库](https://github.com/thought2code/mcp-java-sdk-examples)
 - [MCP 官网](https://modelcontextprotocol.io)
 
 ## 📄 许可证
