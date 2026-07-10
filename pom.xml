@@ -6,7 +6,7 @@
 
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.20.0</version>
+    <version>0.21.0-SNAPSHOT</version>
 
     <name>MCP Annotated Java SDK</name>
     <description>Annotation-driven MCP (Model Context Protocol) Development with Java</description>
@@ -45,7 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!--==================== maven plugin versions ====================-->
-        <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
@@ -55,13 +55,13 @@
         <maven-surefire-plugin.version>3.6.0-M1</maven-surefire-plugin.version>
         <sortpom-maven-plugin.version>4.0.0</sortpom-maven-plugin.version>
         <spotbugs-maven-plugin.version>4.10.2.0</spotbugs-maven-plugin.version>
-        <spotless-maven-plugin.version>3.6.0</spotless-maven-plugin.version>
+        <spotless-maven-plugin.version>3.8.0</spotless-maven-plugin.version>
         <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <!--==================== dependency versions ======================-->
         <annotations.version>26.1.0</annotations.version>
-        <jetty.version>12.1.10</jetty.version>
-        <junit.version>6.1.0</junit.version>
-        <logback.version>1.5.34</logback.version>
+        <jetty.version>12.1.11</jetty.version>
+        <junit.version>6.1.1</junit.version>
+        <logback.version>1.5.38</logback.version>
         <mcp-sdk.version>2.0.0</mcp-sdk.version>
         <mockito.version>5.23.0</mockito.version>
     </properties>
