@@ -54,14 +54,14 @@
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.6.0-M1</maven-surefire-plugin.version>
         <sortpom-maven-plugin.version>4.0.0</sortpom-maven-plugin.version>
-        <spotbugs-maven-plugin.version>4.10.2.0</spotbugs-maven-plugin.version>
-        <spotless-maven-plugin.version>3.8.0</spotless-maven-plugin.version>
+        <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
+        <spotless-maven-plugin.version>3.9.0</spotless-maven-plugin.version>
         <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <!--==================== dependency versions ======================-->
         <annotations.version>26.1.0</annotations.version>
         <jetty.version>12.1.11</jetty.version>
-        <junit.version>6.1.1</junit.version>
-        <logback.version>1.5.38</logback.version>
+        <junit.version>6.1.2</junit.version>
+        <logback.version>1.6.1</logback.version>
         <mcp-sdk.version>2.0.0</mcp-sdk.version>
         <mockito.version>5.23.0</mockito.version>
     </properties>
