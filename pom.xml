@@ -56,7 +56,6 @@
         <sortpom-maven-plugin.version>4.0.0</sortpom-maven-plugin.version>
         <spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
         <spotless-maven-plugin.version>3.9.0</spotless-maven-plugin.version>
-        <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
         <!--==================== dependency versions ======================-->
         <annotations.version>26.1.0</annotations.version>
         <jetty.version>12.1.11</jetty.version>
@@ -274,31 +273,6 @@
                     <!--suppress UnresolvedMavenProperty for IntelliJ IDEA-->
                     <argLine>${jacoco.agent.argLine}</argLine>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>${versions-maven-plugin.version}</version>
-                <configuration>
-                    <allowSnapshots>false</allowSnapshots>
-                    <allowMinorUpdates>true</allowMinorUpdates>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>display-dependency-updates</id>
-                        <goals>
-                            <goal>display-dependency-updates</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                    <execution>
-                        <id>display-plugin-updates</id>
-                        <goals>
-                            <goal>display-plugin-updates</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
