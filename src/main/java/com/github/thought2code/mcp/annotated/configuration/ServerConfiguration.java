@@ -24,7 +24,7 @@ import com.github.thought2code.mcp.annotated.util.StringHelper;
  * @param capabilities feature flags advertised during initialization
  * @param changeNotification list-change notification capability flags
  * @param streamable streamable HTTP transport settings
- * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
+ * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/guides/getting-started/">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
  */

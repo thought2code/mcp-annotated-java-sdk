@@ -5,3 +5,8 @@
 
 # Maven build files
 target/
+
+# Astro documentation build files
+docs/.astro/
+docs/dist/
+docs/node_modules/

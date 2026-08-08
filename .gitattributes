@@ -1,4 +1,6 @@
 * text eol=lf
 
+*.ttf binary !eol
+
 *.bat text eol=crlf
 *.cmd text eol=crlf

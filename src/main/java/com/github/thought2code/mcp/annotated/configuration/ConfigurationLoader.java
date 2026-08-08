@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * merged on top using Jackson merge semantics.
  *
  * @param configFileName YAML file name (for example {@code mcp-server.yml})
- * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
+ * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/guides/getting-started/">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
  */

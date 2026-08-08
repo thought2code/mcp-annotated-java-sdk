@@ -1,12 +1,35 @@
 ---
-hide:
-    - navigation
-    - toc
+title: MCP Annotated Java SDK
+description: Spring-free annotations for building lightweight MCP servers in plain Java.
+template: splash
+hero:
+  tagline: Build lightweight Model Context Protocol servers in plain Java with annotations, generated schemas, and no Spring runtime.
+  actions:
+    - text: Get Started
+      link: /mcp-annotated-java-sdk/guides/getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/thought2code/mcp-annotated-java-sdk
+      icon: external
+      variant: primary
 ---
 
-# mcp-annotated-java-sdk
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
-Spring-free annotation layer for building lightweight [MCP (Model Context Protocol)](https://modelcontextprotocol.io) servers in plain Java.
+<CardGrid>
+  <Card title="Spring-free" icon="seti:java">
+    Run MCP servers in plain Java applications, CLI tools, embedded processes, and small services.
+  </Card>
+  <Card title="Annotation-driven" icon="puzzle">
+    Define tools, resources, prompts, and completions with concise, type-aware Java annotations.
+  </Card>
+  <Card title="Compile-time generation" icon="document">
+    Generate deterministic component bindings and JSON schemas during compilation.
+  </Card>
+  <Card title="Multiple transports" icon="approve-check">
+    Serve local clients over STDIO or expose production integrations over Streamable HTTP.
+  </Card>
+</CardGrid>
 
 ## 🎯 What is MCP?
 
@@ -28,14 +51,12 @@ MCP helps you build agents and complex workflows on top of LLMs. The official MC
 
 ## Key Advantages
 
-- **🚫 No Spring Framework Required** - Pure Java, lightweight and fast
-- **⚡ Instant MCP Server** - Start server with just 1 line of code
-- **🎉 Low Boilerplate** - No need to write repetitive low-level MCP SDK registration code
-- **👏 Generated JSON Schema** - Derive tool schemas from annotated Java signatures and metadata
-- **🎯 Focus on Logic** - Concentrate on core business logic
-- **🧩 Compile-Time Binding Generation** - Annotation processing creates deterministic MCP component providers
-- **🔌 Spring AI-Friendly Configuration** - Familiar configuration shape for teams that may also use Spring AI
-- **📦 Type-Aware** - Leverage Java signatures and compile-time checks for safer MCP components
+- **No Spring Framework required** — pure Java, lightweight and fast
+- **Instant MCP server** — start a server with one line of code
+- **Low boilerplate** — avoid repetitive low-level MCP SDK registration code
+- **Generated JSON Schema** — derive tool schemas from annotated Java signatures and metadata
+- **Compile-time binding generation** — produce deterministic MCP component providers
+- **Type-aware** — use Java signatures and compile-time checks for safer MCP components
 
 ## Comparison
 
@@ -74,17 +95,17 @@ This SDK is especially suitable for the following scenarios:
 
 ## Runtime notes
 
-- **ASYNC vs SYNC** — `type: ASYNC` selects the async MCP server API; your annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)`. See [Getting Started — Runtime model](./getting-started.md#runtime-model-and-stability).
+- **ASYNC vs SYNC** — `type: ASYNC` selects the async MCP server API; your annotated methods stay blocking Java wrapped in `Mono.fromCallable(...)`. See [Getting Started — Runtime model](/mcp-annotated-java-sdk/guides/getting-started/#runtime-model-and-stability).
 - **Singleton components** — one instance per component class, shared across concurrent requests; keep handlers stateless or thread-safe.
-- **Required YAML** — `instructions` must be non-blank; when `mode` is `STREAMABLE`, the `streamable` transport section must be present and complete.
+- **Explicit YAML** — core fields and applicable nested settings must be specified explicitly in `mcp-server.yml`; `instructions` must be non-blank, `capabilities.subscribe-resource` is required only when resource support is enabled, and the `streamable` section must be present and complete only when `mode` is `STREAMABLE`. Defaults apply only when building a configuration programmatically via `ServerConfiguration.builder()`.
 
 ## 📖 Getting Started
 
-Want to get started quickly? Check out the [Getting Started Guide](./getting-started.md) to learn how to build your first MCP server in 5 minutes.
+Want to get started quickly? Check out the [Getting Started Guide](/mcp-annotated-java-sdk/guides/getting-started/) to learn how to build your first MCP server in 5 minutes.
 
 ## 🔗 Quick Links
 
-- [Getting Started Guide](./getting-started.md) - Build your first MCP server
-- [Core Components](./components.md) - Resources, Tools, Prompts, and Completions
+- [Getting Started Guide](/mcp-annotated-java-sdk/guides/getting-started/) - Build your first MCP server
+- [Core Components](/mcp-annotated-java-sdk/reference/components/) - Resources, Tools, Prompts, and Completions
 - [GitHub Repository](https://github.com/thought2code/mcp-annotated-java-sdk) - Source code and examples
 - [Examples](https://github.com/thought2code/mcp-java-sdk-examples) - Real-world examples

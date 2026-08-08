@@ -1,0 +1,100 @@
+@font-face {
+  font-family: 'Liberation Mono';
+  src: url('/mcp-annotated-java-sdk/fonts/liberation-mono/LiberationMono-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Liberation Mono';
+  src: url('/mcp-annotated-java-sdk/fonts/liberation-mono/LiberationMono-Italic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Liberation Mono';
+  src: url('/mcp-annotated-java-sdk/fonts/liberation-mono/LiberationMono-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Liberation Mono';
+  src: url('/mcp-annotated-java-sdk/fonts/liberation-mono/LiberationMono-BoldItalic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --sl-font-mono: 'Liberation Mono';
+  --sl-color-accent-low: #0d2a22;
+  --sl-color-accent: #20b486;
+  --sl-color-accent-high: #b6f5dd;
+  --sl-color-white: #f4fbf8;
+  --sl-color-gray-1: #dce9e4;
+  --sl-color-gray-2: #a9bbb4;
+  --sl-color-gray-3: #71847c;
+  --sl-color-gray-4: #40534b;
+  --sl-color-gray-5: #263831;
+  --sl-color-gray-6: #172720;
+  --sl-color-black: #0d1813;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d8f6e9;
+  --sl-color-accent: #087a59;
+  --sl-color-accent-high: #063f31;
+  --sl-color-white: #14251e;
+  --sl-color-gray-1: #253a32;
+  --sl-color-gray-2: #455c53;
+  --sl-color-gray-3: #687d75;
+  --sl-color-gray-4: #9aaba4;
+  --sl-color-gray-5: #d5dfdb;
+  --sl-color-gray-6: #edf3f0;
+  --sl-color-gray-7: #f8fbf9;
+  --sl-color-black: #ffffff;
+}
+
+.hero {
+  padding-block: clamp(3rem, 8vw, 6.5rem);
+}
+
+.hero .tagline {
+  max-width: 46rem;
+}
+
+.hero h1 {
+  font-size: clamp(1.5rem, calc(0.25rem + 5vw), var(--sl-text-6xl));
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+@media (min-width: 50rem) {
+  .hero:not(:has(> img, > .hero-html)) {
+    grid-template-columns: 100%;
+  }
+}
+
+.sl-markdown-content .card {
+  border-radius: 0.9rem;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.sl-markdown-content .card:hover {
+  border-color: var(--sl-color-accent);
+  transform: translateY(-2px);
+}
+
+header.header {
+  backdrop-filter: blur(12px);
+  background-color: color-mix(in srgb, var(--sl-color-bg-nav) 88%, transparent);
+}
+
+code {
+  font-variant-ligatures: none;
+}

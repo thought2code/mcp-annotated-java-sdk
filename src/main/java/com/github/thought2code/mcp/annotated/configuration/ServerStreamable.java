@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param disallowDelete whether HTTP DELETE on the MCP session is rejected
  * @param keepAliveInterval optional stream keep-alive interval in milliseconds
  * @param port Jetty listen port
- * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/getting-started">MCP
+ * @see <a href="https://thought2code.github.io/mcp-annotated-java-sdk/guides/getting-started/">MCP
  *     Annotated Java SDK Documentation</a>
  * @author codeboyzhou
  */

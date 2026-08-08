@@ -1,9 +1,7 @@
 ---
-hide:
-    - navigation
+title: Getting Started
+description: Build your first annotation-driven MCP server in plain Java.
 ---
-
-# Getting Started Guide
 
 This guide will help you build your first MCP server in 5 minutes.
 
@@ -27,7 +25,7 @@ Use this SDK when you want an annotation-driven MCP server in plain Java without
 
 ### Gradle Dependency
 
-```gradle
+```groovy
 implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.20.0'
 ```
 
@@ -160,7 +158,7 @@ java -jar target/your-app.jar
 
 If you use Gradle Shadow, configure the main class in the manifest:
 
-```gradle
+```groovy
 tasks.shadowJar {
     manifest {
         attributes 'Main-Class': 'com.example.MyFirstMcpServer'
@@ -170,7 +168,7 @@ tasks.shadowJar {
 
 ## Server Modes
 
-This SDK supports two MCP server modes. If you omit `mode` in `mcp-server.yml`, the server defaults to **STREAMABLE** (see the configuration table below).
+This SDK supports two MCP server modes. The `mode` field is required in `mcp-server.yml`; there is no implicit default when loading from YAML (defaults only apply when building a configuration programmatically via `ServerConfiguration.builder()`).
 
 ### 1. STDIO Mode
 
@@ -199,14 +197,16 @@ streamable:
 
 ## Configuration Properties
 
-| Property                          | Description                                                     | Default                      |
+The core fields and applicable nested settings below are **required** when loading configuration from YAML; omitting a required field causes the server to fail startup with `Missing config key '...'`. Conditional fields are required only when their corresponding feature or transport is enabled. The "Builder default" column lists the value applied only when constructing a configuration programmatically via `ServerConfiguration.builder()`.
+
+| Property                          | Description                                                     | Builder default              |
 |-----------------------------------|-----------------------------------------------------------------|------------------------------|
 | `enabled`                         | Enable/disable MCP server                                       | `true`                       |
 | `mode`                            | Server mode: `STDIO`, `STREAMABLE`                              | `STREAMABLE`                 |
 | `name`                            | Server name                                                     | `mcp-server`                 |
 | `version`                         | Server version                                                  | `1.0.0`                      |
 | `type`                            | Server type: `SYNC`, `ASYNC`                                    | `SYNC`                       |
-| `instructions`                    | Instructions for the LLM client                                 | Required (non-blank in YAML) |
+| `instructions`                    | Instructions for the LLM client                                 | *(empty string)*             |
 | `request-timeout`                 | Request timeout in milliseconds                                 | `20000`                      |
 | `capabilities.resource`           | Enable resource support                                         | `true`                       |
 | `capabilities.subscribe-resource` | Enable resource subscription                                    | `true`                       |
@@ -220,6 +220,11 @@ streamable:
 | `streamable.disallow-delete`      | Reject HTTP DELETE on session                                   | `false`                      |
 | `streamable.keep-alive-interval`  | Keep-alive interval (ms)                                        | `20000`                      |
 | `streamable.port`                 | HTTP port for STREAMABLE mode                                   | `8080`                       |
+
+Conditional requirements:
+
+- `capabilities.subscribe-resource` is required only when `capabilities.resource` is `true`.
+- `streamable.*` fields are required only when `mode` is `STREAMABLE`. When `mode` is `STDIO`, the `streamable` section is ignored and may be omitted.
 
 ## Runtime model and stability
 
@@ -289,4 +294,4 @@ your-mcp-project/
 
 ## Next Steps
 
-- Want to learn more about MCP components? Check [Core Components](./components.md)
+- Want to learn more about MCP components? Check [Core Components](/mcp-annotated-java-sdk/reference/components/)

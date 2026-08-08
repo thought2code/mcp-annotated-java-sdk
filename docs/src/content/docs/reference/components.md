@@ -1,10 +1,7 @@
 ---
-hide:
-    - navigation
-    - toc
+title: Core Components
+description: Define MCP resources, tools, prompts, completions, and structured content with Java annotations.
 ---
-
-# Core Components
 
 MCP (Model Context Protocol) defines three core component types, and this SDK simplifies the creation process of these components through annotations.
 
