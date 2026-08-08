@@ -23,20 +23,35 @@ export default defineConfig({
       editLink: {
         baseUrl: 'https://github.com/thought2code/mcp-annotated-java-sdk/edit/main/docs/',
       },
+      locales: {
+        root: { label: 'English', lang: 'en' },
+        'zh-cn': { label: '简体中文', lang: 'zh-CN' },
+      },
+      defaultLocale: 'root',
       lastUpdated: true,
       customCss: ['./src/styles/custom.css'],
       sidebar: [
         {
           label: 'Start Here',
+          translations: { 'zh-CN': '从这里开始' },
           items: [
-            { label: 'Overview', slug: '' },
-            { label: 'Getting Started', slug: 'guides/getting-started' },
+            { label: 'Overview', translations: { 'zh-CN': '概览' }, slug: '' },
+            {
+              label: 'Getting Started',
+              translations: { 'zh-CN': '快速开始' },
+              slug: 'guides/getting-started',
+            },
           ],
         },
         {
           label: 'Reference',
+          translations: { 'zh-CN': '参考' },
           items: [
-            { label: 'Core Components', slug: 'reference/components' },
+            {
+              label: 'Core Components',
+              translations: { 'zh-CN': '核心组件' },
+              slug: 'reference/components',
+            },
           ],
         },
       ],

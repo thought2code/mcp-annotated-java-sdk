@@ -1,0 +1,111 @@
+---
+title: MCP Annotated Java SDK
+description: 使用注解在纯 Java 中构建轻量级 MCP 服务器，无需 Spring。
+template: splash
+hero:
+  tagline: 使用注解自动生成 Schema，纯 Java 代码构建轻量级 MCP 服务，无需 Spring AI
+  actions:
+    - text: 快速开始
+      link: /mcp-annotated-java-sdk/zh-cn/guides/getting-started/
+      icon: right-arrow
+    - text: 在 GitHub 查看
+      link: https://github.com/thought2code/mcp-annotated-java-sdk
+      icon: external
+      variant: primary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="无需 Spring" icon="seti:java">
+    可在纯 Java 应用、命令行工具、嵌入式进程和小型服务中运行 MCP 服务器。
+  </Card>
+  <Card title="注解驱动" icon="puzzle">
+    使用简洁且类型感知的 Java 注解定义工具、资源、提示词和自动补全。
+  </Card>
+  <Card title="编译期生成" icon="document">
+    在编译阶段生成确定性的组件绑定和 JSON Schema。
+  </Card>
+  <Card title="多种传输方式" icon="approve-check">
+    通过 STDIO 服务本地客户端，或通过 Streamable HTTP 暴露生产集成。
+  </Card>
+</CardGrid>
+
+## 🎯 什么是 MCP？
+
+模型上下文协议（Model Context Protocol，MCP）是一种标准化协议，用于构建向大语言模型应用暴露数据和功能的服务器。它类似于 Web API，但专门面向大语言模型交互。
+
+## ✨ 为什么选择这个 SDK？
+
+MCP 可以帮助你在大语言模型之上构建智能体和复杂工作流。官方 MCP Java SDK 是基础层，Spring AI MCP 是 Spring 应用的标准入口。本 SDK 面向纯 Java 场景：命令行工具、嵌入式服务器、本地自动化，以及需要注解能力但不需要 Spring 运行时的小型服务进程。
+
+## 项目定位
+
+| 项目                                                                                  | 最适合的场景                                | 定位                     |
+|---------------------------------------------------------------------------------------|---------------------------------------------|--------------------------|
+| [官方 MCP Java SDK](https://github.com/modelcontextprotocol/java-sdk)                 | 库作者和底层协议集成                        | 基础层                   |
+| [Spring AI MCP](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html) | Spring Boot / Spring Framework 应用         | Spring 生态标准方案      |
+| **mcp-annotated-java-sdk**                                                            | 纯 Java、CLI、嵌入式和轻量级 MCP 服务器     | 无 Spring 的注解封装层   |
+
+**经验法则：** Spring 应用选择 Spring AI；无需 Spring 的轻量级 Java MCP 服务器选择 mcp-annotated-java-sdk。
+
+## 核心优势
+
+- **无需 Spring Framework** — 纯 Java、轻量且快速
+- **快速启动 MCP 服务器** — 一行代码即可启动服务器
+- **更少样板代码** — 避免重复编写底层 MCP SDK 注册代码
+- **自动生成 JSON Schema** — 从带注解的 Java 签名和元数据生成工具 Schema
+- **编译期生成绑定** — 生成确定性的 MCP 组件提供器
+- **类型感知** — 利用 Java 签名和编译期检查构建更安全的 MCP 组件
+
+## 方案对比
+
+| 特性             | 官方 MCP Java SDK       | Spring AI MCP                | 本 SDK                                  |
+|------------------|-------------------------|------------------------------|-----------------------------------------|
+| 主要用户         | 底层 Java 集成          | Spring 应用                  | 纯 Java MCP 服务器                      |
+| 是否依赖 Spring  | 否                      | 是，用于 Spring 集成         | 否                                      |
+| 组件模型         | 编程式注册              | Spring Bean 和注解           | 普通 Java 类和注解                      |
+| JSON Schema      | 手动提供或由应用提供    | 由 Spring AI 生成            | 由注解处理器生成                        |
+| 启动方式         | 自行组装服务器          | Spring Boot 自动配置         | `McpApplication.run(...)`               |
+| 最佳使用场景     | 最大程度的控制          | 企业级 Spring 应用           | CLI、嵌入式、本地工具和小型服务         |
+
+## 路线图重点
+
+- 紧跟官方 MCP Java SDK 的兼容性。
+- 让纯 Java MCP 服务器更容易编写、测试和交付。
+- 改进编译期校验、生成的绑定、Schema 支持和示例。
+- 不在 Boot 自动配置、WebMVC/WebFlux 集成、企业安全或可观测性方面与 Spring AI 竞争。
+
+## 适用场景
+
+本 SDK 特别适合以下场景：
+
+1. **快速原型** — 快速验证 MCP 概念和功能
+2. **CLI 和本地工具** — 面向编辑器、智能体和桌面工作流的 STDIO 工具
+3. **嵌入式服务器** — 将 MCP 能力嵌入现有纯 Java 进程
+4. **本地自动化** — 暴露脚本、文件或内部工作流的小型服务器
+5. **教学演示** — 便于理解和学习 MCP 协议概念
+
+## 支持的服务器模式
+
+| 模式           | 说明                 | 使用场景                       |
+|----------------|----------------------|--------------------------------|
+| **STDIO**      | 标准输入/输出通信    | CLI 工具、本地开发             |
+| **STREAMABLE** | HTTP 流式传输        | Web 应用，推荐用于生产环境     |
+
+## 运行时说明
+
+- **ASYNC 与 SYNC** — `type: ASYNC` 会选择异步 MCP 服务器 API；带注解的方法仍是普通阻塞 Java 方法，由 `Mono.fromCallable(...)` 包装。详见[快速开始 — 运行时模型](/mcp-annotated-java-sdk/zh-cn/guides/getting-started/#运行时模型与稳定性)。
+- **单例组件** — 每个组件类只有一个实例，并在并发请求之间共享；处理器应保持无状态或具备线程安全性。
+- **显式 YAML 配置** — `mcp-server.yml` 中必须显式提供核心字段和适用的嵌套设置；`instructions` 不能为空，仅在启用资源能力时要求 `capabilities.subscribe-resource`，仅在 `mode` 为 `STREAMABLE` 时要求完整的 `streamable` 配置。默认值只适用于通过 `ServerConfiguration.builder()` 以编程方式构建配置。
+
+## 📖 快速开始
+
+想立即开始？请阅读[快速开始指南](/mcp-annotated-java-sdk/zh-cn/guides/getting-started/)，在 5 分钟内构建第一个 MCP 服务器。
+
+## 🔗 快速链接
+
+- [快速开始指南](/mcp-annotated-java-sdk/zh-cn/guides/getting-started/) - 构建第一个 MCP 服务器
+- [核心组件](/mcp-annotated-java-sdk/zh-cn/reference/components/) - 资源、工具、提示词和自动补全
+- [GitHub 仓库](https://github.com/thought2code/mcp-annotated-java-sdk) - 源代码和示例
+- [示例仓库](https://github.com/thought2code/mcp-java-sdk-examples) - 实际使用示例
