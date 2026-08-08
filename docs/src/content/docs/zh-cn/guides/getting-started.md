@@ -19,14 +19,14 @@ description: 使用纯 Java 构建第一个注解驱动的 MCP 服务器。
 <dependency>
     <groupId>io.github.thought2code</groupId>
     <artifactId>mcp-annotated-java-sdk</artifactId>
-    <version>0.20.0</version>
+    <version>0.21.0</version>
 </dependency>
 ```
 
 ### Gradle 依赖
 
 ```groovy
-implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.20.0'
+implementation 'io.github.thought2code:mcp-annotated-java-sdk:0.21.0'
 ```
 
 ## 5 分钟教程
