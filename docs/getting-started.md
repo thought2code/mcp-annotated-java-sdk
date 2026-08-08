@@ -170,7 +170,7 @@ tasks.shadowJar {
 
 ## Server Modes
 
-This SDK supports three MCP server modes. If you omit `mode` in `mcp-server.yml`, the server defaults to **STREAMABLE** (see the configuration table below).
+This SDK supports two MCP server modes. If you omit `mode` in `mcp-server.yml`, the server defaults to **STREAMABLE** (see the configuration table below).
 
 ### 1. STDIO Mode
 
@@ -194,6 +194,8 @@ streamable:
   keep-alive-interval: 20000
   port: 8080
 ```
+
+**STREAMABLE** is the supported HTTP transport.
 
 ## Configuration Properties
 
@@ -233,8 +235,6 @@ Use **SYNC** by default. Choose **ASYNC** only when your deployment requires the
 ### Component instances and concurrency
 
 The SDK creates **one instance per component class** (via a **public no-arg constructor**) and reuses it for all requests. Concurrent MCP calls share that object. Keep components **stateless** or **thread-safe**; avoid unsynchronized per-request instance fields.
-
-- **STREAMABLE** is the supported HTTP transport.
 
 ## Profile-based Configuration
 

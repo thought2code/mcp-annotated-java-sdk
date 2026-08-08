@@ -500,7 +500,7 @@ public String createUser(
 ## Links
 
 - **GitHub Repository**: https://github.com/thought2code/mcp-annotated-java-sdk
-- **Official Documentation**: https://thought2code.github.io/mcp-annotated-java-sdk-docs
+- **Official Documentation**: https://thought2code.github.io/mcp-annotated-java-sdk
 - **Examples Repository**: https://github.com/thought2code/mcp-java-sdk-examples
 - **MCP Official Site**: https://modelcontextprotocol.io
 - **MCP Java SDK**: https://github.com/modelcontextprotocol/java-sdk

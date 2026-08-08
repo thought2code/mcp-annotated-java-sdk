@@ -167,6 +167,6 @@ change-notification:
 ## Links
 
 - GitHub: https://github.com/thought2code/mcp-annotated-java-sdk
-- Documentation: https://thought2code.github.io/mcp-annotated-java-sdk-docs
+- Documentation: https://thought2code.github.io/mcp-annotated-java-sdk
 - Examples: https://github.com/thought2code/mcp-java-sdk-examples
 - MCP Protocol: https://modelcontextprotocol.io

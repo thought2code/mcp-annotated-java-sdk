@@ -27,7 +27,7 @@ It is intentionally not a Spring AI replacement. Spring AI is the standard MCP e
 
 > **Workflow:** Add dependency → Configure `mcp-server.yml` → Annotate Resources / Tools / Prompts / Completions → Run with `McpApplication`
 
-[📖 Documentation](https://thought2code.github.io/mcp-annotated-java-sdk-docs) · [💡 Examples](https://github.com/thought2code/mcp-java-sdk-examples)
+[📖 Documentation](https://thought2code.github.io/mcp-annotated-java-sdk) · [💡 Examples](https://github.com/thought2code/mcp-java-sdk-examples)
 
 ---
 
@@ -450,7 +450,7 @@ cd mcp-annotated-java-sdk
 
 ## 📖 Documentation
 
-- [Official Documentation](https://thought2code.github.io/mcp-annotated-java-sdk-docs)
+- [Official Documentation](https://thought2code.github.io/mcp-annotated-java-sdk)
 - [Examples Repository](https://github.com/thought2code/mcp-java-sdk-examples)
 - [MCP Official Site](https://modelcontextprotocol.io)
 
