@@ -58,7 +58,7 @@
         <spotless-maven-plugin.version>3.9.0</spotless-maven-plugin.version>
         <!--==================== dependency versions ======================-->
         <annotations.version>26.1.0</annotations.version>
-        <jetty.version>12.1.11</jetty.version>
+        <jetty.version>12.1.12</jetty.version>
         <junit.version>6.1.2</junit.version>
         <logback.version>1.6.1</logback.version>
         <mcp-sdk.version>2.0.0</mcp-sdk.version>
