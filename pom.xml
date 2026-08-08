@@ -40,8 +40,7 @@
         <!-- Skip artifact signing by default; enable with -Dgpg.skip=false for Maven Central deploy -->
         <gpg.skip>true</gpg.skip>
         <java.version>17</java.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!--==================== maven plugin versions ====================-->
@@ -202,8 +201,8 @@
                 <configuration>
                     <rules>
                         <requireJavaVersion>
-                            <version>17</version>
-                            <message>Java 17 or higher is required to build this project</message>
+                            <version>${java.version}</version>
+                            <message>Java ${java.version} or higher is required to build this project</message>
                         </requireJavaVersion>
                         <requireMavenVersion>
                             <version>3.9.16</version>
